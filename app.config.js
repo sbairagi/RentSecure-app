@@ -1,7 +1,7 @@
 module.exports = {
   expo: {
     extra: {
-      API_URL: "http://localhost:3000/api/v1",
+      API_URL: "http://localhost:8000/api",
       API_TIMEOUT: 30000,
       API_RETRY_COUNT: 3,
       APP_NAME: "SecureNest",

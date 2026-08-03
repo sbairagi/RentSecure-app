@@ -43,7 +43,7 @@ const appEnv = (getEnvValue('APP_ENV', 'development') as AppEnvironment) || 'dev
 
 export const environment: EnvironmentConfig = {
   appEnv,
-  apiUrl: getEnvValue('API_URL', 'http://localhost:3000/api/v1'),
+  apiUrl: getEnvValue('API_URL', 'http://localhost:8000/api'),
   apiTimeout: getEnvNumber('API_TIMEOUT', 30000),
   apiRetryCount: getEnvNumber('API_RETRY_COUNT', 3),
   appName: getEnvValue('APP_NAME', 'SecureNest'),
