@@ -1,0 +1,89 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# BRANCH PROTECTION VALIDATOR
+# ═══════════════════════════════════════════════════════════════════════════════
+# Validates GitHub branch protection rules are correctly configured.
+# Runs on schedule, on push to main/master when .github/** changes,
+# and on PRs that touch .github/**.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Branch Protection Validator
+
+"on":
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - ".github/**"
+  pull_request:
+    paths:
+      - ".github/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Branch Protection Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install -g @github/github-api js-yaml
+
+      - name: Run branch protection validator
+        id: validator
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node - <<'JS'
+          const { Octokit } = require("@github/github-api");
+          const octokit = new Octokit({ auth: process.env.GH_TOKEN });
+          const repo = process.env.GITHUB_REPOSITORY;
+          const [owner, name] = repo.split("/");
+          async function main() {
+            try {
+              const { data: branches } = await octokit.repos.listBranches({ owner, repo: name });
+              console.log(`Found ${branches.length} branches`);
+              for (const branch of branches) {
+                try {
+                  const { data: protection } = await octokit.repos.getBranchProtection({
+                    owner, repo: name, branch: branch.name
+                  });
+                  console.log(`Branch ${branch.name} has protection enabled`);
+                } catch (e) {
+                  if (e.status === 404) {
+                    console.log(`Branch ${branch.name} has no protection rules`);
+                  } else {
+                    console.error(`Error checking ${branch.name}:`, e.message);
+                  }
+                }
+              }
+              console.log("Branch protection validation completed");
+            } catch (e) {
+              console.error("Validation failed:", e.message);
+              process.exit(1);
+            }
+          }
+          main();
+          JS
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: branch-protection-report
+          path: branch-protection-report.txt
+          retention-days: 30

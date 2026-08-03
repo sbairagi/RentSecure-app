@@ -1,0 +1,36 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier
+        entry: npx prettier --write
+        language: system
+        pass_filenames: true
+        files: \.(ts|tsx|js|jsx|json|css|scss|md|yaml|yml)$
+        exclude: "^node_modules/"
+
+      - id: expo-lint
+        name: Expo ESLint
+        entry: npx expo lint
+        language: system
+        pass_filenames: false
+        types: [file]
+        files: '\.(ts|tsx|js|jsx)$'
+
+      - id: typescript-check
+        name: TypeScript Type Check
+        entry: npx tsc --noEmit
+        language: system
+        pass_filenames: false
+        types: [file]
+        files: '\.(ts|tsx)$'

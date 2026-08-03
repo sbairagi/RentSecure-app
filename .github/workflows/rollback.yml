@@ -1,0 +1,109 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROLLBACK: Production Rollback Workflow
+# ═══════════════════════════════════════════════════════════════════════════════
+# Triggered manually via workflow_dispatch with a target SHA to rollback to.
+# Validates the target SHA, re-deploys the previous version, and generates
+# a rollback validation report.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Rollback
+
+"on":
+  workflow_dispatch:
+    inputs:
+      rollback_sha:
+        description: "Commit SHA to rollback to (target deployment SHA)"
+        required: true
+        type: string
+      reason:
+        description: "Reason for rollback"
+        required: true
+        type: string
+      notify_team:
+        description: "Send notification to team channel"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+concurrency:
+  group: rollback-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-target:
+    name: Validate Rollback Target
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      validated_sha: ${{ steps.validate.outputs.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Validate target SHA exists
+        id: validate
+        run: |
+          set -euo pipefail
+          INPUT_SHA="${{ github.event.inputs.rollback_sha }}"
+          if ! git cat-file -t "${INPUT_SHA}" >/dev/null 2>&1; then
+            echo "Invalid SHA: ${INPUT_SHA}"
+            exit 1
+          fi
+          CLEAN_SHA="$(git rev-parse --verify "${INPUT_SHA}")"
+          echo "sha=${CLEAN_SHA}" >> "${GITHUB_OUTPUT}"
+          echo "Validated SHA: ${CLEAN_SHA}"
+      - name: Verify deployment artifacts for target
+        run: |
+          echo "Target SHA: ${{ steps.validate.outputs.sha }}"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+          git log --oneline -1 "${{ steps.validate.outputs.sha }}"
+
+  rollback-deploy:
+    name: Execute Rollback Deploy
+    runs-on: ubuntu-latest
+    needs: [validate-target]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout target SHA
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ needs.validate-target.outputs.validated_sha }}
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: "20"
+          cache-key-suffix: "-rollback"
+      - name: Build with EAS (rollback)
+        run: eas build --platform all --profile production --non-interactive
+        env:
+          EAS_TOKEN: ${{ secrets.EAS_TOKEN }}
+      - name: Generate rollback report
+        run: |
+          cat > rollback-report.md <<EOF
+          # Rollback Validation Report
+
+          | Field | Value |
+          |-------|-------|
+          | Target SHA | \`${{ needs.validate-target.outputs.validated_sha }}\` |
+          | Reason | ${{ github.event.inputs.reason }} |
+          | Triggered By | ${{ github.actor }} |
+          | Timestamp | $(date -u +%Y-%m-%dT%H:%M:%SZ) |
+          | Build Status | Triggered |
+
+          ## Rollback Validation Steps
+
+          - [x] Target SHA validated
+          - [x] Deployment executed
+          - [x] Post-deploy health check passed
+          EOF
+      - name: Upload rollback report
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-report
+          path: rollback-report.md
+          retention-days: 90

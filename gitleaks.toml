@@ -1,0 +1,12 @@
+title = "gitleaks config"
+
+[allowlist]
+  description = "RentSecure Mobile-specific false-positive patterns"
+  paths = [
+    { description = "Example env with fake placeholder keys", globs = [".env.example"] },
+    { description = "Lockfiles contain hashes, not secrets", globs = ["**/package-lock.json", "**/yarn.lock", "**/pnpm-lock.yaml"] },
+    { description = "Fake test fixtures", globs = ["**/__tests__/**", "**/*.test.{ts,tsx,js,jsx}"] },
+    { description = "CI logs", globs = ["**/*.log"] },
+    { description = "TypeScript build info", globs = ["**/*.tsbuildinfo"] },
+    { description = "Generated native folders", globs = ["/ios/**", "/android/**"] },
+  ]

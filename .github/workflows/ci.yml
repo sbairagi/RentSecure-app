@@ -1,0 +1,59 @@
+name: CI Pipeline
+
+"on":
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  merge_group:
+
+jobs:
+  lint-fast:
+    name: Stage 1 │ Lint Fast
+    uses: ./.github/workflows/lint.yml
+    secrets: inherit
+
+  test:
+    name: Stage 2 │ Test
+    needs: [lint-fast]
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+
+  security-fast:
+    name: Stage 3 │ Security Fast
+    needs: [lint-fast]
+    uses: ./.github/workflows/security.yml
+    with:
+      run_dependency_review: ${{ github.event_name == 'pull_request' }}
+    secrets: inherit
+
+  security-deep:
+    name: Stage 4 │ Security Deep
+    needs: [lint-fast]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    uses: ./.github/workflows/security-deep.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+      id-token: write
+
+  quality:
+    name: Stage 5 │ Quality
+    needs: [test]
+    uses: ./.github/workflows/quality.yml
+    secrets: inherit
+
+  deploy-readiness:
+    name: Stage 6 │ Deploy Readiness
+    needs: [quality, security-fast]
+    uses: ./.github/workflows/deploy-readiness.yml
+    secrets: inherit
+
+  deploy:
+    name: Stage 7 │ Deploy
+    needs: [deploy-readiness]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

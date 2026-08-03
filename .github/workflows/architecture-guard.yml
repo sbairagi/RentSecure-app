@@ -1,0 +1,95 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# ARCHITECTURE CONTRACT GUARD
+# ═══════════════════════════════════════════════════════════════════════════════
+# This workflow enforces the approved CI/CD pipeline and app architecture.
+# Any unauthorized workflow or app-structure modification must fail CI.
+#
+# Runs on PRs that modify workflow files + daily schedule + manual.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Architecture Contract Guard
+
+"on":
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - "src/app/**"
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - ".github/workflows/**"
+      - "src/app/**"
+
+concurrency:
+  group: architecture-guard-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  enforce-contract:
+    name: Enforce Architecture Contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate Expo Router structure
+        run: |
+          set -euo pipefail
+          test -d src/app || (echo "ERROR: src/app/ directory missing" && exit 1)
+          test -f src/app/_layout.tsx || (echo "ERROR: src/app/_layout.tsx missing" && exit 1)
+          echo "Expo Router structure validated."
+
+      - name: Validate CI workflow structure
+        run: |
+          set -euo pipefail
+          REQUIRED_WORKFLOWS=("ci.yml" "lint.yml" "test.yml" "security.yml" "quality.yml" "deploy.yml")
+          for wf in "${REQUIRED_WORKFLOWS[@]}"; do
+            if [ ! -f ".github/workflows/$wf" ]; then
+              echo "ERROR: Missing required workflow: $wf"
+              exit 1
+            fi
+          done
+          echo "CI workflow structure validated."
+
+      - name: Upload compliance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: architecture-compliance-report
+          path: architecture-compliance-report.json
+          retention-days: 90
+
+      - name: Post failure summary
+        if: failure()
+        run: |
+          echo "============================================"
+          echo "❌ ARCHITECTURE CONTRACT VIOLATION DETECTED"
+          echo "============================================"
+          echo ""
+          echo "The app or CI structure has been modified"
+          echo "in a way that violates the approved architecture"
+          echo "contract."
+          echo ""
+          echo "To resolve:"
+          echo "  1. Revert workflow or structure changes"
+          echo "  2. Or update the architecture rules in:"
+          echo "     .kilo/instructions/architecture.md"
+          echo "  3. Get architecture review approval"
+          echo ""
+          echo "See: .kilo/instructions/architecture.md for details"
+          echo "============================================"

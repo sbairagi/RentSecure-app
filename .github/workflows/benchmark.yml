@@ -1,0 +1,57 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK: Performance Regression Detection
+# ═══════════════════════════════════════════════════════════════════════════════
+# Runs bundle size and build time benchmarks for the Expo/React Native app.
+# Runs only via weekly.yml workflow_call or manual workflow_dispatch.
+# Never scheduled independently.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Benchmark
+
+"on":
+  workflow_call:
+  workflow_dispatch:
+
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: Benchmark │ Bundle Size + Build Time
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: "20"
+          cache-key-suffix: "-benchmark"
+      - name: Install dependencies
+        run: npm ci
+      - name: Measure bundle size (web export)
+        run: |
+          npx expo export --platform web --output-dir dist-benchmark
+          du -sh dist-benchmark > bundle-size.txt
+          cat bundle-size.txt
+      - name: Measure build time
+        run: |
+          START=$(date +%s)
+          npx expo export --platform web --output-dir dist-benchmark-time
+          END=$(date +%s)
+          echo "build_time_seconds=$((END - START))" > build-time.txt
+          cat build-time.txt
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            bundle-size.txt
+            build-time.txt
+          retention-days: 90

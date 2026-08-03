@@ -1,0 +1,43 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# STAGE 2: Tests
+# ═══════════════════════════════════════════════════════════════════════════════
+# Runs: Jest with coverage
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Test
+
+"on":
+  workflow_call:
+    inputs:
+      node-version:
+        type: string
+        default: "20"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Stage 2 │ Jest + Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache-key-suffix: "-test"
+      - name: Run tests with coverage
+        run: npx jest --coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30

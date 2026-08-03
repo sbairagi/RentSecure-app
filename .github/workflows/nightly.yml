@@ -1,0 +1,31 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NIGHTLY DEEP VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════════
+# Runs security deep scans and other heavy validations that would be too
+# expensive to run on every push/PR.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Nightly Deep Validation
+
+"on":
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+  merge_group:
+
+concurrency:
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  security-deep:
+    name: Security Deep Scan — Nightly
+    uses: ./.github/workflows/security-deep.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+      id-token: write

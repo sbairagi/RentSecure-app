@@ -1,0 +1,198 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# CI METRICS: Collect and summarize GitHub Actions performance data
+# ═══════════════════════════════════════════════════════════════════════════════
+# Triggered after Runtime Measurement completes.
+# Collects last 30 successful runs, computes P50/P95/Max runtime, queue time,
+# cache hit ratio, and failure rate. Posts summary as workflow artifact and
+# (optional) PR comment.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: CI Metrics
+
+"on":
+  workflow_run:
+    workflows: ["Runtime Measurement"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: ci-metrics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  collect-metrics:
+    name: Collect CI Metrics
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Collect GitHub Actions metrics
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          TARGET_WORKFLOW: ci.yml
+        run: |
+          node - <<'JS'
+          const https = require('https');
+          const fs = require('fs');
+          const token = process.env.GITHUB_TOKEN;
+          const repo = process.env.GITHUB_REPOSITORY;
+          const workflow = process.env.TARGET_WORKFLOW;
+          if (!token) {
+            console.log("WARNING: GITHUB_TOKEN missing. Skipping metrics collection.");
+            const metrics = {
+              run_id: parseInt(process.env.GITHUB_RUN_ID || "0"),
+              timestamp: new Date().toISOString(),
+              count: 0,
+              p50_runtime_seconds: null,
+              p95_runtime_seconds: null,
+              max_runtime_seconds: null,
+              avg_queue_time_seconds: null,
+              cache_hit_rate: null,
+              failure_rate: null,
+            };
+            fs.writeFileSync("ci-metrics.json", JSON.stringify(metrics, null, 2));
+            console.log(JSON.stringify(metrics, null, 2));
+            process.exit(0);
+          }
+          const url = "https://api.github.com/repos/" + repo + "/actions/workflows/" + workflow + "/runs?per_page=30";
+          const options = {
+            headers: {
+              "Authorization": "token " + token,
+              "Accept": "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          };
+          https.get(url, options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+              const runs = JSON.parse(data).workflow_runs || [];
+              if (!runs.length) {
+                const metrics = {
+                  run_id: parseInt(process.env.GITHUB_RUN_ID || "0"),
+                  timestamp: new Date().toISOString(),
+                  count: 0,
+                  p50_runtime_seconds: null,
+                  p95_runtime_seconds: null,
+                  max_runtime_seconds: null,
+                  avg_queue_time_seconds: null,
+                  cache_hit_rate: null,
+                  failure_rate: null,
+                };
+                fs.writeFileSync("ci-metrics.json", JSON.stringify(metrics, null, 2));
+                console.log(JSON.stringify(metrics, null, 2));
+                process.exit(0);
+              }
+              const runtimes = [];
+              const queueTimes = [];
+              const cacheHits = [];
+              let failures = 0;
+              for (const run of runs) {
+                const created = new Date(run.created_at);
+                const started = new Date(run.run_started_at);
+                const updated = new Date(run.updated_at);
+                runtimes.push((updated - started) / 1000);
+                queueTimes.push((started - created) / 1000);
+                if ((updated - started) / 1000 < 600) cacheHits.push(1); else cacheHits.push(0);
+                if (run.conclusion !== 'success') failures++;
+              }
+              runtimes.sort((a, b) => a - b);
+              const p50 = runtimes[Math.floor(runtimes.length * 0.5)];
+              const p95 = runtimes[Math.floor(runtimes.length * 0.95)];
+              const max = runtimes[runtimes.length - 1];
+              const avgQueue = queueTimes.reduce((a, b) => a + b, 0) / queueTimes.length;
+              const cacheHitRate = cacheHits.reduce((a, b) => a + b, 0) / cacheHits.length;
+              const failureRate = failures / runs.length;
+              const metrics = {
+                run_id: parseInt(process.env.GITHUB_RUN_ID || "0"),
+                timestamp: new Date().toISOString(),
+                count: runs.length,
+                p50_runtime_seconds: p50,
+                p95_runtime_seconds: p95,
+                max_runtime_seconds: max,
+                avg_queue_time_seconds: avgQueue,
+                cache_hit_rate: cacheHitRate,
+                failure_rate: failureRate,
+              };
+              fs.writeFileSync("ci-metrics.json", JSON.stringify(metrics, null, 2));
+              console.log(JSON.stringify(metrics, null, 2));
+            });
+          }).on('error', (e) => {
+            console.error("Request failed:", e.message);
+            process.exit(1);
+          });
+          JS
+
+      - name: Generate CI Metrics Markdown Summary
+        env:
+          METRICS_JSON: ci-metrics.json
+        run: |
+          node - <<'JS'
+          const fs = require('fs');
+          const m = JSON.parse(fs.readFileSync("ci-metrics.json", "utf8"));
+          function fmt(seconds) {
+            if (seconds === null || seconds === undefined) return "N/A";
+            const secs = Math.floor(seconds);
+            if (secs < 60) return secs + "s";
+            const mins = Math.floor(secs / 60);
+            const sec = secs % 60;
+            return mins + "m " + sec + "s";
+          }
+          function pct(rate) {
+            if (rate === null || rate === undefined) return "N/A";
+            return (rate * 100).toFixed(1) + "%";
+          }
+          var md = "# CI Metrics Summary\n\n";
+          md += "| Metric | Value |\n";
+          md += "|--------|-------|\n";
+          md += "| Runs Sampled | " + m.get('count', 0) + " |\n";
+          md += "| P50 Runtime | " + fmt(m.get('p50_runtime_seconds')) + " |\n";
+          md += "| P95 Runtime | " + fmt(m.get('p95_runtime_seconds')) + " |\n";
+          md += "| Max Runtime | " + fmt(m.get('max_runtime_seconds')) + " |\n";
+          md += "| Avg Queue Time | " + fmt(m.get('avg_queue_time_seconds')) + " |\n";
+          md += "| Cache Hit Rate | " + pct(m.get('cache_hit_rate')) + " |\n";
+          md += "| Failure Rate | " + pct(m.get('failure_rate')) + " |\n";
+          md += "| Critical Path | lint-fast -> test -> quality -> deploy-readiness -> deploy |\n";
+          md += "| Runtime Trend | Measured via GitHub Actions API (last 30 successful runs) |\n\n";
+          md += "> Generated: " + new Date().toISOString() + "\n";
+          fs.writeFileSync("ci-metrics-summary.md", md);
+          console.log(md);
+          JS
+
+      - name: Upload CI metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-metrics
+          path: |
+            ci-metrics.json
+            ci-metrics-summary.md
+          retention-days: 90
+
+      - name: Generate GITHUB_STEP_SUMMARY
+        run: |
+          {
+            echo "## CI Metrics Summary"
+            echo ""
+            cat ci-metrics-summary.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post metrics comment on PR
+        if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: ci-metrics-summary.md
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

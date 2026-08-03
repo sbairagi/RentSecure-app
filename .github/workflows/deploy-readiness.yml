@@ -1,0 +1,50 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# STAGE 5: Deploy Readiness Check
+# ═══════════════════════════════════════════════════════════════════════════════
+# Verifies environment configuration and deployment readiness.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Deploy Readiness
+
+"on":
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-readiness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-readiness:
+    name: Stage 5 │ Deploy Readiness Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: "20"
+          cache-key-suffix: "-deploy-readiness"
+      - name: Verify deployment scripts exist
+        run: |
+          test -f eas.json && echo "EAS config present" || echo "No eas.json found (optional)"
+      - name: Validate app configuration
+        run: |
+          test -f app.json && echo "app.json present" || (echo "Missing app.json" && exit 1)
+          node -e "const cfg=require('./app.json'); if(!cfg.expo||!cfg.expo.name||!cfg.expo.slug){console.error('Invalid app.json');process.exit(1);} console.log('app.json valid:', cfg.expo.name);"
+      - name: Validate environment variables exist
+        run: |
+          if [ -f .env.example ]; then
+            echo ".env.example present"
+          else
+            echo "No .env.example found (optional)"
+          fi
+          if [ -f .env ]; then
+            echo ".env present (ensure it is gitignored)"
+          else
+            echo "No .env found"
+          fi

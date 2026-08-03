@@ -1,0 +1,63 @@
+rules:
+  - id: react-native-hardcoded-secret
+    patterns:
+      - pattern-either:
+          - pattern: API_KEY = "..."
+          - pattern: API_KEY="..."
+          - pattern: SECRET_KEY = "..."
+          - pattern: SECRET_KEY="..."
+      - metavariable-regex:
+          metavariable: KEY_VALUE
+          regex: '".{8,}"'
+    message: >-
+      Hardcoded API key or secret detected in source code.
+      Use Expo environment variables (`process.env.EXPO_PUBLIC_*` or `Constants.expoConfig.extra`).
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: "cwe-798"
+      confidence: MEDIUM
+
+  - id: react-native-eval-usage
+    patterns:
+      - pattern: eval(...)
+    message: >-
+      `eval()` detected in React Native code. This executes arbitrary code and
+      is a critical injection risk. Remove this call.
+    languages: [javascript, typescript]
+    severity: ERROR
+    metadata:
+      cwe: "cwe-95"
+      confidence: HIGH
+
+  - id: react-native-console-log-production
+    patterns:
+      - pattern: console.log(...)
+    message: >-
+      `console.log()` detected. Remove or replace with a proper logging library
+      before shipping to production.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      cwe: "cwe-778"
+      confidence: LOW
+
+  - id: react-native-insecure-storage
+    patterns:
+      - pattern-either:
+          - pattern: AsyncStorage.setItem(...)
+          - pattern: AsyncStorage.getItem(...)
+    message: >-
+      `AsyncStorage` detected for sensitive data. Use `expo-secure-store` instead.
+    languages: [javascript, typescript]
+    severity: WARNING
+    metadata:
+      cwe: "cwe-311"
+      confidence: MEDIUM
+
+exclude:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.expo/**"
+  - "**/coverage/**"

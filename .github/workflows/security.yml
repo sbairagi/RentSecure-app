@@ -1,0 +1,194 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# STAGE 3: Security & Supply Chain
+# ═══════════════════════════════════════════════════════════════════════════════
+# Runs: Trivy (FS), Semgrep, Trivy (Secrets), npm audit, Dependency Review
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Security
+
+"on":
+  workflow_call:
+    inputs:
+      run_dependency_review:
+        description: "Run dependency-review job (true for PRs)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  trivy:
+    name: Stage 3a │ Trivy (FS Vulnerability Scan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Run Trivy filesystem scan
+        id: trivy-fs
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: "sarif"
+          output: trivy-results.sarif
+          severity: "CRITICAL,HIGH"
+          skip-dirs: node_modules,.expo,dist,build
+          vuln-type: "os,library"
+          ignore-unfixed: true
+        env:
+          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db
+      - name: Verify Trivy SARIF output exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f trivy-results.sarif ]; then
+            echo "::error::Trivy filesystem scan did not produce trivy-results.sarif"
+            exit 1
+          fi
+      - name: Upload Trivy SARIF to GitHub Security
+        if: ${{ !github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        with:
+          sarif_file: trivy-results.sarif
+
+  trivy-secrets:
+    name: Stage 3b │ Trivy (Secret Scanning)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Run Trivy secret scan
+        id: trivy-secrets
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: "sarif"
+          output: trivy-secrets.sarif
+          severity: "HIGH,CRITICAL"
+          scanners: secret
+          ignore-unfixed: true
+      - name: Verify Trivy Secret SARIF exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f trivy-secrets.sarif ]; then
+            echo "::error::Trivy secret scan did not produce trivy-secrets.sarif"
+            exit 1
+          fi
+      - name: Upload Trivy Secret SARIF
+        if: ${{ !github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        with:
+          sarif_file: trivy-secrets.sarif
+
+  semgrep:
+    name: Stage 3c │ Semgrep (SAST — OWASP + JS/TS)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Semgrep
+        run: npm install -g semgrep
+      - name: Run Semgrep
+        shell: bash
+        run: |
+          set -euo pipefail
+          semgrep scan \
+            --config p/security-audit \
+            --config p/owasp-top-ten \
+            --config p/react \
+            --sarif \
+            --output semgrep.sarif
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN || '' }}
+      - name: Upload Semgrep SARIF to GitHub Security
+        if: ${{ !github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        with:
+          sarif_file: semgrep.sarif
+
+  npm-audit:
+    name: Stage 3d │ npm Audit (Dependency Scanner)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: "20"
+          cache-key-suffix: "-security-audit"
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  dependency-review:
+    name: Stage 3e │ Dependency Review (License + Vuln)
+    if: ${{ inputs.run_dependency_review }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Verify Dependency Graph is available
+        id: dep-graph-check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: token ${GH_TOKEN}" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/dependency-graph/snapshots")
+          echo "dependency_graph_status=${status}" >> $GITHUB_OUTPUT
+          if [ "${status}" == "404" ]; then
+            echo "Dependency Graph is not available for this repository. Skipping Dependency Review."
+            exit 0
+          elif [ "${status}" != "200" ]; then
+            echo "::warning::Unexpected status ${status} from dependency-graph API. Attempting Dependency Review anyway."
+          fi
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        if: ${{ steps.dep-graph-check.outputs.dependency_graph_status != '404' }}
+        with:
+          fail-on-severity: high
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC

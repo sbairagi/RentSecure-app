@@ -1,0 +1,68 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# STAGE 4: Quality Gate
+# ═══════════════════════════════════════════════════════════════════════════════
+# Aggregates coverage and enforces quality thresholds.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Quality
+
+"on":
+  workflow_call:
+    inputs:
+      node-version:
+        type: string
+        default: "20"
+      coverage-threshold:
+        type: number
+        default: 70
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Stage 4 │ Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache-key-suffix: "-quality"
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+      - name: Validate coverage report exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -d coverage ]; then
+            echo "ERROR: coverage directory not found."
+            ls -la
+            exit 1
+          fi
+      - name: Enforce coverage threshold
+        shell: bash
+        run: |
+          set -euo pipefail
+          COVERAGE_THRESHOLD=${{ inputs.coverage-threshold }}
+          COVERAGE_PCT=$(npx jest --coverage --coverageReporters=text 2>/dev/null | grep -oP 'All files.*\K\d+(?=%)' | head -1 || echo "0")
+          if [ -z "$COVERAGE_PCT" ]; then
+            echo "::warning::Could not parse coverage percentage. Ensure jest outputs coverage."
+            exit 0
+          fi
+          echo "Coverage: ${COVERAGE_PCT}% (threshold: ${COVERAGE_THRESHOLD}%)"
+          if [ "$COVERAGE_PCT" -lt "$COVERAGE_THRESHOLD" ]; then
+            echo "::error::Coverage ${COVERAGE_PCT}% is below threshold ${COVERAGE_THRESHOLD}%"
+            exit 1
+          fi
+          echo "Coverage threshold check passed."

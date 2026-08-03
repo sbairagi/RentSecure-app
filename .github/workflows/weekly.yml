@@ -1,0 +1,42 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# WEEKLY EXHAUSTIVE VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════════
+# Schedule: 0 3 * * 0
+# Single weekly orchestrator for SBOM, benchmark, rollback drill.
+# Never blocks PR merges.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Weekly Exhaustive Validation
+
+"on":
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: weekly-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+  sbom:
+    name: Weekly │ SBOM
+    uses: ./.github/workflows/sbom.yml
+    with:
+      artifact_retention_days: 90
+    secrets: inherit
+
+  benchmark:
+    name: Weekly │ Benchmark
+    needs: sbom
+    uses: ./.github/workflows/benchmark.yml
+    secrets: inherit
+
+  rollback-drill:
+    name: Weekly │ Rollback Drill
+    needs: benchmark
+    uses: ./.github/workflows/rollback.yml
+    secrets: inherit

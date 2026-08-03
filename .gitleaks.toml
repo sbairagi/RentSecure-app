@@ -1,0 +1,13 @@
+[allowlist]
+  description = "Allowlist test-specific secret key patterns and mobile build artifacts"
+  regexes = [
+    '''test-secret-key-[a-z0-9-]+''',
+  ]
+  paths = [
+    { description = "Example env with fake placeholder keys", globs = [".env.example"] },
+    { description = "Lockfiles contain hashes, not secrets", globs = ["**/package-lock.json", "**/yarn.lock", "**/pnpm-lock.yaml"] },
+    { description = "Generated native folders", globs = ["/ios/**", "/android/**"] },
+    { description = "Fake test fixtures", globs = ["**/__tests__/**", "**/*.test.{ts,tsx,js,jsx}"] },
+    { description = "CI logs", globs = ["**/*.log"] },
+    { description = "TypeScript build info", globs = ["**/*.tsbuildinfo"] },
+  ]

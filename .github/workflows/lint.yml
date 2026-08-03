@@ -1,0 +1,105 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# STAGE 1: Lint Fast (Fast-Fail)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Jobs: Pre-commit, ESLint, TypeScript type check, Prettier, npm audit
+# All jobs run in parallel for minimal wall-clock time.
+# ═══════════════════════════════════════════════════════════════════════════════
+name: Lint
+
+"on":
+  workflow_call:
+    inputs:
+      node-version:
+        type: string
+        default: "20"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit:
+    name: Stage 1 │ Pre-commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache-key-suffix: "-pre-commit"
+      - name: Install pre-commit dependencies
+        run: npm ci
+      - name: Run Pre-commit
+        run: npx pre-commit run --all-files
+
+  eslint:
+    name: Stage 1 │ ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache-key-suffix: "-eslint"
+      - name: Run ESLint
+        run: npx expo lint
+
+  typecheck:
+    name: Stage 1 │ TypeScript Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache-key-suffix: "-typecheck"
+      - name: Run TypeScript type check
+        run: npx tsc --noEmit
+
+  prettier:
+    name: Stage 1 │ Prettier Format Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache-key-suffix: "-prettier"
+      - name: Run Prettier check
+        run: npx prettier --check "src/**/*.{ts,tsx,json,css,scss,md}"
+
+  npm-audit:
+    name: Stage 1 │ npm Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: ./.github/actions/setup-node
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache-key-suffix: "-npm-audit"
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
