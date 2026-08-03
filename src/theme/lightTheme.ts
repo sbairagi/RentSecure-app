@@ -1,4 +1,4 @@
-import { Colors, Theme } from "./colors";
+import { Colors, Theme } from './colors';
 
 export const LightTheme: Theme = {
   background: Colors.gray50,

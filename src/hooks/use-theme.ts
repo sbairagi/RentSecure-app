@@ -1,4 +1,4 @@
-import { useAppTheme } from "@/theme/ThemeContext";
+import { useAppTheme } from '@/theme/context';
 
 export function useTheme() {
   const { theme } = useAppTheme();

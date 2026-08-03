@@ -1,24 +1,15 @@
-import { View, Text, StyleSheet } from "react-native";
-import { COLORS, SIZES } from "../constants/theme";
+import { useAuthStore } from '@/store/authStore';
+import { Redirect } from 'expo-router';
 
-export default function Home() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Welcome to SecureNest 🏠</Text>
-    </View>
-  );
+export default function HomeScreen() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isLoading = useAuthStore((s) => s.isLoading);
+
+  if (isLoading) return null;
+
+  if (isAuthenticated) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <Redirect href="/(auth)/login" />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: COLORS.background,
-  },
-  text: {
-    fontSize: SIZES.font,
-    fontWeight: "bold",
-    color: COLORS.text,
-  },
-});

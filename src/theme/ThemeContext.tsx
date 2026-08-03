@@ -1,7 +1,8 @@
-import { createContext, useContext } from "react";
-import { LightTheme, type Theme } from "./index";
+import { createContext, useContext } from 'react';
+import { LightTheme } from './themes';
+import type { Theme } from './types';
 
-export type ThemeMode = "light" | "dark" | "system";
+export type ThemeMode = 'light' | 'dark' | 'system';
 
 export interface ThemeContextValue {
   mode: ThemeMode;
@@ -11,7 +12,7 @@ export interface ThemeContextValue {
 }
 
 export const ThemeContext = createContext<ThemeContextValue>({
-  mode: "system",
+  mode: 'system',
   theme: LightTheme,
   setMode: () => {},
   isDark: false,

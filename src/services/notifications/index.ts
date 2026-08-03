@@ -1,0 +1,1 @@
+export { initNotifications } from './push';

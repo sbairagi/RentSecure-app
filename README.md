@@ -1,56 +1,124 @@
-# Welcome to your Expo app 👋
+# SecureNest Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Enterprise-grade React Native mobile application built with Expo SDK 57, Expo Router, and TypeScript for the SecureNest property management platform.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Feature-based Architecture**: Scalable folder structure supporting 100+ screens
+- **Multiple User Roles**: Owner, Caretaker, Renter, Admin
+- **Internationalization**: English and Hindi support with i18next
+- **State Management**: Zustand for global state
+- **API Layer**: Axios with JWT auth, refresh tokens, retry logic, and network detection
+- **Secure Storage**: Expo Secure Store for sensitive data
+- **Offline Ready**: MMKV caching for offline support
+- **Modern UI**: React Native Paper, Reanimated, Gesture Handler
 
-   ```bash
-   npm install
-   ```
+## Getting Started
 
-2. Start the app
+### Prerequisites
 
-   ```bash
-   npx expo start
-   ```
+- Node.js >= 18.x
+- npm >= 9.x
+- Expo CLI
+- iOS Simulator / Android Emulator
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Installation
 
 ```bash
-npm run reset-project
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+# Run on iOS
+npm run ios
+
+# Run on Android
+npm run android
+
+# Run on web
+npm run web
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Project Structure
 
-### Other setup steps
+```
+src/
+├── app/                    # Expo Router screens and layouts
+├── assets/                 # Images, fonts, icons
+├── components/             # Reusable UI components
+│   ├── common/            # Base components (AppButton, AppText, etc.)
+│   ├── ui/                # UI components (Avatar, Badge, etc.)
+│   ├── forms/             # Form components
+│   └── charts/            # Chart components
+├── config/                # App configuration
+├── constants/             # Theme and shared constants
+├── hooks/                 # Custom React hooks
+├── layouts/               # Shared layout components
+├── localization/          # i18next translations (en, hi)
+├── navigation/            # Navigation configuration
+├── providers/             # Context providers (Theme, Query, Storage)
+├── services/              # API, Auth, Storage, Notifications
+├── features/              # Feature modules (authentication, dashboard, etc.)
+├── store/                 # Zustand global stores
+├── theme/                 # Theme system (light/dark)
+├── types/                 # TypeScript type definitions
+├── utils/                 # Utility helpers
+└── validations/           # Zod validation schemas
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Tech Stack
 
-## Learn more
+- **Framework**: React Native with Expo SDK 57
+- **Navigation**: Expo Router (file-based)
+- **Language**: TypeScript
+- **State Management**: Zustand
+- **API Client**: Axios with interceptors
+- **Data Fetching**: TanStack React Query
+- **Forms**: React Hook Form + Zod
+- **Styling**: React Native Paper + Custom Theme
+- **Animations**: Reanimated 3 + Gesture Handler
+- **Storage**: Expo Secure Store + MMKV
+- **Notifications**: Expo Notifications
+- **Internationalization**: i18next (EN, HI)
 
-To learn more about developing your project with Expo, look at the following resources:
+## Scripts
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm start          # Start Expo dev server
+npm run lint       # Run ESLint
+npm run lint:fix   # Fix ESLint errors
+npm run typecheck  # Run TypeScript checks
+npm run prettier   # Format code with Prettier
+```
 
-## Join the community
+## Environment Variables
 
-Join our community of developers creating universal apps.
+Create `.env` file based on `.env.example`:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```env
+EXPO_PUBLIC_API_URL=http://localhost:3000/api/v1
+EXPO_PUBLIC_APP_ENV=development
+EXPO_PUBLIC_SENTRY_DSN=
+```
+
+## Architecture Principles
+
+- **Clean Architecture**: Separation of concerns with clear module boundaries
+- **SOLID Principles**: Single responsibility, dependency inversion
+- **DRY/KISS**: Reusable components, minimal complexity
+- **Scalability**: Feature-based structure for 100+ screens
+- **Offline Ready**: MMKV caching with network detection
+- **Security**: Secure storage, JWT refresh tokens, HTTPS only
+
+## User Roles
+
+1. **Owner**: Full property management access
+2. **Caretaker**: Property maintenance and renter management
+3. **Renter**: View agreements, make payments, submit requests
+4. **Admin**: Platform administration and oversight
+
+## License
+
+Proprietary - SecureNest Platform
