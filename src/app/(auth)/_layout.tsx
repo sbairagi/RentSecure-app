@@ -1,5 +1,14 @@
+import { useAuthNavigation } from '@/features/authentication/hooks/useAuthNavigation';
+import { useAuthStore } from '@/store/authStore';
 import { Redirect } from 'expo-router';
 
-export default function LoginScreen() {
-  return <Redirect href="/(auth)/login/index" />;
+export default function AuthLayout() {
+  const { isAuthenticated } = useAuthStore();
+  const { navigateToRoleDashboard } = useAuthNavigation();
+
+  if (isAuthenticated) {
+    return <Redirect href="/(tabs)" />;
+  }
+
+  return <Redirect href="/(auth)/welcome" />;
 }

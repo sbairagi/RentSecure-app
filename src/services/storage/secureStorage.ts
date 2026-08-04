@@ -93,6 +93,14 @@ class SecureStorageService {
   async clearAll(): Promise<void> {
     await Promise.all(Object.values(SECURE_STORAGE_KEYS).map((key) => this.removeItem(key)));
   }
+
+  async setBiometricEnabled(value: string): Promise<void> {
+    await this.setItem('biometric_enabled', value);
+  }
+
+  async getBiometricEnabled(): Promise<string | null> {
+    return this.getItem('biometric_enabled');
+  }
 }
 
 export const secureStorage = new SecureStorageService();

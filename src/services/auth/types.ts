@@ -1,16 +1,65 @@
-export type UserRole = 'owner' | 'caretaker' | 'renter' | 'admin' | 'user';
+import type { User } from '@/types';
 
-export interface User {
-  id: string;
-  phone: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  username?: string;
-  role: UserRole;
-  avatar?: string;
-  properties?: string[];
-  createdAt?: string;
-  updatedAt?: string;
+export interface SendOtpResponse {
+  message: string;
+  expiresIn?: number;
+}
+
+export interface VerifyOtpResponse {
+  refresh: string;
+  access: string;
+  user: User;
+}
+
+export interface RefreshTokenResponse {
+  access: string;
+  refresh?: string;
+  expiresIn?: number;
+}
+
+export interface SocialAuthResponse {
+  refresh: string;
+  access: string;
+  user: User;
+  isNewUser: boolean;
+}
+
+export interface ProfileResponse {
+  user: User;
+}
+
+export interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface BiometricSetupResponse {
+  message: string;
+  isBiometricEnabled: boolean;
+}
+
+export interface LogoutResponse {
+  message: string;
+}
+
+export interface DeviceInfo {
+  deviceId: string;
+  deviceModel: string;
+  deviceName: string;
+  platform: 'ios' | 'android' | 'web';
+  osVersion: string;
+  appVersion: string;
+  buildVersion: string;
+}
+
+export interface CheckUpdateResponse {
+  isUpdateRequired: boolean;
+  isOptional: boolean;
+  latestVersion: string;
+}
+
+export interface MaintenanceResponse {
+  isMaintenance: boolean;
+  message?: string;
 }
