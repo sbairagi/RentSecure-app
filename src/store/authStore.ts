@@ -1,20 +1,6 @@
+import type { User } from '@/services/auth/types';
 import { mmkvStorage } from '@/services/storage/mmkv';
 import { create } from 'zustand';
-
-export type UserRole = 'owner' | 'caretaker' | 'renter' | 'admin';
-
-export interface User {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
-  role: UserRole;
-  avatar?: string;
-  properties?: string[];
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface AuthState {
   user: User | null;

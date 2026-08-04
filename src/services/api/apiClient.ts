@@ -112,15 +112,15 @@ class ApiService {
     if (!refreshToken) return null;
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-        refreshToken,
+      const response = await axios.post(`${API_BASE_URL}/api/token/refresh`, {
+        refresh: refreshToken,
       });
-      const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-      await secureStorage.setAccessToken(accessToken);
+      const { access, refresh: newRefreshToken } = response.data;
+      await secureStorage.setAccessToken(access);
       if (newRefreshToken) {
         await secureStorage.setRefreshToken(newRefreshToken);
       }
-      return accessToken;
+      return access;
     } catch {
       return null;
     }

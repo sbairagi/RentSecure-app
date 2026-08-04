@@ -1,14 +1,16 @@
-export type UserRole = 'owner' | 'caretaker' | 'renter' | 'admin';
+export type UserRole = 'owner' | 'caretaker' | 'renter' | 'admin' | 'user';
 
 export interface User {
   id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone?: string;
+  phone: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  username?: string;
   role: UserRole;
   avatar?: string;
   properties?: string[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
