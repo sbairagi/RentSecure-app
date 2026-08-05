@@ -40,11 +40,11 @@ export const API_ENDPOINTS = {
     DOCUMENTS: (id: string) => `/properties/${id}/documents/`,
   },
   BUILDINGS: {
-    LIST: (propertyId: string) => `/properties/${propertyId}/buildings/`,
-    DETAIL: (id: string) => `/buildings/${id}/`,
-    CREATE: (propertyId: string) => `/properties/${propertyId}/buildings/`,
-    UPDATE: (id: string) => `/buildings/${id}/`,
-    DELETE: (id: string) => `/buildings/${id}/`,
+    LIST: '/api/buildings/',
+    DETAIL: (id: string) => `/api/buildings/${id}/`,
+    CREATE: '/api/buildings/',
+    UPDATE: (id: string) => `/api/buildings/${id}/`,
+    DELETE: (id: string) => `/api/buildings/${id}/`,
   },
   UNITS: {
     LIST: (buildingId: string) => `/buildings/${buildingId}/units/`,

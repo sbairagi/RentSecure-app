@@ -40,7 +40,7 @@ export const queryKeys = {
     detail: (id: string) => ['property', 'detail', id],
   },
   buildings: {
-    list: (propertyId: string) => ['buildings', 'list', propertyId],
+    list: ['buildings', 'list'],
     detail: (id: string) => ['buildings', 'detail', id],
   },
   units: {

@@ -1,12 +1,18 @@
 import { FontSizes } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import React from 'react';
-import { Text as RNText, StyleSheet, TextProps, TextStyle } from 'react-native';
+import {
+  Text as RNText,
+  StyleSheet,
+  TextProps,
+  type StyleProp,
+  type TextStyle,
+} from 'react-native';
 
 interface AppTextProps extends TextProps {
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'body' | 'caption' | 'link';
   color?: string;
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
 }
 
 export const AppText: React.FC<AppTextProps> = ({ variant = 'body', color, style, ...rest }) => {
