@@ -8,8 +8,8 @@ export default function HomeScreen() {
   if (isLoading) return null;
 
   if (isAuthenticated) {
-    return <Redirect href="/(tabs)" />;
+    return <Redirect href="/(drawer)/(tabs)/dashboard" />;
   }
 
-  return <Redirect href="/(auth)/login" />;
+  return <Redirect href="/(auth)/welcome" />;
 }

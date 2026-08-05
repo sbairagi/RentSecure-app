@@ -7,7 +7,7 @@ export default function AuthLayout() {
   const { navigateToRoleDashboard } = useAuthNavigation();
 
   if (isAuthenticated) {
-    return <Redirect href="/(tabs)" />;
+    return <Redirect href="/(drawer)/(tabs)/dashboard" />;
   }
 
   return <Redirect href="/(auth)/welcome" />;

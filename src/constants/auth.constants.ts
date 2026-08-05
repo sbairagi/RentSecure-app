@@ -22,17 +22,6 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   user: 'User',
 };
 
-export const ROLE_NAVIGATION: Record<UserRole, string> = {
-  super_admin: '/(tabs)/super-admin',
-  admin: '/(tabs)/admin',
-  property_owner: '/(tabs)/owner',
-  ca_partner: '/(tabs)/ca-partner',
-  caretaker: '/(tabs)/caretaker',
-  support_executive: '/(tabs)/support',
-  renter: '/(tabs)/renter',
-  user: '/(auth)/welcome',
-};
-
 export const SESSION_TIMEOUT = 30 * 60 * 1000;
 export const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
 export const BIOMETRIC_TIMEOUT = 5 * 60 * 1000;

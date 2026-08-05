@@ -49,7 +49,7 @@ export interface RegisterData {
   phone: string;
   password: string;
   confirmPassword: string;
-  role: UserRole;
+  role: 'property_owner' | 'renter' | 'caretaker';
 }
 
 export interface ForgotPasswordData {
