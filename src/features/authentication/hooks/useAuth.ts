@@ -81,7 +81,6 @@ export const useAuth = () => {
   const forgotPassword = useCallback(async (data: ForgotPasswordData) => {
     try {
       const response = await authApi.forgotPassword(data);
-      showMessage({ message: 'Password reset link sent to your email', type: 'success' });
       return response;
     } catch (error: any) {
       const message = error.message || 'Failed to send reset link';

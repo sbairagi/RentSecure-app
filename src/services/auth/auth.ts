@@ -81,12 +81,16 @@ export const authApi = {
     };
   },
 
-  forgotPassword: async (_data: ForgotPasswordData): Promise<{ message: string }> => {
-    return Promise.resolve({ message: 'Password reset not implemented' });
+  forgotPassword: async (data: ForgotPasswordData): Promise<{ message: string }> => {
+    const response = await apiService.post<{ message: string }>('/forgot-password/', data);
+    return response;
   },
 
   resetPassword: async (data: ResetPasswordData): Promise<{ message: string }> => {
-    const response = await apiService.post<{ message: string }>('/reset-password/', data);
+    const response = await apiService.post<{ message: string }>(`/reset-password/${data.token}/`, {
+      new_password: data.password,
+      confirmPassword: data.confirmPassword,
+    });
     return response;
   },
 

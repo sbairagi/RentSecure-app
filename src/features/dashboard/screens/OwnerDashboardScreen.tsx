@@ -1,16 +1,6 @@
 import { AnimatedBarChart } from '@/components/charts/AnimatedBarChart';
 import { AnimatedLineChart } from '@/components/charts/AnimatedLineChart';
 import { SkeletonChart, SkeletonStatCard } from '@/components/loaders/SkeletonCard';
-import {
-  DashboardNotifications,
-  DashboardPendingTasks,
-  DashboardQuickActions,
-  DashboardRecentActivity,
-  DashboardStatsCard,
-  DashboardSubscriptionWidget,
-} from '@/features/dashboard/components';
-import { useDashboard } from '@/features/dashboard/hooks';
-import type { FeatureUsage, SubscriptionPlan } from '@/features/dashboard/types/dashboard';
 import { useAuthStore } from '@/store/authStore';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useRouter } from 'expo-router';
@@ -19,6 +9,16 @@ import { Dimensions, RefreshControl, ScrollView, StyleSheet, View } from 'react-
 import { showMessage } from 'react-native-flash-message';
 import { Avatar, Button, IconButton, Text, useTheme } from 'react-native-paper';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import {
+  DashboardNotifications,
+  DashboardPendingTasks,
+  DashboardQuickActions,
+  DashboardRecentActivity,
+  DashboardStatsCard,
+  DashboardSubscriptionWidget,
+} from '../components';
+import { useDashboard } from '../hooks';
+import type { FeatureUsage, SubscriptionPlan } from '../types/dashboard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRID_COLUMNS = SCREEN_WIDTH > 768 ? 4 : 2;
@@ -57,42 +57,12 @@ export default function OwnerDashboardScreen() {
     if (!dashboardData?.stats) return null;
     const s = dashboardData.stats;
     return [
-      {
-        title: 'Total Buildings',
-        value: s.total_buildings,
-        icon: '🏢',
-        color: '#2563EB',
-      },
-      {
-        title: 'Total Units',
-        value: s.total_units,
-        icon: '🚪',
-        color: '#059669',
-      },
-      {
-        title: 'Occupied Units',
-        value: s.occupied_units,
-        icon: '👥',
-        color: '#D97706',
-      },
-      {
-        title: 'Vacant Units',
-        value: s.vacant_units,
-        icon: '🔓',
-        color: '#DC2626',
-      },
-      {
-        title: 'Active Renters',
-        value: s.active_renters,
-        icon: '👤',
-        color: '#7C3AED',
-      },
-      {
-        title: 'Caretakers',
-        value: s.caretakers,
-        icon: '🔑',
-        color: '#0891B2',
-      },
+      { title: 'Total Buildings', value: s.total_buildings, icon: '🏢', color: '#2563EB' },
+      { title: 'Total Units', value: s.total_units, icon: '🚪', color: '#059669' },
+      { title: 'Occupied Units', value: s.occupied_units, icon: '👥', color: '#D97706' },
+      { title: 'Vacant Units', value: s.vacant_units, icon: '🔓', color: '#DC2626' },
+      { title: 'Active Renters', value: s.active_renters, icon: '👤', color: '#7C3AED' },
+      { title: 'Caretakers', value: s.caretakers, icon: '🔑', color: '#0891B2' },
       {
         title: 'Monthly Collection',
         value: `₹${s.monthly_collection}`,
@@ -134,21 +104,13 @@ export default function OwnerDashboardScreen() {
         <Avatar.Text
           size={48}
           label={userName.charAt(0).toUpperCase()}
-          style={{
-            backgroundColor: theme.colors.primaryContainer,
-          }}
-          labelStyle={{
-            color: theme.colors.onPrimaryContainer,
-            fontSize: 20,
-          }}
+          style={{ backgroundColor: theme.colors.primaryContainer }}
+          labelStyle={{ color: theme.colors.onPrimaryContainer, fontSize: 20 }}
         />
         <View style={styles.headerText}>
           <Text
             variant="headlineSmall"
-            style={{
-              color: theme.colors.onSurface,
-              fontWeight: '600',
-            }}
+            style={{ color: theme.colors.onSurface, fontWeight: '600' }}
           >
             {greeting}
           </Text>
@@ -206,14 +168,7 @@ export default function OwnerDashboardScreen() {
       return (
         <View style={styles.statsGrid}>
           {Array.from({ length: GRID_COLUMNS * 2 }).map((_, i) => (
-            <View
-              key={i}
-              style={{
-                flex: 1 / GRID_COLUMNS,
-                marginHorizontal: 4,
-                marginBottom: 12,
-              }}
-            >
+            <View key={i} style={{ flex: 1 / GRID_COLUMNS, marginHorizontal: 4, marginBottom: 12 }}>
               <SkeletonStatCard />
             </View>
           ))}
@@ -235,11 +190,7 @@ export default function OwnerDashboardScreen() {
           <Animated.View
             key={stat.title}
             entering={FadeInDown.duration(400)}
-            style={{
-              flex: 1 / GRID_COLUMNS,
-              marginHorizontal: 4,
-              marginBottom: 12,
-            }}
+            style={{ flex: 1 / GRID_COLUMNS, marginHorizontal: 4, marginBottom: 12 }}
           >
             <DashboardStatsCard
               title={stat.title}
@@ -267,10 +218,7 @@ export default function OwnerDashboardScreen() {
         <View
           style={[
             styles.chartCard,
-            {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.outline,
-            },
+            { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
           ]}
         >
           <Text
@@ -338,21 +286,13 @@ export default function OwnerDashboardScreen() {
           <Text style={styles.offlineIcon}>📡</Text>
           <Text
             variant="titleMedium"
-            style={{
-              color: theme.colors.onSurface,
-              fontWeight: '600',
-              marginTop: 16,
-            }}
+            style={{ color: theme.colors.onSurface, fontWeight: '600', marginTop: 16 }}
           >
             You&apos;re Offline
           </Text>
           <Text
             variant="bodyMedium"
-            style={{
-              color: theme.colors.onSurfaceVariant,
-              marginTop: 8,
-              textAlign: 'center',
-            }}
+            style={{ color: theme.colors.onSurfaceVariant, marginTop: 8, textAlign: 'center' }}
           >
             Please check your internet connection and try again.
           </Text>
@@ -373,21 +313,13 @@ export default function OwnerDashboardScreen() {
           <Text style={styles.errorIcon}>⚠️</Text>
           <Text
             variant="titleMedium"
-            style={{
-              color: theme.colors.onSurface,
-              fontWeight: '600',
-              marginTop: 16,
-            }}
+            style={{ color: theme.colors.onSurface, fontWeight: '600', marginTop: 16 }}
           >
             Something went wrong
           </Text>
           <Text
             variant="bodyMedium"
-            style={{
-              color: theme.colors.onSurfaceVariant,
-              marginTop: 8,
-              textAlign: 'center',
-            }}
+            style={{ color: theme.colors.onSurfaceVariant, marginTop: 8, textAlign: 'center' }}
           >
             {error}
           </Text>
@@ -419,11 +351,7 @@ export default function OwnerDashboardScreen() {
         <View style={styles.section}>
           <Text
             variant="titleMedium"
-            style={{
-              color: theme.colors.onSurface,
-              fontWeight: '600',
-              marginBottom: 12,
-            }}
+            style={{ color: theme.colors.onSurface, fontWeight: '600', marginBottom: 12 }}
           >
             Analytics
           </Text>
@@ -433,11 +361,7 @@ export default function OwnerDashboardScreen() {
         <View style={styles.section}>
           <Text
             variant="titleMedium"
-            style={{
-              color: theme.colors.onSurface,
-              fontWeight: '600',
-              marginBottom: 12,
-            }}
+            style={{ color: theme.colors.onSurface, fontWeight: '600', marginBottom: 12 }}
           >
             Quick Actions
           </Text>
@@ -459,10 +383,7 @@ export default function OwnerDashboardScreen() {
           <DashboardNotifications
             preview
             onMarkAllRead={() => {
-              showMessage({
-                message: 'All notifications marked as read',
-                type: 'success',
-              });
+              showMessage({ message: 'All notifications marked as read', type: 'success' });
             }}
           />
         </View>

@@ -25,6 +25,10 @@ export const API_ENDPOINTS = {
     RECENT_RENT: '/dashboard/recent-rent/',
     RECENT_PAYMENTS: '/dashboard/recent-payments/',
     RECENT_MAINTENANCE: '/dashboard/recent-maintenance/',
+    OWNER_SUMMARY: '/properties/owner/dashboard/',
+    OWNER_DASHBOARD_SUMMARY: '/properties/owner/dashboard-summary/',
+    UNIT_ANALYTICS: '/properties/unit_analytics',
+    POLICE_VERIFICATION_STATS: '/police-verifications/dashboard_stats/',
   },
   PROPERTIES: {
     LIST: '/properties/',
