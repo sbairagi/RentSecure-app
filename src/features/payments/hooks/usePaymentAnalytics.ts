@@ -1,0 +1,1 @@
+export { usePaymentAnalytics } from './usePayments';
