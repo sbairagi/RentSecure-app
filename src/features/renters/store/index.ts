@@ -1,0 +1,1 @@
+export { useRentersStore } from './rentersStore';

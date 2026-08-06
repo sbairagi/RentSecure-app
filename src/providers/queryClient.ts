@@ -48,8 +48,17 @@ export const queryKeys = {
     detail: (id: string) => ['units', 'detail', id],
   },
   renters: {
-    list: ['renters', 'list'],
+    list: (params?: Record<string, any>) => ['renters', 'list', params],
     detail: (id: string) => ['renters', 'detail', id],
+    statusSummary: ['renters', 'status-summary'],
+    timeline: (id: string) => ['renters', id, 'timeline'],
+    kycDocuments: (id: string) => ['renters', id, 'kyc-documents'],
+    documents: (id: string) => ['renters', id, 'documents'],
+    notes: (id: string) => ['renters', id, 'notes'],
+    activity: ['renters', 'recent-activity'],
+    agreements: (id: string) => ['renters', id, 'agreements'],
+    payments: (id: string) => ['renters', id, 'payments'],
+    profile: (id: string) => ['renters', 'profile', id],
   },
   caretakers: {
     list: ['caretakers', 'list'],

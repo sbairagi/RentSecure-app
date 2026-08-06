@@ -1,0 +1,1 @@
+export { rentersRepository } from './rentersRepository';

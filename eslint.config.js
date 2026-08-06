@@ -39,7 +39,7 @@ export default [
       prettier,
     },
     rules: {
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "unused-imports/no-unused-imports": "warn",
       "unused-imports/no-unused-vars": "off",
       "@typescript-eslint/consistent-type-imports": "off",
@@ -54,6 +54,12 @@ export default [
         typescript: { project: "./tsconfig.json" },
         node: { extensions: [".ts", ".tsx", ".js", ".jsx"] },
       },
+    },
+  },
+  {
+    files: ["**/tests/**/*.{ts,tsx}", "**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
+    rules: {
+      "import/no-unresolved": "off",
     },
   },
 ];
