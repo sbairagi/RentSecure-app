@@ -1,7 +1,9 @@
 import type {
+  KycDocument,
   KycDocumentType,
   PaymentMethod,
   PaymentStatus,
+  Renter,
   RenterStatus,
   RenterStatusConfig,
   SortOption,
