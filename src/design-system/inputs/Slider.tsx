@@ -17,14 +17,14 @@ export interface SliderProps {
 
 export const Slider: React.FC<SliderProps> = ({
   value,
-  _onValueChange,
+  onValueChange,
   minimumValue = 0,
   maximumValue = 100,
-  _step = 1,
+  step = 1,
   label,
   error,
   containerStyle,
-  _disabled = false,
+  disabled = false,
 }) => {
   const theme = useDesignSystemTheme();
 
@@ -101,10 +101,7 @@ const styles = StyleSheet.create({
     top: '50%',
     marginTop: -10,
     marginLeft: -10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
     elevation: 2,
   },
   valueContainer: {

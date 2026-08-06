@@ -18,19 +18,23 @@ export default function SplashScreen() {
     if (!isInitialized) return;
 
     const navigate = async () => {
+      console.log('[Splash] initializing, waiting 300ms...');
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       if (!isAuthenticated || !accessToken) {
+        console.log('[Splash] no auth, navigating to welcome');
         router.replace('/(auth)/welcome');
         return;
       }
 
       const role = mapBackendRole(user?.role);
       const defaultRoute = ROLE_REDIRECT[role] || '/(auth)/welcome';
+      console.log('[Splash] authenticated, role =', role, 'navigating to', defaultRoute);
 
       if (['property_owner', 'ca_partner', 'admin', 'super_admin'].includes(role)) {
         const result = await checkSubscriptionAccess();
         if (!result.hasAccess && defaultRoute !== '/(drawer)/(tabs)/subscription') {
+          console.log('[Splash] no subscription access, navigating to subscription');
           router.replace('/(drawer)/(tabs)/subscription');
           return;
         }

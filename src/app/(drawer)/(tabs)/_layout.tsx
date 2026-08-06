@@ -6,6 +6,7 @@ import { mapBackendRole, type UserRole } from '@/navigation/types/navigation.typ
 import { ROLE_TAB_ACCESS } from '@/navigation/utils/roleRedirect';
 import { useAuthStore } from '@/store/authStore';
 import { Tabs } from 'expo-router';
+import { type ColorValue } from 'react-native';
 import { Text } from 'react-native';
 
 const BASE_TABS = [
@@ -67,7 +68,7 @@ export default function DrawerTabsLayout() {
                 name={tab.name}
                 options={{
                   title: tab.title,
-                  tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+                  tabBarIcon: ({ focused, color, size }: { focused: boolean; color: ColorValue; size: number }) => (
                     <Text style={{ fontSize: size, color }}>{tab.icon}</Text>
                   ),
                 }}

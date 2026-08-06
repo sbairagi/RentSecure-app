@@ -4,27 +4,18 @@ import { Spacing } from '@/constants/theme';
 import { AuthHeader } from '@/features/authentication/components/AuthHeader';
 import { SocialLoginButtons } from '@/features/authentication/components/SocialLoginButtons';
 import { useAuth } from '@/features/authentication/hooks/useAuth';
-import { useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function WelcomeScreen() {
-  const router = useRouter();
   const { socialLogin } = useAuth();
 
   const handleGoogleLogin = async () => {
-    try {
-      await socialLogin('google', 'mock_token');
-    } catch {
-      // Silently fail
-    }
+    Alert.alert('Coming soon', 'Google sign-in requires OAuth client configuration.');
   };
 
   const handleAppleLogin = async () => {
-    try {
-      await socialLogin('apple', 'mock_token');
-    } catch {
-      // Silently fail
-    }
+    Alert.alert('Coming soon', 'Apple sign-in requires Apple identity token verification.');
   };
 
   return (
@@ -51,19 +42,12 @@ export default function WelcomeScreen() {
         </View>
 
         <View style={styles.buttonContainer}>
-          <AppButton
-            title="Login with Phone"
-            onPress={() => router.push('/(auth)/login')}
-            variant="primary"
-            size="large"
-          />
-          <AppButton
-            title="Create Account"
-            onPress={() => router.push('/(auth)/register')}
-            variant="outline"
-            size="large"
-            style={styles.secondaryButton}
-          />
+          <Link href="/(auth)/login" asChild>
+            <AppButton title="Login with Phone" variant="primary" size="large" />
+          </Link>
+          <Link href="/(auth)/register" asChild>
+            <AppButton title="Create Account" variant="outline" size="large" style={styles.secondaryButton} />
+          </Link>
         </View>
 
         <SocialLoginButtons onGooglePress={handleGoogleLogin} onApplePress={handleAppleLogin} />

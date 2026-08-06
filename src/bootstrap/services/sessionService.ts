@@ -27,7 +27,7 @@ class SessionService {
         logger.warn('Session forbidden (403)');
         return false;
       }
-      logger.error('Session validation error', error);
+      logger.warn('Session validation error', error);
       return false;
     }
   }

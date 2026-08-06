@@ -5,10 +5,11 @@ import { Spacing } from '@/constants/theme';
 import { AuthHeader } from '@/features/authentication/components/AuthHeader';
 import { SocialLoginButtons } from '@/features/authentication/components/SocialLoginButtons';
 import { useAuth } from '@/features/authentication/hooks/useAuth';
-import { useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { z } from 'zod';
+import { Alert } from 'react-native';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -18,7 +19,6 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
-  const router = useRouter();
   const { login, socialLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -43,7 +43,7 @@ export default function LoginScreen() {
     }
     try {
       await login({ email, password });
-      router.replace('/(tabs)');
+      router.replace('/(drawer)/(tabs)/dashboard');
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {
@@ -52,23 +52,11 @@ export default function LoginScreen() {
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      await socialLogin('google', 'mock_token');
-      router.replace('/(tabs)');
-    } catch {
-      setLoading(false);
-    }
+    Alert.alert('Coming soon', 'Google sign-in requires OAuth client configuration.');
   };
 
   const handleAppleLogin = async () => {
-    setLoading(true);
-    try {
-      await socialLogin('apple', 'mock_token');
-      router.replace('/(tabs)');
-    } catch {
-      setLoading(false);
-    }
+    Alert.alert('Coming soon', 'Apple sign-in requires Apple identity token verification.');
   };
 
   return (
@@ -97,18 +85,20 @@ export default function LoginScreen() {
         <AppButton title="Login" onPress={handleSubmit} loading={loading} disabled={loading} />
 
         <View style={styles.links}>
-          <AppButton
-            title="Forgot Password?"
-            onPress={() => router.push('/(auth)/forgot-password')}
-            variant="ghost"
-            size="small"
-          />
-          <AppButton
-            title="Create Account"
-            onPress={() => router.push('/(auth)/register')}
-            variant="ghost"
-            size="small"
-          />
+          <Link href="/(auth)/forgot-password" asChild>
+            <AppButton
+              title="Forgot Password?"
+              variant="ghost"
+              size="small"
+            />
+          </Link>
+          <Link href="/(auth)/register" asChild>
+            <AppButton
+              title="Create Account"
+              variant="ghost"
+              size="small"
+            />
+          </Link>
         </View>
       </View>
 

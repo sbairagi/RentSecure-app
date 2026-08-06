@@ -1,4 +1,5 @@
 import { checkSubscriptionAccess, getSubscriptionStatus } from '@/navigation/utils/subscription';
+import { mapBackendRole, type UserRole } from '@/navigation/types/navigation.types';
 import { useAuthStore } from '@/store/authStore';
 import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { usePathname, useRouter } from 'expo-router';
@@ -10,22 +11,34 @@ interface SubscriptionGuardProps {
   fallback?: React.ReactNode;
   redirectTo?: string;
   showFallback?: boolean;
+  requiredRoles?: UserRole[];
 }
+
+const DEFAULT_SUBSCRIPTION_ROLES: UserRole[] = [
+  'property_owner',
+  'ca_partner',
+  'admin',
+  'super_admin',
+];
 
 export function SubscriptionGuard({
   children,
   fallback,
   redirectTo = '/(drawer)/(tabs)/subscription',
   showFallback = false,
+  requiredRoles = DEFAULT_SUBSCRIPTION_ROLES,
 }: SubscriptionGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { subscription, isLoading } = useSubscriptionStore();
   const [checking, setChecking] = useState(false);
 
+  const currentRole: UserRole = mapBackendRole(user?.role);
+  const requiresSubscription = requiredRoles.includes(currentRole);
+
   const checkAccess = useCallback(async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !requiresSubscription) return;
 
     setChecking(true);
     try {
@@ -38,15 +51,15 @@ export function SubscriptionGuard({
     } finally {
       setChecking(false);
     }
-  }, [isAuthenticated, pathname, redirectTo, router]);
+  }, [isAuthenticated, requiresSubscription, pathname, redirectTo, router]);
 
   useEffect(() => {
-    if (!subscription && isAuthenticated && !isLoading) {
+    if (!subscription && isAuthenticated && !isLoading && requiresSubscription) {
       Promise.resolve().then(() => {
         checkAccess();
       });
     }
-  }, [subscription, isAuthenticated, isLoading, checkAccess]);
+  }, [subscription, isAuthenticated, isLoading, requiresSubscription, checkAccess]);
 
   if (checking || isLoading) {
     return (
@@ -58,7 +71,7 @@ export function SubscriptionGuard({
 
   const status = getSubscriptionStatus(subscription);
 
-  if (!status.isActive) {
+  if (!status.isActive && requiresSubscription) {
     if (showFallback && fallback) {
       return <>{fallback}</>;
     }

@@ -28,7 +28,7 @@ class MaintenanceService {
       logger.info('Maintenance check completed', maintenanceInfo);
       return maintenanceInfo;
     } catch (error) {
-      logger.error('Maintenance check failed', error as Error);
+      logger.warn('Maintenance check failed', error as Error);
       if (this.cachedMaintenance) {
         return this.cachedMaintenance;
       }

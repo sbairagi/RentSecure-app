@@ -14,7 +14,7 @@ export interface PhoneInputProps {
 export const PhoneInput: React.FC<PhoneInputProps> = ({
   label,
   value,
-  _onChangeText,
+  onChangeText,
   error,
   containerStyle,
 }) => {

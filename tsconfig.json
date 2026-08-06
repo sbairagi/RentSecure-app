@@ -5,28 +5,70 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@features/*": ["./src/features/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@services/*": ["./src/services/*"],
-      "@utils/*": ["./src/utils/*"],
-      "@types/*": ["./src/types/*"],
-      "@constants/*": ["./src/constants/*"],
-      "@theme/*": ["./src/theme/*"],
-      "@layouts/*": ["./src/layouts/*"],
-      "@navigation/*": ["./src/navigation/*"],
-      "@providers/*": ["./src/providers/*"],
-      "@store/*": ["./src/store/*"],
-      "@assets/*": ["./assets/*"],
-      "@config/*": ["./src/config/*"],
-      "@localization/*": ["./src/localization/*"],
-      "@validations/*": ["./src/validations/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@features/*": [
+        "./src/features/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@services/*": [
+        "./src/services/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@types/*": [
+        "./src/types/*"
+      ],
+      "@constants/*": [
+        "./src/constants/*"
+      ],
+      "@theme/*": [
+        "./src/theme/*"
+      ],
+      "@layouts/*": [
+        "./src/layouts/*"
+      ],
+      "@navigation/*": [
+        "./src/navigation/*"
+      ],
+      "@providers/*": [
+        "./src/providers/*"
+      ],
+      "@store/*": [
+        "./src/store/*"
+      ],
+      "@assets/*": [
+        "./assets/*"
+      ],
+      "@config/*": [
+        "./src/config/*"
+      ],
+      "@localization/*": [
+        "./src/localization/*"
+      ],
+      "@validations/*": [
+        "./src/validations/*"
+      ]
     },
     "resolveJsonModule": true,
     "allowJs": true,
     "esModuleInterop": true
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "**/*.json"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.json"
+  ]
 }

@@ -91,10 +91,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     ...Platform.select({
       ios: {
-        shadowColor: '#22c55e',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
+        boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)',
       },
       android: {
         elevation: 4,
@@ -168,10 +165,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#22c55e',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        boxShadow: '0 4px 8px rgba(34, 197, 94, 0.3)',
       },
       android: {
         elevation: 4,

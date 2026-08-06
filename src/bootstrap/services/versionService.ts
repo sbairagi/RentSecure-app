@@ -31,7 +31,7 @@ class VersionService {
       logger.info('Version check completed', versionInfo);
       return versionInfo;
     } catch (error) {
-      logger.error('Version check failed', error as Error);
+      logger.warn('Version check failed', error as Error);
       if (this.cachedVersion) {
         return this.cachedVersion;
       }

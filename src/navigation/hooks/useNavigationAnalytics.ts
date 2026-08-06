@@ -97,7 +97,7 @@ export function useNavigationTiming(from: string, to: string) {
   const startTimeRef = useRef(() => performance.now());
 
   useEffect(() => {
-    startTimeRef.current = performance.now();
+    startTimeRef.current = () => performance.now();
   }, [to]);
 
   useEffect(() => {

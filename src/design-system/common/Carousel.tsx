@@ -22,8 +22,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export const Carousel: React.FC<CarouselProps> = ({
   items,
-  _autoPlay = false,
-  _interval = 3000,
+  autoPlay = false,
+  interval = 3000,
   showDots = true,
   style,
 }) => {

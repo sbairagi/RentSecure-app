@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
+    cursor: 'pointer',
   },
   text: {
     textAlign: 'center',

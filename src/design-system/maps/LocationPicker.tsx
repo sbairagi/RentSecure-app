@@ -8,7 +8,7 @@ export interface LocationPickerProps {
   style?: ViewStyle;
 }
 
-export const LocationPicker: React.FC<LocationPickerProps> = ({ _onSelect, style }) => {
+export const LocationPicker: React.FC<LocationPickerProps> = ({ onSelect, style }) => {
   const theme = useDesignSystemTheme();
 
   return (

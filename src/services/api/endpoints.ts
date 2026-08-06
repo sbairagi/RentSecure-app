@@ -1,3 +1,5 @@
+import { environment } from '@/config/environment';
+
 export const API_ENDPOINTS = {
   AUTH: {
     SEND_OTP: '/auth/send-otp/',
@@ -183,20 +185,37 @@ export const API_ENDPOINTS = {
     REPORT: (id: string) => `/download/report/${id}/`,
     BULK: '/download/bulk/',
   },
+  DOCUMENTS: {
+    LIST: '/api/documents/',
+    DETAIL: (id: string | number) => `/api/documents/${id}/`,
+    CREATE: '/api/documents/',
+    UPDATE: (id: string | number) => `/api/documents/${id}/`,
+    DELETE: (id: string | number) => `/api/documents/${id}/`,
+    DOWNLOAD: (id: string | number) => `/api/documents/${id}/download/`,
+    PREVIEW: (id: string | number) => `/api/documents/${id}/preview/`,
+    UPLOAD: '/api/documents/upload/',
+    MOVE: (id: string | number) => `/api/documents/${id}/move/`,
+    COPY: (id: string | number) => `/api/documents/${id}/copy/`,
+    SHARE: (id: string | number) => `/api/documents/${id}/share/`,
+    FAVORITE: (id: string | number) => `/api/documents/${id}/favorite/`,
+    ARCHIVE: (id: string | number) => `/api/documents/${id}/archive/`,
+    RESTORE: (id: string | number) => `/api/documents/${id}/restore/`,
+    VERSIONS: (id: string | number) => `/api/documents/${id}/versions/`,
+    DUPLICATES: '/api/documents/duplicates/',
+    FOLDERS: '/api/documents/folders/',
+    USAGE_LIMITS: '/api/documents/usage-limits/',
+    BULK_DELETE: '/api/documents/bulk-delete/',
+    BULK_MOVE: '/api/documents/bulk-move/',
+    BULK_DOWNLOAD: '/api/documents/bulk-download/',
+    SEARCH: '/api/documents/search/',
+    METADATA: (id: string | number) => `/api/documents/${id}/metadata/`,
+  },
 };
 
 export const API_CONFIG = {
-  BASE_URL: (() => {
-    if (
-      typeof globalThis !== 'undefined' &&
-      (globalThis as any)?.process?.env?.EXPO_PUBLIC_API_URL
-    ) {
-      return (globalThis as any).process.env.EXPO_PUBLIC_API_URL;
-    }
-    return 'https://api.rentsecure.com';
-  })(),
-  TIMEOUT: 30000,
-  RETRY_COUNT: 3,
+  BASE_URL: environment.apiUrl,
+  TIMEOUT: environment.apiTimeout,
+  RETRY_COUNT: environment.apiRetryCount,
   RETRY_DELAY: 1000,
   MAX_RETRY_DELAY: 10000,
   REFRESH_TOKEN_URL: '/api/token/refresh/',

@@ -4,6 +4,7 @@ import { ScreenContainer } from '@/components/common/ScreenContainer';
 import { Spacing } from '@/constants/theme';
 import { AuthHeader } from '@/features/authentication/components/AuthHeader';
 import { useAuth } from '@/features/authentication/hooks/useAuth';
+import { Link } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -59,7 +60,7 @@ export default function RegisterScreen() {
     }
     try {
       await register(form);
-      router.replace('/(tabs)');
+      router.replace('/(drawer)/(tabs)/dashboard');
     } catch (err: any) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -127,12 +128,13 @@ export default function RegisterScreen() {
         />
 
         <View style={styles.loginLink}>
-          <AppButton
-            title="Already have an account? Login"
-            onPress={() => router.back()}
-            variant="ghost"
-            size="small"
-          />
+          <Link href="/(auth)/welcome" asChild>
+            <AppButton
+              title="Already have an account? Login"
+              variant="ghost"
+              size="small"
+            />
+          </Link>
         </View>
       </View>
     </ScreenContainer>

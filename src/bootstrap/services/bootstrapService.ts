@@ -2,6 +2,7 @@ import { environment } from '@/config/environment';
 import { apiService } from '@/services/api/apiClient';
 import { logger } from '@/services/api/logger';
 import { useAuthStore } from '@/store/authStore';
+import { Platform } from 'react-native';
 import { BOOTSTRAP_CONSTANTS } from '../constants/bootstrap';
 import { useAppStore } from '../stores/appStore';
 import type { BootstrapErrorType, BootstrapPhase, BootstrapResponse } from '../types/bootstrap';
@@ -14,6 +15,8 @@ import { sessionService } from './sessionService';
 import { subscriptionService } from './subscriptionService';
 import { versionService } from './versionService';
 
+const IS_WEB = Platform.OS === 'web';
+
 type BootstrapStep = {
   phase: Exclude<BootstrapPhase, 'idle' | 'completed' | 'failed'>;
   execute: () => Promise<void>;
@@ -23,6 +26,7 @@ type BootstrapStep = {
 
 class BootstrapService {
   private isRunning = false;
+  private hasCompleted = false;
   private phaseListeners: Set<(phase: BootstrapPhase) => void> = new Set();
 
   subscribeToPhase(listener: (phase: BootstrapPhase) => void): () => void {
@@ -48,6 +52,14 @@ class BootstrapService {
     errorMessage?: string;
     data?: BootstrapResponse;
   }> {
+    if (this.hasCompleted) {
+      logger.warn('Bootstrap already completed - returning cached state');
+      return {
+        success: useAppStore.getState().isInitialized,
+        data: this.buildBootstrapResponse(useAppStore.getState()),
+      };
+    }
+
     if (this.isRunning) {
       logger.warn('Bootstrap already running');
       return {
@@ -147,7 +159,13 @@ class BootstrapService {
           await step.execute();
         } catch (error: any) {
           const errorType = this.classifyError(error);
-          logger.error(`Bootstrap step failed: ${step.phase}`, error);
+          const expectedFailure = ['internet_lost', 'backend_down', 'maintenance', 'version_unsupported', 'expired_token'].includes(errorType);
+
+          if (expectedFailure) {
+            logger.warn(`Bootstrap step failed: ${step.phase}`, { errorType, message: error?.message });
+          } else {
+            logger.error(`Bootstrap step failed: ${step.phase}`, error);
+          }
 
           if (errorType === 'backend_down' || errorType === 'internet_lost') {
             store.setError(errorType, BOOTSTRAP_CONSTANTS.ERROR_MESSAGES[errorType]);
@@ -177,6 +195,7 @@ class BootstrapService {
 
       const bootstrapData = this.buildBootstrapResponse(store);
       logger.info('Bootstrap completed successfully');
+      this.hasCompleted = true;
 
       return { success: true, data: bootstrapData };
     } catch (error: any) {
@@ -194,17 +213,48 @@ class BootstrapService {
 
   private async checkConnectivity(): Promise<void> {
     const store = useAppStore.getState();
+    console.log('[Bootstrap] checkConnectivity: start', {
+      isWeb: IS_WEB,
+      env: process.env.EXPO_PUBLIC_APP_ENV,
+    });
     const isConnected = await connectivityService.isConnected();
+    console.log('[Bootstrap] checkConnectivity: isConnected =', isConnected);
+    logger.info('Connectivity check', { isConnected });
+
+    // In development on web, skip the hard backend gate so the app is usable
+    // without the Django server running. The backend-dependent screens will
+    // still show their own errors when the API calls fail.
+    const isDevWeb =
+      IS_WEB && process.env.EXPO_PUBLIC_APP_ENV !== 'production';
+    console.log('[Bootstrap] checkConnectivity: isDevWeb =', isDevWeb);
+    if (isDevWeb) {
+      store.setOnline(true);
+      logger.info('Dev web mode: skipping hard backend availability gate');
+      console.log('[Bootstrap] checkConnectivity: DEV WEB MODE - skipping backend gate');
+      return;
+    }
+
     const backendAvailable = isConnected
       ? await connectivityService.checkBackendAvailability(environment.apiUrl)
       : false;
 
+    console.log('[Bootstrap] checkConnectivity: backendAvailable =', backendAvailable, 'url =', environment.apiUrl);
+    logger.info('Backend availability check', {
+      baseUrl: environment.apiUrl,
+      backendAvailable,
+      isOnline: isConnected && backendAvailable,
+    });
+
     store.setOnline(isConnected && backendAvailable);
 
     if (!isConnected) {
+      logger.warn('Device reports offline - throwing NO_INTERNET');
+      console.log('[Bootstrap] checkConnectivity: THROW NO_INTERNET');
       throw new Error('NO_INTERNET');
     }
     if (!backendAvailable) {
+      logger.warn('Backend unreachable - throwing BACKEND_DOWN');
+      console.log('[Bootstrap] checkConnectivity: THROW BACKEND_DOWN');
       throw new Error('BACKEND_DOWN');
     }
   }
@@ -247,12 +297,19 @@ class BootstrapService {
     const authStore = useAuthStore.getState();
     const accessToken = authStore.accessToken;
 
+    if (!accessToken) {
+      logger.info('No access token - skipping session validation');
+      return;
+    }
+
     const result = await sessionService.validateAndRefresh(accessToken, authStore.refreshToken);
 
     if (!result.success) {
       if (result.shouldClearSession) {
         sessionService.clearSession();
       }
+      // Only throw for actual auth errors; the catch block in initialize()
+      // will classify and store the error for the UI to handle.
       throw new Error(result.errorType || 'SESSION_INVALID');
     }
   }
@@ -261,7 +318,7 @@ class BootstrapService {
     const authStore = useAuthStore.getState();
     const refreshToken = authStore.refreshToken;
     if (!refreshToken) {
-      logger.info('No refresh token available');
+      logger.info('No refresh token available - skipping token refresh');
       return;
     }
 
@@ -331,6 +388,12 @@ class BootstrapService {
     if (error?.statusCode === 503) return 'backend_down';
     if (error?.statusCode === 401) return 'expired_token';
     if (error?.statusCode === 403) return 'permission_missing';
+
+    // Browser fetch TypeError: "Failed to fetch" — treat as backend down on web,
+    // because the page itself loaded so the browser has connectivity.
+    if (error?.name === 'TypeError' && message.includes('FAILED TO FETCH')) return 'backend_down';
+    // AbortController aborts also indicate connectivity/timeout issues
+    if (error?.name === 'AbortError' || message.includes('ABORTERROR')) return 'backend_down';
 
     return 'unknown';
   }

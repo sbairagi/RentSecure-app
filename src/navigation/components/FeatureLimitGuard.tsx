@@ -2,6 +2,7 @@ import { useSubscriptionStore } from '@/store/subscriptionStore';
 import { usePathname, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { API_CONFIG } from '@/services/api/endpoints';
 
 interface FeatureLimitGuardProps {
   featureKey: string;
@@ -34,7 +35,7 @@ export function FeatureLimitGuard({
     setChecking(true);
     try {
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api'}/usage-limits/`,
+        `${API_CONFIG.BASE_URL}/usage-limits/`,
         {
           headers: {
             Authorization: `Bearer ${useSubscriptionStore.getState()}`,

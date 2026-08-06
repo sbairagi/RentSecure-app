@@ -12,7 +12,7 @@ import { networkManager } from './networkManager';
 import { requestQueue } from './requestQueue';
 import type { SecureNestApiError } from './types';
 
-interface SecureNestAxiosRequestConfig extends InternalAxiosRequestConfig {
+export interface SecureNestAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
   _retryCount?: number;
   metadata?: {

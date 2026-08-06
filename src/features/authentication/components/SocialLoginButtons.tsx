@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     borderRadius: Radius.md,
     borderWidth: 1,
+    cursor: 'pointer',
   },
   googleIcon: {
     fontSize: FontSizes.lg,

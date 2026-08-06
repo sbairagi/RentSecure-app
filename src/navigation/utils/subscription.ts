@@ -104,12 +104,17 @@ export const checkSubscriptionAccess = async (): Promise<{
 
 export const fetchSubscriptionData = async (): Promise<void> => {
   try {
-    const [subsRes, addOnsRes, limitsRes, plansRes] = await Promise.all([
+    const results = await Promise.allSettled([
       apiService.get<any>(API_ENDPOINTS.SUBSCRIPTION_CURRENT),
       apiService.get<any>(API_ENDPOINTS.ADDON_PURCHASES),
       apiService.get<any>(API_ENDPOINTS.USAGE_LIMITS),
       apiService.get<any>(API_ENDPOINTS.SUBSCRIPTION_PLANS),
     ]);
+
+    const subsRes = results[0].status === 'fulfilled' ? results[0].value : null;
+    const addOnsRes = results[1].status === 'fulfilled' ? results[1].value : null;
+    const limitsRes = results[2].status === 'fulfilled' ? results[2].value : null;
+    const plansRes = results[3].status === 'fulfilled' ? results[3].value : null;
 
     const subscriptions = subsRes?.results || subsRes || [];
     const activeSubscription = Array.isArray(subscriptions)

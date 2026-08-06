@@ -27,7 +27,7 @@ export const RenterCard: React.FC<RenterCardProps> = ({
   phone,
   unit,
   status,
-  _avatarUrl,
+  avatarUrl,
   onPress,
   style,
 }) => {

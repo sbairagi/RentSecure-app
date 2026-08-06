@@ -6,7 +6,7 @@ import { useBootstrap } from '../hooks/useBootstrap';
 
 export default function OfflineScreen() {
   const router = useRouter();
-  const { retry, isOnline, retryCount } = useBootstrap();
+  const { retry, isOnline, retryCount, error, errorMessage } = useBootstrap();
   // Animated.Value is designed to be created in render for React Native Animated API
   const pulseAnim = new Animated.Value(1);
 
@@ -15,6 +15,16 @@ export default function OfflineScreen() {
       router.replace('/splash');
     }
   }, [isOnline]);
+
+  useEffect(() => {
+    // Log diagnostic info to help debug connectivity issues
+    logger.warn('OfflineScreen rendered', {
+      error,
+      errorMessage,
+      isOnline,
+      retryCount,
+    });
+  }, []);
 
   useEffect(() => {
     Animated.loop(
@@ -44,6 +54,17 @@ export default function OfflineScreen() {
     }
   };
 
+  const handleContinueOffline = () => {
+    router.replace('/(auth)/welcome');
+  };
+
+  const getSubtitle = (): string => {
+    if (error === 'backend_down' || errorMessage?.toLowerCase().includes('server')) {
+      return 'The server is not reachable. Please check that the backend is running and try again.';
+    }
+    return 'Please check your network connection and try again. The app needs an internet connection to sync your data.';
+  };
+
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.iconContainer, { transform: [{ scale: pulseAnim }] }]}>
@@ -51,10 +72,7 @@ export default function OfflineScreen() {
       </Animated.View>
 
       <Text style={styles.title}>No Internet Connection</Text>
-      <Text style={styles.message}>
-        Please check your network connection and try again. The app needs an internet connection to
-        sync your data.
-      </Text>
+      <Text style={styles.message}>{getSubtitle()}</Text>
 
       <TouchableOpacity style={styles.retryButton} onPress={handleRetry} activeOpacity={0.8}>
         <Text style={styles.retryButtonText}>
@@ -64,7 +82,7 @@ export default function OfflineScreen() {
 
       <TouchableOpacity
         style={styles.offlineButton}
-        onPress={() => router.replace('/(auth)/welcome')}
+        onPress={handleContinueOffline}
         activeOpacity={0.8}
       >
         <Text style={styles.offlineButtonText}>Continue Offline</Text>
@@ -91,10 +109,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     ...Platform.select({
       ios: {
-        shadowColor: '#ef4444',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        boxShadow: '0 4px 12px rgba(239, 68, 68, 0.15)',
       },
       android: {
         elevation: 4,
@@ -128,10 +143,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     ...Platform.select({
       ios: {
-        shadowColor: '#4f46e5',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
+        boxShadow: '0 4px 8px rgba(79, 70, 229, 0.3)',
       },
       android: {
         elevation: 4,

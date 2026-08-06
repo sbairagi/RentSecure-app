@@ -34,7 +34,7 @@ export function FlashListWrapper<T>({
   loading = false,
   error = null,
   emptyMessage = 'No data available',
-  _estimatedItemSize = 80,
+  estimatedItemSize = 80,
   contentContainerStyle,
   onRefresh,
   refreshing = false,

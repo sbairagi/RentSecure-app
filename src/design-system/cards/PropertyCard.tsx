@@ -19,7 +19,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   address,
   units,
   occupied,
-  _imageUrl,
+  imageUrl,
   onPress,
   style,
 }) => {

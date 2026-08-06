@@ -1,8 +1,8 @@
 import { useAuthStore } from '@/store/authStore';
 import Constants from 'expo-constants';
-import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { API_CONFIG } from '@/services/api/endpoints';
 
 type UpdateType = 'required' | 'optional' | null;
 
@@ -12,7 +12,6 @@ interface VersionGuardProps {
 }
 
 export function VersionGuard({ children, fallback }: VersionGuardProps) {
-  const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const [checking, setChecking] = useState(true);
   const [updateType, setUpdateType] = useState<UpdateType>(null);
@@ -37,7 +36,7 @@ export function VersionGuard({ children, fallback }: VersionGuardProps) {
     const checkVersion = async () => {
       try {
         const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000/api'}/auth/app/version/`,
+          `${API_CONFIG.BASE_URL}/auth/app/version/`,
           { headers: { Accept: 'application/json' } }
         );
 

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { BOOTSTRAP_CONSTANTS } from '../constants/bootstrap';
-import { bootstrapService } from '../services/bootstrapService';
 import type { BootstrapErrorType, BootstrapPhase } from '../types/bootstrap';
 
 interface AppBootstrapState {
@@ -95,6 +94,7 @@ export const useAppStore = create<AppStore>((set, _get) => ({
   incrementRetry: () => set((state) => ({ retryCount: state.retryCount + 1 })),
 
   initialize: async () => {
+    const { bootstrapService } = await import('../services/bootstrapService');
     const result = await bootstrapService.initialize();
     if (!result.success && result.errorType) {
       set({
@@ -107,6 +107,7 @@ export const useAppStore = create<AppStore>((set, _get) => ({
 
   reload: async () => {
     set({ retryCount: 0, error: null, errorMessage: '', isInitialized: false });
+    const { bootstrapService } = await import('../services/bootstrapService');
     const result = await bootstrapService.initialize();
     return result;
   },

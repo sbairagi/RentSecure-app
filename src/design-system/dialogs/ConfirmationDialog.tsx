@@ -69,10 +69,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: radius.lg,
     padding: spacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
     elevation: 8,
   },
   title: {

@@ -1,8 +1,8 @@
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import SplashScreen from 'expo-splash-screen';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useBootstrap } from '@/bootstrap/hooks/useBootstrap';
 import {
@@ -17,25 +17,33 @@ import { useAuthStore } from '@/store/authStore';
 
 SplashScreen.preventAutoHideAsync();
 
-type AppState = 'loading' | 'bootstrapping' | 'ready' | 'error';
-
 export default function AppLayout() {
-  const [appState, setAppState] = useState<AppState>('loading');
   const [fontsLoaded] = useFonts({});
   const { initialize, isInitialized, error, isMaintenance, isForceUpdate, currentPhase } =
     useBootstrap();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading: authLoading } = useAuthStore();
+
+  const initializeRef = useRef(initialize);
+  initializeRef.current = initialize;
+  const hasRunRef = useRef(false);
 
   useEffect(() => {
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
+
     const prepare = async () => {
       try {
-        setAppState('bootstrapping');
-        await initialize();
-      } catch {
-        setAppState('error');
+        console.log('[AppLayout] bootstrapping...');
+        const result = await initializeRef.current();
+        console.log('[AppLayout] bootstrap result:', result);
+      } catch (e) {
+        console.log('[AppLayout] bootstrap threw:', e);
       } finally {
-        setAppState('ready');
-        await SplashScreen.hideAsync();
+        try {
+          await SplashScreen.hideAsync();
+        } catch (e) {
+          console.log('[AppLayout] SplashScreen.hideAsync() failed:', e);
+        }
       }
     };
 
@@ -44,7 +52,20 @@ export default function AppLayout() {
     }
   }, [fontsLoaded]);
 
+  console.log('[AppLayout] render:', {
+    isInitialized,
+    error,
+    isMaintenance,
+    isForceUpdate,
+    fontsLoaded: fontsLoaded,
+    authLoading,
+    isAuthenticated,
+  });
+
   const getErrorScreen = useCallback(() => {
+    if (error === 'expired_token') {
+      return <SessionExpiredScreen />;
+    }
     if (error === 'backend_down' || error === 'internet_lost') {
       return <OfflineScreen />;
     }
@@ -54,40 +75,27 @@ export default function AppLayout() {
     if (error === 'version_unsupported' || isForceUpdate) {
       return <ForceUpdateScreen />;
     }
-    if (error === 'expired_token') {
-      return <SessionExpiredScreen />;
-    }
     return null;
   }, [error, isMaintenance, isForceUpdate, currentPhase]);
 
-  if (!fontsLoaded || appState === 'loading') {
-    return null;
-  }
-
-  if (appState === 'bootstrapping' || !isInitialized) {
+  if (!fontsLoaded || !isInitialized) {
+    console.log('[AppLayout] → BootstrapSplashScreen (loading or not initialized)');
     if (error && getErrorScreen()) {
       return getErrorScreen() as React.ReactElement;
     }
     return <BootstrapSplashScreen />;
   }
 
-  if (appState === 'error' || (error && getErrorScreen())) {
+  if (error && getErrorScreen()) {
+    console.log('[AppLayout] → error screen');
     return getErrorScreen() as React.ReactElement;
   }
 
+  console.log('[AppLayout] → Stack navigator');
   return (
     <RouteGuard requireAuth={false}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="splash" options={{ headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen name="bootstrap" options={{ headerShown: false, gestureEnabled: false }} />
-        <Stack.Screen
-          name="(drawer)"
-          options={{
-            headerShown: false,
-            presentation: 'transparentModal',
-            animation: 'fade',
-          }}
-        />
         <Stack.Screen
           name="(auth)"
           options={{
@@ -96,7 +104,14 @@ export default function AppLayout() {
             animation: 'slide_from_bottom',
           }}
         />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
+        <Stack.Screen
+          name="(drawer)"
+          options={{
+            headerShown: false,
+            presentation: 'transparentModal',
+            animation: 'fade',
+          }}
+        />
         <Stack.Screen name="not-found" options={{ title: 'Not Found', headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />

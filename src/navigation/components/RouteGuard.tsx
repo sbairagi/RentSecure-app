@@ -27,6 +27,7 @@ const AUTH_ROUTES = [
   '/(auth)/create-password',
   '/(auth)/session-expired',
 ];
+const AUTH_ROUTE_PATHS = AUTH_ROUTES.map((r) => r.replace(/^\/(\([^)]+\)|[^/]+)\//, '/'));
 const SPLASH_ROUTE = '/splash';
 const MAINTENANCE_ROUTE = '/(auth)/maintenance';
 const UPGRADE_ROUTE = '/(drawer)/(tabs)/subscription';
@@ -115,6 +116,9 @@ export function RouteGuard({
     ]
   );
 
+  const canAccessRouteRef = useRef(canAccessRoute);
+  canAccessRouteRef.current = canAccessRoute;
+
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
@@ -187,7 +191,7 @@ export function RouteGuard({
       return;
     }
 
-    if (isAuthenticated && !canAccessRoute(pathname)) {
+    if (isAuthenticated && !canAccessRouteRef.current(pathname)) {
       const targetRoute = redirectTo || ROLE_REDIRECT[currentRole] || '/(auth)/welcome';
       router.replace(targetRoute);
       return;
@@ -195,10 +199,15 @@ export function RouteGuard({
 
     if (!isAuthenticated) {
       const isPublicRoute =
-        pathname === SPLASH_ROUTE || AUTH_ROUTES.some((r) => pathname.startsWith(r));
+        pathname === SPLASH_ROUTE ||
+        AUTH_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`)) ||
+        AUTH_ROUTE_PATHS.some((r) => pathname === r || pathname.startsWith(`${r}/`));
 
       if (!isPublicRoute) {
+        console.log('[RouteGuard] redirecting unauthenticated from', pathname, 'to /(auth)/welcome');
         router.replace('/(auth)/welcome');
+      } else {
+        console.log('[RouteGuard] allowing public route', pathname);
       }
     }
   }, [
@@ -211,7 +220,6 @@ export function RouteGuard({
     maintenanceMode,
     requiresUpdate,
     requireAuth,
-    canAccessRoute,
     redirectTo,
   ]);
 
@@ -241,16 +249,8 @@ export function RouteGuard({
     return <Redirect href={redirectTo || '/(auth)/welcome'} />;
   }
 
-  if (isAuthenticated && !canAccessRoute(pathname)) {
+  if (isAuthenticated && !canAccessRouteRef.current(pathname)) {
     return null;
-  }
-
-  if (!isAuthenticated) {
-    const isPublicRoute =
-      pathname === SPLASH_ROUTE || AUTH_ROUTES.some((r) => pathname.startsWith(r));
-    if (!isPublicRoute) {
-      return <Redirect href="/(auth)/welcome" />;
-    }
   }
 
   return <>{children}</>;

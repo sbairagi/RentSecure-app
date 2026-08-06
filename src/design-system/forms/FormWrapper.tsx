@@ -10,9 +10,9 @@ export interface FormWrapperProps<T extends FieldValues> {
 }
 
 export const FormWrapper = <T extends FieldValues>({
-  _children,
-  _control,
-  _onSubmit,
+  children,
+  control,
+  onSubmit,
   style,
 }: FormWrapperProps<T>) => {
   return <View style={[styles.container, style]}>{children}</View>;

@@ -9,7 +9,7 @@ export interface ImageViewerProps {
   style?: ViewStyle;
 }
 
-export const ImageViewer: React.FC<ImageViewerProps> = ({ _uri, visible, onClose, style }) => {
+export const ImageViewer: React.FC<ImageViewerProps> = ({ uri, visible, onClose, style }) => {
   const theme = useDesignSystemTheme();
 
   if (!visible) return null;
