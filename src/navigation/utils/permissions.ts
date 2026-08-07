@@ -17,6 +17,7 @@ export const FEATURE_PERMISSIONS: Record<string, Permission[]> = {
   support: ['dashboard:read'],
   dashboard: ['dashboard:read'],
   properties: ['property:read', 'property:write'],
+  maintenance: ['maintenance:read', 'maintenance:write'],
 };
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
@@ -46,6 +47,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'agreement:write',
     'notification:read',
     'notification:write',
+    'maintenance:read',
+    'maintenance:write',
   ],
   admin: [
     'dashboard:read',
@@ -72,6 +75,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'agreement:write',
     'notification:read',
     'notification:write',
+    'maintenance:read',
+    'maintenance:write',
   ],
   property_owner: [
     'dashboard:read',
@@ -96,6 +101,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'agreement:write',
     'notification:read',
     'notification:write',
+    'maintenance:read',
+    'maintenance:write',
   ],
   ca_partner: [
     'dashboard:read',

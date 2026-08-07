@@ -200,6 +200,96 @@ export default function DrawerTabsLayout() {
                 href: null,
               }}
             />
+            <Tabs.Screen
+              name="maintenance"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/dashboard"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/create"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/edit"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/update-status"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/assign-caretaker"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/assign-vendor"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/add-comment"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/add-expense"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/upload-photos"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/upload-documents"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/[id]/timeline"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/resolved"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance/closed"
+              options={{
+                href: null,
+              }}
+            />
           </Tabs>
         </SubscriptionGuard>
       </VersionGuard>
