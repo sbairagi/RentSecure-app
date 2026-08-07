@@ -128,6 +128,78 @@ export default function DrawerTabsLayout() {
                 href: null,
               }}
             />
+            <Tabs.Screen
+              name="caretakers/[id]"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/assignment"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/permissions"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/building-access"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/unit-access"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/activity"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/documents"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/notifications"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/deactivate"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/delete"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/add"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="caretakers/[id]/edit"
+              options={{
+                href: null,
+              }}
+            />
           </Tabs>
         </SubscriptionGuard>
       </VersionGuard>

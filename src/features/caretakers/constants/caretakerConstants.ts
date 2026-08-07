@@ -1,0 +1,90 @@
+export type CaretakerConstants = typeof CARETAKER_CONSTANTS;
+
+export const CARETAKER_CONSTANTS = {
+  API: {
+    LIST: '/api/caretakers/',
+    DETAIL: (id: number | string) => `/api/caretakers/${id}/`,
+    CREATE: '/api/caretakers/',
+    UPDATE: (id: number | string) => `/api/caretakers/${id}/`,
+    DELETE: (id: number | string) => `/api/caretakers/${id}/`,
+    DEACTIVATE: (id: number | string) => `/api/caretakers/${id}/deactivate/`,
+    ASSIGN_UNIT: '/api/caretakers/assign-unit/',
+    LIMITS: '/api/usage-limits/',
+    SUBSCRIPTION: '/api/user-subscriptions/',
+    NOTIFICATIONS: '/api/notifications/get/',
+    UNIT_DOCUMENTS: '/api/unit-all-documents/',
+    DASHBOARD: '/properties/owner/dashboard/',
+  } as const,
+  STATUS: {
+    ACTIVE: 'active',
+    INACTIVE: 'inactive',
+  } as const,
+  STATUS_LABELS: {
+    active: 'Active',
+    inactive: 'Inactive',
+  } as const,
+  STATUS_CONFIG: {
+    active: {
+      label: 'Active',
+      color: '#16a34a',
+      backgroundColor: '#dcfce7',
+    },
+    inactive: {
+      label: 'Inactive',
+      color: '#dc2626',
+      backgroundColor: '#fee2e2',
+    },
+  } as const,
+  SORT_OPTIONS: {
+    newest: 'newest',
+    oldest: 'oldest',
+    name_asc: 'name_asc',
+    name_desc: 'name_desc',
+    joining_date_desc: '-joining_date',
+    joining_date_asc: 'joining_date',
+  } as const,
+  SORT_LABELS: {
+    newest: 'Newest First',
+    oldest: 'Oldest First',
+    name_asc: 'Name (A-Z)',
+    name_desc: 'Name (Z-A)',
+    joining_date_desc: 'Joining Date (Newest)',
+    joining_date_asc: 'Joining Date (Oldest)',
+  } as const,
+  FILTERS: {
+    STATUS: 'status',
+    UNIT: 'unit',
+    SEARCH: 'search',
+  } as const,
+  PAGINATION: {
+    DEFAULT_PAGE_SIZE: 20,
+    PAGE_SIZE_OPTIONS: [10, 20, 50],
+  } as const,
+  CACHE: {
+    STALE_TIME: 2 * 60 * 1000,
+    GC_TIME: 10 * 60 * 1000,
+  } as const,
+  ERROR_MESSAGES: {
+    NETWORK_ERROR: 'Unable to connect to the server. Please check your internet connection.',
+    UNAUTHORIZED: 'You are not authorized. Please log in again.',
+    FORBIDDEN: 'You do not have permission to perform this action.',
+    NOT_FOUND: 'Caretaker not found.',
+    CONFLICT: 'This action conflicts with existing data.',
+    VALIDATION_ERROR: 'Please check the entered data.',
+    RATE_LIMITED: 'Too many requests. Please try again later.',
+    SERVER_ERROR: 'Server error. Please try again later.',
+    MAINTENANCE: 'The system is under maintenance. Please try again later.',
+    SUBSCRIPTION_EXPIRED: 'Your subscription has expired. Please renew to continue.',
+    PERMISSION_DENIED: 'You do not have permission to access this resource.',
+    OFFLINE: 'You are offline. Some features may be unavailable.',
+    LIMIT_REACHED: 'You have reached your caretaker limit. Please upgrade.',
+    GENERIC: 'Something went wrong. Please try again.',
+    DELETE_CONFIRM: 'Are you sure you want to delete this caretaker? This action cannot be undone.',
+    DEACTIVATE_CONFIRM: 'Are you sure you want to deactivate this caretaker?',
+  } as const,
+  EMPTY_STATE: {
+    TITLE: 'No caretakers found',
+    DESCRIPTION: 'Get started by adding your first caretaker.',
+    ACTION_LABEL: 'Add Caretaker',
+  } as const,
+} as const;
