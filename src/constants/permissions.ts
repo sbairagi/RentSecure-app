@@ -23,7 +23,10 @@ export type Permission =
   | 'agreement:read'
   | 'agreement:write'
   | 'notification:read'
-  | 'notification:write';
+  | 'notification:write'
+  | 'maintenance:read'
+  | 'maintenance:write'
+  | 'ai:read';
 
 export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   super_admin: [
@@ -52,6 +55,7 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'agreement:write',
     'notification:read',
     'notification:write',
+    'ai:read',
   ],
   admin: [
     'dashboard:read',
@@ -78,6 +82,7 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'agreement:write',
     'notification:read',
     'notification:write',
+    'ai:read',
   ],
   property_owner: [
     'dashboard:read',
@@ -102,6 +107,7 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'agreement:write',
     'notification:read',
     'notification:write',
+    'ai:read',
   ],
   ca_partner: [
     'dashboard:read',

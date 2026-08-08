@@ -99,6 +99,12 @@ export default function DrawerTabsLayout() {
               }}
             />
             <Tabs.Screen
+              name="ai-assistant"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
               name="agreements"
               options={{
                 href: null,

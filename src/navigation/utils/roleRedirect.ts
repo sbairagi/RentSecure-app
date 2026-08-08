@@ -27,14 +27,15 @@ export const ROLE_TAB_ACCESS: Record<
 };
 
 export const ROLE_EXTRA_ROUTES: Record<UserRole, string[]> = {
-  super_admin: ['/(drawer)/(tabs)/settings', '/(drawer)/(tabs)/support'],
-  admin: ['/(drawer)/(tabs)/settings', '/(drawer)/(tabs)/support'],
+  super_admin: ['/(drawer)/(tabs)/settings', '/(drawer)/(tabs)/support', '/(drawer)/(tabs)/ai-assistant'],
+  admin: ['/(drawer)/(tabs)/settings', '/(drawer)/(tabs)/support', '/(drawer)/(tabs)/ai-assistant'],
   property_owner: [
     '/(drawer)/(tabs)/settings',
     '/(drawer)/(tabs)/support',
     '/(drawer)/(tabs)/subscription',
     '/(drawer)/(tabs)/reports',
     '/(drawer)/(tabs)/agreements',
+    '/(drawer)/(tabs)/ai-assistant',
   ],
   renter: ['/(drawer)/(tabs)/settings'],
   caretaker: ['/(drawer)/(tabs)/settings'],

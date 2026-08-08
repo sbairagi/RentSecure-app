@@ -135,7 +135,8 @@ export type Permission =
   | 'notification:read'
   | 'notification:write'
   | 'maintenance:read'
-  | 'maintenance:write';
+  | 'maintenance:write'
+  | 'ai:read';
 
 export type DeepLinkType =
   'payment' | 'invitation' | 'agreement' | 'rent_record' | 'notification' | 'general';
