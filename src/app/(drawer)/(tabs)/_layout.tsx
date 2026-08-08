@@ -189,6 +189,78 @@ export default function DrawerTabsLayout() {
               }}
             />
             <Tabs.Screen
+              name="visitors"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/list"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/create"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/[id]"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/[id]/approval"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/[id]/history"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/[id]/documents"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/qr-scanner"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/qr-display"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/verify"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/entry"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="visitors/exit"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
               name="caretakers/add"
               options={{
                 href: null,

@@ -14,13 +14,13 @@ export const ROLE_REDIRECT: Record<UserRole, string> = {
 
 export const ROLE_TAB_ACCESS: Record<
   UserRole,
-  ('dashboard' | 'properties' | 'payments' | 'notifications' | 'profile')[]
+  ('dashboard' | 'properties' | 'payments' | 'notifications' | 'profile' | 'visitors')[]
 > = {
-  super_admin: ['dashboard', 'properties', 'payments', 'notifications', 'profile'],
-  admin: ['dashboard', 'properties', 'payments', 'notifications', 'profile'],
-  property_owner: ['dashboard', 'properties', 'payments', 'notifications', 'profile'],
+  super_admin: ['dashboard', 'properties', 'payments', 'notifications', 'profile', 'visitors'],
+  admin: ['dashboard', 'properties', 'payments', 'notifications', 'profile', 'visitors'],
+  property_owner: ['dashboard', 'properties', 'visitors', 'payments', 'notifications', 'profile'],
   renter: ['dashboard', 'notifications', 'profile'],
-  caretaker: ['dashboard', 'properties', 'notifications', 'profile'],
+  caretaker: ['dashboard', 'properties', 'visitors', 'notifications', 'profile'],
   ca_partner: ['dashboard', 'properties', 'notifications', 'profile'],
   support_executive: ['dashboard', 'notifications', 'profile'],
   user: [],
@@ -55,6 +55,7 @@ export const ROLE_FEATURE_ACCESS: Record<UserRole, string[]> = {
     'units',
     'renters',
     'caretakers',
+    'visitors',
     'rent-records',
     'payments',
     'invoices',
@@ -68,7 +69,7 @@ export const ROLE_FEATURE_ACCESS: Record<UserRole, string[]> = {
     'maintenance',
   ],
   renter: ['rent-records', 'payments', 'agreements', 'notifications', 'settings', 'maintenance'],
-  caretaker: ['buildings', 'units', 'renters', 'reports', 'notifications', 'settings', 'maintenance'],
+  caretaker: ['buildings', 'units', 'renters', 'visitors', 'reports', 'notifications', 'settings', 'maintenance'],
   ca_partner: [
     'properties',
     'renters',
