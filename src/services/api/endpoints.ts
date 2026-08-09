@@ -210,6 +210,10 @@ export const API_ENDPOINTS = {
     REPORT: (id: string) => `/download/report/${id}/`,
     BULK: '/download/bulk/',
   },
+  SEARCH: {
+    GLOBAL: '/api/search/',
+    SUGGESTIONS: '/api/search/suggestions/',
+  },
   DOCUMENTS: {
     LIST: '/api/documents/',
     DETAIL: (id: string | number) => `/api/documents/${id}/`,

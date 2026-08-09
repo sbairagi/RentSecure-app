@@ -87,4 +87,8 @@ export const queryKeys = {
   settings: {
     profile: ['settings', 'profile'],
   },
+  search: {
+    global: (query: string, filters: Record<string, any>) => ['search', 'global', query, filters],
+    suggestions: (query: string) => ['search', 'suggestions', query],
+  },
 } as const;

@@ -184,6 +184,15 @@ export default function OwnerDashboardScreen() {
           </View>
         )}
         <IconButton
+          icon="magnify"
+          size={24}
+          onPress={() => router.push('/(drawer)/(tabs)/search')}
+          style={styles.headerIcon}
+          iconColor={theme.colors.onSurfaceVariant}
+          accessibilityLabel="Search"
+          accessibilityHint="Open global search"
+        />
+        <IconButton
           icon="bell-outline"
           size={24}
           onPress={() => router.push('/(drawer)/(tabs)/notifications')}

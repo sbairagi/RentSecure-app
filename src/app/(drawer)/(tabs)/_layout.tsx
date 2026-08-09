@@ -31,6 +31,11 @@ const BASE_TABS = [
     icon: '🔔',
   },
   {
+    name: 'search',
+    title: 'Search',
+    icon: '🔍',
+  },
+  {
     name: 'profile',
     title: 'Profile',
     icon: '👤',
@@ -190,6 +195,12 @@ export default function DrawerTabsLayout() {
             />
             <Tabs.Screen
               name="caretakers/[id]/delete"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="search"
               options={{
                 href: null,
               }}
