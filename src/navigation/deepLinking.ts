@@ -2,8 +2,11 @@ import type { DeepLinkPayload, DeepLinkType } from '@/navigation/types/navigatio
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
+import { parseDeepLink as parseDeepLinkNew } from '@/navigation/deep-links';
+import { routeNotification } from '@/navigation/notification-routing';
+import { pendingDeepLinkStore } from '@/navigation/navigation-state';
 
-const DEEP_LINK_SCHEME = 'rentsecureapp';
+const DEEP_LINK_SCHEME = 'rentsecure';
 const DEEP_LINK_HOST = 'app.rentsecureapp.com';
 
 export const DeepLinkingConfig = {
@@ -139,7 +142,37 @@ export function useDeepLinking() {
       const payload = parseDeepLink(url);
       if (!payload) return;
 
+      if (payload.type === 'notification' && payload.id) {
+        const notificationResult = routeNotification({
+          id: payload.id,
+          title: 'Notification',
+          message: '',
+          data: { resource_id: payload.id },
+        });
+
+        if (notificationResult.success && notificationResult.route) {
+          if (!useAuthStore.getState().isAuthenticated) {
+            pendingDeepLinkStore.set({
+              route: notificationResult.route,
+              timestamp: Date.now(),
+            });
+            router.replace('/(auth)/welcome');
+            return;
+          }
+          router.replace(notificationResult.route as any);
+          return;
+        }
+      }
+
       const route = getDeepLinkRoute(payload);
+      if (!useAuthStore.getState().isAuthenticated) {
+        pendingDeepLinkStore.set({
+          route,
+          timestamp: Date.now(),
+        });
+        router.replace('/(auth)/welcome');
+        return;
+      }
       router.replace(route as any);
     },
     [router]

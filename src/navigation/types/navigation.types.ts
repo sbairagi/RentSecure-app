@@ -54,23 +54,6 @@ export interface TabConfig {
   minRoleLevel?: number;
 }
 
-export interface DrawerSection {
-  id: string;
-  title?: string;
-  items: DrawerItem[];
-}
-
-export interface DrawerItem {
-  id: string;
-  label: string;
-  icon: string;
-  href: string;
-  requiredRole?: UserRole[];
-  requiredPermission?: string;
-  featureKey?: string;
-  children?: DrawerItem[];
-}
-
 export interface SubscriptionStatus {
   isActive: boolean;
   isExpired: boolean;
@@ -139,7 +122,20 @@ export type Permission =
   | 'ai:read';
 
 export type DeepLinkType =
-  'payment' | 'invitation' | 'agreement' | 'rent_record' | 'notification' | 'general';
+  | 'payment'
+  | 'invitation'
+  | 'agreement'
+  | 'rent_record'
+  | 'notification'
+  | 'building'
+  | 'unit'
+  | 'renter'
+  | 'caretaker'
+  | 'maintenance'
+  | 'visitor'
+  | 'document'
+  | 'subscription'
+  | 'general';
 
 export interface DeepLinkPayload {
   type: DeepLinkType;

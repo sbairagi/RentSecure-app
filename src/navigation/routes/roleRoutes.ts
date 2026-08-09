@@ -1,5 +1,6 @@
-import { ROLE_HIERARCHY } from '@/constants/auth.constants';
-import type { UserRole } from '@/navigation/types/navigation.types';
+import type { UserRole } from '@/navigation/types';
+import { ROLE_HIERARCHY } from '@/navigation/types/navigation.types';
+import { ROUTE_NAMES } from '@/navigation/constants';
 
 export const ROLE_REDIRECT: Record<UserRole, string> = {
   super_admin: '/(drawer)/(tabs)/dashboard',
@@ -69,6 +70,7 @@ export const ROLE_FEATURE_ACCESS: Record<UserRole, string[]> = {
     'support',
     'maintenance',
     'search',
+    'ai-assistant',
   ],
   renter: ['rent-records', 'payments', 'agreements', 'notifications', 'settings', 'maintenance', 'search'],
   caretaker: ['buildings', 'units', 'renters', 'visitors', 'reports', 'notifications', 'settings', 'maintenance', 'search'],
