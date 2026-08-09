@@ -1,3 +1,9 @@
+/**
+ * NOTE: authInterceptor.ts provides an alternative functional interceptor
+ * implementation. The primary API client is apiClient.ts, which now uses
+ * refreshTokenManager from refreshToken.ts for concurrent-safe token refresh.
+ * This file is kept for reference but is not the active interceptor.
+ */
 import axios, { InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from './endpoints';
 import { createApiError } from './errorHandler';

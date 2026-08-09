@@ -10,12 +10,19 @@ import { I18nextProvider } from 'react-i18next';
 import FlashMessage from 'react-native-flash-message';
 import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ErrorBoundary } from '@/core/observability/error';
+import { initSentry } from '@/core/observability/monitoring/sentry';
+import { environment } from '@/config/environment';
 import { queryClient } from './queryClient';
 
 function ProvidersInner({ children }: { children: React.ReactNode }) {
   const _themeMode = useThemeStore((s) => s.mode);
   const language = useLanguageStore((s) => s.language);
   const [fontsLoaded] = useFonts({});
+
+  useEffect(() => {
+    initSentry();
+  }, []);
 
   useEffect(() => {
     i18n.changeLanguage(language);
@@ -34,7 +41,9 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
     <SafeAreaProvider>
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={queryClient}>
-          {children}
+          <ErrorBoundary enabled={true}>
+            {children}
+          </ErrorBoundary>
           <FlashMessage position="top" />
           <GlobalLoader />
         </QueryClientProvider>

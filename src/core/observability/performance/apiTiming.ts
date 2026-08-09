@@ -1,0 +1,1 @@
+export { trackApiPerformance, trackScreenLoad, trackAppStartup, trackNavigationPerformance, trackImageUpload, trackDocumentUpload, getSlowMetrics, getRecentMetrics, clearMetrics, getMetricsCount } from './index';

@@ -35,6 +35,25 @@ export class ApiError extends Error implements SecureNestApiError {
   }
 }
 
+export function normalizeValidationErrors(errors: any): Record<string, string[]> | undefined {
+  if (!errors) return undefined;
+  if (Array.isArray(errors)) {
+    return { non_field_errors: errors.map((e: any) => (typeof e === 'string' ? e : e?.message || String(e))) };
+  }
+  if (typeof errors !== 'object') return undefined;
+  const normalized: Record<string, string[]> = {};
+  for (const [field, value] of Object.entries(errors)) {
+    if (Array.isArray(value)) {
+      normalized[field] = value.map((v: any) => (typeof v === 'string' ? v : v?.message || String(v)));
+    } else if (typeof value === 'string') {
+      normalized[field] = [value];
+    } else {
+      normalized[field] = [String(value)];
+    }
+  }
+  return normalized;
+}
+
 export function createApiError(error: any, correlationId?: string): ApiError {
   if (error instanceof ApiError) {
     return error;
@@ -75,7 +94,7 @@ export function createApiError(error: any, correlationId?: string): ApiError {
   } else if (status === 422) {
     code = 'VALIDATION_ERROR';
     message = data?.message || ERROR_MESSAGES.VALIDATION_ERROR;
-    details = data?.errors || data?.details;
+    details = normalizeValidationErrors(data?.errors || data?.details);
   } else if (status === 429) {
     code = 'RATE_LIMITED';
     message = data?.message || ERROR_MESSAGES.RATE_LIMITED;
@@ -83,6 +102,9 @@ export function createApiError(error: any, correlationId?: string): ApiError {
   } else if (status === 503) {
     code = 'MAINTENANCE';
     message = data?.message || ERROR_MESSAGES.MAINTENANCE;
+  } else if (status === 502 || status === 504) {
+    code = 'SERVER_ERROR';
+    message = data?.message || ERROR_MESSAGES.SERVER_ERROR;
   } else if (status && status >= 500) {
     code = 'SERVER_ERROR';
     message = data?.message || ERROR_MESSAGES.SERVER_ERROR;
@@ -127,6 +149,7 @@ export function getErrorCode(error: any): ApiErrorCode {
   if (status === 422) return 'VALIDATION_ERROR';
   if (status === 429) return 'RATE_LIMITED';
   if (status === 503) return 'MAINTENANCE';
+  if (status === 502 || status === 504) return 'SERVER_ERROR';
   if (status && status >= 500) return 'SERVER_ERROR';
   return 'UNKNOWN';
 }

@@ -1,0 +1,1 @@
+export { observabilityLogger } from './index';

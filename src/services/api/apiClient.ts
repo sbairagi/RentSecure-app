@@ -10,6 +10,8 @@ import { useGlobalLoaderStore } from './globalLoader';
 import { logger } from './logger';
 import { networkManager } from './networkManager';
 import { requestQueue } from './requestQueue';
+import { refreshTokenManager } from './refreshToken';
+import { createApiError } from './errorHandler';
 import type { SecureNestApiError } from './types';
 
 export interface SecureNestAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -124,7 +126,7 @@ class ApiClient {
     config._retry = true;
 
     try {
-      const newToken = await this.refreshAccessToken();
+      const newToken = await refreshTokenManager.refreshToken(this.axiosInstance);
       if (newToken && config.headers) {
         config.headers.Authorization = `${API_CONFIG.BEARER_PREFIX}${newToken}`;
       }
@@ -266,33 +268,6 @@ class ApiClient {
     }
   }
 
-  private async refreshAccessToken(): Promise<string | null> {
-    try {
-      const { MMKV } = await import('react-native-mmkv');
-      const mmkv = new MMKV();
-      const refreshToken = mmkv.getString('refresh_token');
-
-      if (!refreshToken) return null;
-
-      const response = await axios.post(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.REFRESH_TOKEN_URL}`,
-        { refresh: refreshToken },
-        { timeout: API_CONFIG.TIMEOUT }
-      );
-
-      const { access, refresh: newRefreshToken } = response.data;
-      mmkv.set('access_token', access);
-      if (newRefreshToken) {
-        mmkv.set('refresh_token', newRefreshToken);
-      }
-
-      return access;
-    } catch (error) {
-      logger.error('Token refresh failed', error as Error);
-      return null;
-    }
-  }
-
   private async clearAuthData(): Promise<void> {
     try {
       const { MMKV } = await import('react-native-mmkv');
@@ -346,46 +321,7 @@ class ApiClient {
 }
 
 function createApiErrorFromAxios(error: AxiosError, correlationId?: string): SecureNestApiError {
-  const status = error.response?.status;
-  const data = error.response?.data;
-
-  let message = (data as any)?.message || error.message || 'An unexpected error occurred';
-  let code: SecureNestApiError['code'] = 'UNKNOWN';
-
-  if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
-    code = 'TIMEOUT';
-    message = 'The request timed out. Please try again.';
-  } else if (
-    !status &&
-    (error.message?.includes('Network') || error.message?.includes('network'))
-  ) {
-    code = 'NETWORK_ERROR';
-    message = 'Unable to connect to the server. Please check your internet connection.';
-  } else if (status === 401) {
-    code = 'UNAUTHORIZED';
-  } else if (status === 403) {
-    code = 'FORBIDDEN';
-  } else if (status === 404) {
-    code = 'NOT_FOUND';
-  } else if (status === 409) {
-    code = 'CONFLICT';
-  } else if (status === 422) {
-    code = 'VALIDATION_ERROR';
-  } else if (status === 429) {
-    code = 'RATE_LIMITED';
-  } else if (status === 503) {
-    code = 'MAINTENANCE';
-  } else if (status && status >= 500) {
-    code = 'SERVER_ERROR';
-  }
-
-  return {
-    message,
-    code,
-    statusCode: status,
-    details: (data as any)?.details || (data as any)?.errors,
-    correlationId,
-  };
+  return createApiError(error, correlationId);
 }
 
 function generateCorrelationId(): string {
