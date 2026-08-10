@@ -65,6 +65,13 @@ export const API_ENDPOINTS = {
     VERIFY: (id: string) => `/renters/${id}/verify/`,
     BLACKLIST: (id: string) => `/renters/${id}/blacklist/`,
     HISTORY: (id: string) => `/renters/${id}/history/`,
+    PROFILE: '/renter/profile/',
+    RENT_RECORDS: '/renter/rent-records/',
+    RENT_RECORD_DETAIL: (id: string) => `/renter/rent-records/${id}/`,
+    AGREEMENT: '/renter/agreement/',
+    DOCUMENTS: '/renter/documents/',
+    DASHBOARD: '/renter/dashboard/',
+    EXTRA_CHARGES: '/renter/extra-charges/',
   },
   CARETAKERS: {
     LIST: '/caretakers/',

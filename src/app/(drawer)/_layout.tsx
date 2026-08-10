@@ -72,6 +72,8 @@ const DRAWER_ITEMS: Record<UserRole, { label: string; icon: string; href: string
     { label: 'Rent Records', icon: '📋', href: '/(drawer)/(tabs)/payments' },
     { label: 'Search', icon: '🔍', href: '/(drawer)/(tabs)/search' },
     { label: 'Agreements', icon: '📄', href: '/(drawer)/(tabs)/agreements' },
+    { label: 'Maintenance', icon: '🔧', href: '/(drawer)/(tabs)/maintenance' },
+    { label: 'Documents', icon: '📁', href: '/(drawer)/(tabs)/documents' },
     { label: 'Notifications', icon: '🔔', href: '/(drawer)/(tabs)/notifications' },
     { label: 'Settings', icon: '⚙️', href: '/(drawer)/(tabs)/settings' },
     { label: 'Profile', icon: '👤', href: '/(drawer)/(tabs)/profile' },

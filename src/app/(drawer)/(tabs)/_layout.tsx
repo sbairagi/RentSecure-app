@@ -104,6 +104,36 @@ export default function DrawerTabsLayout() {
               />
             ))}
             <Tabs.Screen
+              name="payment-details"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="pay-rent"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="maintenance"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="documents"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="agreements"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
               name="subscription"
               options={{
                 href: null,
