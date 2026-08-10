@@ -1,12 +1,16 @@
 import { Spacing } from '@/constants/theme';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { UNIT_CONSTANTS } from '../constants/unitConstants';
 import { useUnitSubscriptionLimits } from '../hooks/useUnitSubscriptionLimits';
 
 export default function AddUnitScreen() {
   const router = useRouter();
+  const { building: buildingParam, buildingName: buildingNameParam } = useLocalSearchParams<{
+    building?: string;
+    buildingName?: string;
+  }>();
   const { limits } = useUnitSubscriptionLimits();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -28,18 +32,47 @@ export default function AddUnitScreen() {
 
   const canCreate = limits?.can_create_unit ?? true;
 
+  useEffect(() => {
+    if (buildingParam) {
+      const parsed = parseInt(buildingParam, 10);
+      if (!Number.isNaN(parsed)) {
+        setFormData((prev) => ({ ...prev }));
+      }
+    }
+  }, [buildingParam]);
+
+  const updateField = (field: string, value: string | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = async () => {
     if (!formData.unit.trim() || !formData.address_line.trim() || !formData.city.trim()) {
       Alert.alert('Error', 'Please fill in all required fields.');
       return;
     }
+
+    const buildingId = buildingParam ? parseInt(buildingParam as string, 10) : null;
+
     setLoading(true);
     try {
       const { unitsRepository } = await import('../repository/unitsRepository');
       await unitsRepository.createUnit({
-        ...formData,
-        building: null,
+        unit: formData.unit,
         unit_type: formData.unit_type as any,
+        address_line: formData.address_line,
+        landmark: formData.landmark || undefined,
+        city: formData.city,
+        state: formData.state || undefined,
+        country: formData.country,
+        postal_code: formData.postal_code,
+        latitude: formData.latitude || undefined,
+        longitude: formData.longitude || undefined,
+        maintenance_notes: formData.maintenance_notes || undefined,
+        notes: formData.notes || undefined,
+        rent_due_reminder: formData.rent_due_reminder,
+        agreement_expiry_reminder: formData.agreement_expiry_reminder,
+        building: buildingId,
+        building_name: buildingNameParam ? String(buildingNameParam) : undefined,
       });
       router.back();
     } catch (_error) {
@@ -69,10 +102,6 @@ export default function AddUnitScreen() {
     );
   }
 
-  const updateField = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
   return (
     <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
       <View style={[styles.header, { backgroundColor: '#fff' }]}>
@@ -88,6 +117,17 @@ export default function AddUnitScreen() {
       </View>
 
       <View style={styles.content}>
+        {buildingParam && (
+          <View style={[styles.section, { backgroundColor: '#fff' }]}>
+            <Text style={styles.sectionTitle}>Building</Text>
+            <View style={styles.inputContainer}>
+              <Text style={styles.valueText}>
+                {buildingNameParam ? String(buildingNameParam) : `Building #${buildingParam}`}
+              </Text>
+            </View>
+          </View>
+        )}
+
         <View style={[styles.section, { backgroundColor: '#fff' }]}>
           <Text style={styles.sectionTitle}>Basic Information</Text>
           <View style={styles.inputContainer}>
@@ -187,6 +227,58 @@ export default function AddUnitScreen() {
             </View>
           </View>
         </View>
+
+        <View style={[styles.section, { backgroundColor: '#fff' }]}>
+          <Text style={styles.sectionTitle}>Location</Text>
+          <View style={styles.row}>
+            <View style={[styles.inputContainer, { flex: 1 }]}>
+              <Text style={styles.label}>Latitude</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.latitude}
+                onChangeText={(text) => updateField('latitude', text)}
+                placeholder="e.g., 19.0760"
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={[styles.inputContainer, { flex: 1 }]}>
+              <Text style={styles.label}>Longitude</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.longitude}
+                onChangeText={(text) => updateField('longitude', text)}
+                placeholder="e.g., 72.8777"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: '#fff' }]}>
+          <Text style={styles.sectionTitle}>Notes</Text>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Maintenance Notes</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.maintenance_notes}
+              onChangeText={(text) => updateField('maintenance_notes', text)}
+              placeholder="Internal notes about maintenance"
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Additional Notes</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              value={formData.notes}
+              onChangeText={(text) => updateField('notes', text)}
+              placeholder="Additional notes"
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -281,6 +373,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#374151',
   },
+  valueText: {
+    fontSize: 15,
+    color: '#111827',
+    fontWeight: '500',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#e5e7eb',
@@ -289,6 +386,10 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     fontSize: 15,
     color: '#111827',
+  },
+  textArea: {
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   row: {
     flexDirection: 'row',

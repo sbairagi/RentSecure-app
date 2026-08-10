@@ -25,6 +25,12 @@ export default function UnitDetailsScreen() {
     router.push(`/(drawer)/(tabs)/units/${id}/assign-caretaker`);
   };
 
+  const handleViewRenter = () => {
+    if (unit?.current_renter?.id) {
+      router.push(`/(drawer)/(tabs)/renters/${unit.current_renter.id}`);
+    }
+  };
+
   if (isLoading) {
     return (
       <RouteGuard requireAuth>
@@ -51,6 +57,9 @@ export default function UnitDetailsScreen() {
       </RouteGuard>
     );
   }
+
+  const isVacant = unit.status === 'vacant';
+  const hasRenter = !!unit.current_renter;
 
   return (
     <RouteGuard requireAuth>
@@ -115,38 +124,72 @@ export default function UnitDetailsScreen() {
 
             <View style={[styles.section, { backgroundColor: '#fff' }]}>
               <Text style={styles.sectionTitle}>Renter Information</Text>
-              <View style={styles.detailRow}>
-                <Text style={styles.label}>Current Renter</Text>
-                <Text style={styles.value}>{unit.current_renter?.name || 'Vacant'}</Text>
-              </View>
-              {unit.current_renter && (
+              {hasRenter ? (
                 <>
                   <View style={styles.detailRow}>
+                    <Text style={styles.label}>Current Renter</Text>
+                    <TouchableOpacity onPress={handleViewRenter}>
+                      <Text style={[styles.value, { color: '#4f46e5' }]}>
+                        {unit.current_renter?.name}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.detailRow}>
                     <Text style={styles.label}>Phone</Text>
-                    <Text style={styles.value}>{unit.current_renter.phone}</Text>
+                    <Text style={styles.value}>{unit.current_renter?.phone}</Text>
                   </View>
                   <View style={styles.detailRow}>
                     <Text style={styles.label}>Rent Amount</Text>
-                    <Text style={styles.value}>₹{unit.current_renter.rent_amount}</Text>
+                    <Text style={styles.value}>
+                      {unit.current_renter?.rent_amount
+                        ? `₹${unit.current_renter.rent_amount}`
+                        : 'N/A'}
+                    </Text>
                   </View>
                 </>
+              ) : (
+                <View style={styles.vacantContainer}>
+                  <Text style={styles.vacantIcon}>🏠</Text>
+                  <Text style={styles.vacantText}>This unit is currently vacant.</Text>
+                </View>
               )}
             </View>
 
             <View style={styles.actions}>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: '#dbeafe' }]}
-                onPress={handleAssignRenter}
-              >
-                <Text style={[styles.actionButtonText, { color: '#2563eb' }]}>Assign Renter</Text>
-              </TouchableOpacity>
+              {isVacant && (
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: '#dbeafe' }]}
+                  onPress={handleAssignRenter}
+                >
+                  <Text style={[styles.actionButtonText, { color: '#2563eb' }]}>Assign Renter</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: '#dcfce7' }]}
                 onPress={handleAssignCaretaker}
               >
-                <Text style={[styles.actionButtonText, { color: '#16a34a' }]}>
-                  Assign Caretaker
-                </Text>
+                <Text style={[styles.actionButtonText, { color: '#16a34a' }]}>Assign Caretaker</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.navActions}>
+              <TouchableOpacity
+                style={styles.navButton}
+                onPress={() => router.push(`/(drawer)/(tabs)/units/${id}/gallery`)}
+              >
+                <Text style={styles.navButtonText}>Gallery</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.navButton}
+                onPress={() => router.push(`/(drawer)/(tabs)/units/${id}/documents`)}
+              >
+                <Text style={styles.navButtonText}>Documents</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.navButton}
+                onPress={() => router.push(`/(drawer)/(tabs)/units/${id}/timeline`)}
+              >
+                <Text style={styles.navButtonText}>Timeline</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -241,6 +284,19 @@ const styles = StyleSheet.create({
     flex: 2,
     textAlign: 'right',
   },
+  vacantContainer: {
+    alignItems: 'center',
+    paddingVertical: Spacing.lg,
+  },
+  vacantIcon: {
+    fontSize: 36,
+    marginBottom: Spacing.sm,
+  },
+  vacantText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
   actions: {
     flexDirection: 'row',
     gap: Spacing.md,
@@ -254,5 +310,23 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  navActions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  navButton: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  navButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
   },
 });

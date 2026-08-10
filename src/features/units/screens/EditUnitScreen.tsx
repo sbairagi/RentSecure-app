@@ -1,6 +1,6 @@
 import { Spacing } from '@/constants/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { UNIT_CONSTANTS } from '../constants/unitConstants';
 import { useUnit } from '../hooks/useUnit';
@@ -10,6 +10,7 @@ export default function EditUnitScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { unit, isLoading, error } = useUnit(Number(id));
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const [formData, setFormData] = useState({
     unit: '',
@@ -20,13 +21,16 @@ export default function EditUnitScreen() {
     state: '',
     country: 'India',
     postal_code: '',
+    latitude: '',
+    longitude: '',
     maintenance_notes: '',
     notes: '',
+    rent_due_reminder: true,
+    agreement_expiry_reminder: true,
   });
 
-  React.useEffect(() => {
-    if (unit) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    if (unit && !initialized) {
       setFormData({
         unit: unit.unit,
         unit_type: unit.unit_type,
@@ -36,22 +40,16 @@ export default function EditUnitScreen() {
         state: unit.state,
         country: unit.country,
         postal_code: unit.postal_code,
+        latitude: unit.latitude || '',
+        longitude: unit.longitude || '',
         maintenance_notes: unit.maintenance_notes,
         notes: unit.notes,
+        rent_due_reminder: unit.rent_due_reminder,
+        agreement_expiry_reminder: unit.agreement_expiry_reminder,
       });
+      setInitialized(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    unit?.id,
-    unit?.unit,
-    unit?.address_line,
-    unit?.city,
-    unit?.state,
-    unit?.country,
-    unit?.postal_code,
-    unit?.maintenance_notes,
-    unit?.notes,
-  ]);
+  }, [unit, initialized]);
 
   const handleSubmit = async () => {
     if (!formData.unit.trim() || !formData.address_line.trim() || !formData.city.trim()) {
@@ -62,11 +60,23 @@ export default function EditUnitScreen() {
     try {
       const { unitsRepository } = await import('../repository/unitsRepository');
       await unitsRepository.updateUnit(Number(id), {
-        ...formData,
+        unit: formData.unit,
         unit_type: formData.unit_type as any,
+        address_line: formData.address_line,
+        landmark: formData.landmark || undefined,
+        city: formData.city,
+        state: formData.state || undefined,
+        country: formData.country,
+        postal_code: formData.postal_code,
+        latitude: formData.latitude || undefined,
+        longitude: formData.longitude || undefined,
+        maintenance_notes: formData.maintenance_notes || undefined,
+        notes: formData.notes || undefined,
+        rent_due_reminder: formData.rent_due_reminder,
+        agreement_expiry_reminder: formData.agreement_expiry_reminder,
       });
       router.back();
-    } catch {
+    } catch (_error) {
       Alert.alert('Error', 'Failed to update unit. Please try again.');
     } finally {
       setLoading(false);
@@ -92,7 +102,7 @@ export default function EditUnitScreen() {
     );
   }
 
-  const updateField = (field: string, value: string) => {
+  const updateField = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -205,6 +215,32 @@ export default function EditUnitScreen() {
                 value={formData.postal_code}
                 onChangeText={(text) => updateField('postal_code', text)}
                 placeholder="ZIP / Postal code"
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: '#fff' }]}>
+          <Text style={styles.sectionTitle}>Location</Text>
+          <View style={styles.row}>
+            <View style={[styles.inputContainer, { flex: 1 }]}>
+              <Text style={styles.label}>Latitude</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.latitude}
+                onChangeText={(text) => updateField('latitude', text)}
+                placeholder="e.g., 19.0760"
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={[styles.inputContainer, { flex: 1 }]}>
+              <Text style={styles.label}>Longitude</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.longitude}
+                onChangeText={(text) => updateField('longitude', text)}
+                placeholder="e.g., 72.8777"
                 keyboardType="numeric"
               />
             </View>

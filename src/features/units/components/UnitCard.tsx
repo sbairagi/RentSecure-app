@@ -1,24 +1,32 @@
 import { Spacing } from '@/constants/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import type { Unit } from '../types/units';
+import type { Unit, UnitStatusConfig } from '../types/units';
 
 interface UnitCardProps {
   unit: Unit;
   onPress: () => void;
 }
 
+function getStatusConfig(status: string): UnitStatusConfig {
+  const normalized = status.toLowerCase();
+  const configs: Record<string, UnitStatusConfig> = {
+    vacant: { label: 'Vacant', color: '#16a34a', backgroundColor: '#dcfce7' },
+    occupied: { label: 'Occupied', color: '#2563eb', backgroundColor: '#dbeafe' },
+  };
+  return configs[normalized] || { label: status, color: '#374151', backgroundColor: '#e5e7eb' };
+}
+
 export const UnitCard: React.FC<UnitCardProps> = ({ unit, onPress }) => {
-  const statusColor = unit.is_vacant ? '#16a34a' : '#2563eb';
-  const statusLabel = unit.is_vacant ? 'Vacant' : 'Occupied';
+  const statusConfig = getStatusConfig(unit.status);
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Text style={styles.unitNumber}>{unit.unit}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-            <Text style={styles.statusText}>{statusLabel}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: statusConfig.color }]}>
+            <Text style={styles.statusText}>{statusConfig.label}</Text>
           </View>
         </View>
         <Text style={styles.buildingName}>{unit.building_name || 'No Building'}</Text>
@@ -36,8 +44,8 @@ export const UnitCard: React.FC<UnitCardProps> = ({ unit, onPress }) => {
         </View>
         <View style={styles.detailRow}>
           <Text style={styles.label}>Status:</Text>
-          <Text style={[styles.value, { color: statusColor }]}>
-            {unit.status.replace(/_/g, ' ')}
+          <Text style={[styles.value, { color: statusConfig.color }]}>
+            {statusConfig.label}
           </Text>
         </View>
       </View>

@@ -137,8 +137,6 @@ export interface UnitFilters {
   city?: string;
   status?: VacancyStatus | '';
   unit_type?: UnitType | '';
-  rent_min?: number;
-  rent_max?: number;
   is_archived?: boolean;
   ordering?: string;
   page?: number;

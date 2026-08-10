@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { apiService } from '@/services/api/apiClient';
 import type { UnitImage } from '../types/units';
 
 const UNIT_IMAGES_QUERY_KEY = (unitId: number | string) => ['units', unitId, 'images'];
@@ -10,7 +11,9 @@ export const useUnitImages = (unitId: number | string) => {
   const { data, isLoading, error, refetch } = useQuery<UnitImage[]>({
     queryKey: UNIT_IMAGES_QUERY_KEY(unitId),
     queryFn: async () => {
-      return [];
+      const response = await apiService.get<UnitImage[]>('/api/unit-images/');
+      const allImages = Array.isArray(response) ? response : [];
+      return allImages.filter((img) => img.unit === Number(unitId));
     },
     enabled: !!unitId,
     staleTime: 5 * 60 * 1000,

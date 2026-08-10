@@ -48,11 +48,6 @@ function getStatusConfig(status: string): UnitStatusConfig {
   const configs: Record<string, UnitStatusConfig> = {
     vacant: { label: 'Vacant', color: '#16a34a', backgroundColor: '#dcfce7' },
     occupied: { label: 'Occupied', color: '#2563eb', backgroundColor: '#dbeafe' },
-    reserved: { label: 'Reserved', color: '#d97706', backgroundColor: '#fef3c7' },
-    under_maintenance: { label: 'Under Maintenance', color: '#dc2626', backgroundColor: '#fee2e2' },
-    notice_period: { label: 'Notice Period', color: '#9333ea', backgroundColor: '#f3e8ff' },
-    blocked: { label: 'Blocked', color: '#374151', backgroundColor: '#e5e7eb' },
-    archived: { label: 'Archived', color: '#6b7280', backgroundColor: '#f3f4f6' },
   };
   return configs[normalized] || { label: status, color: '#374151', backgroundColor: '#e5e7eb' };
 }

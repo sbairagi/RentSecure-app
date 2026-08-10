@@ -1,45 +1,44 @@
 import { Spacing } from '@/constants/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
-interface Renter {
-  id: number;
-  name: string;
-  phone: string;
-  status: string;
-}
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useRenters } from '@/features/renters/hooks/useRenters';
+import type { Renter } from '@/features/renters/types/renters';
 
 export default function AssignRenterScreen() {
   const router = useRouter();
   const { unitId } = useLocalSearchParams<{ unitId: string }>();
+  const { renters, isLoading } = useRenters();
   const [search, setSearch] = useState('');
-  const [selectedRenter, setSelectedRenter] = useState<number | null>(null);
+  const [selectedRenterId, setSelectedRenterId] = useState<number | null>(null);
   const [assigning, setAssigning] = useState(false);
 
-  const mockRenters: Renter[] = [
-    { id: 1, name: 'John Doe', phone: '+1 234 567 8900', status: 'active' },
-    { id: 2, name: 'Jane Smith', phone: '+1 234 567 8901', status: 'active' },
-    { id: 3, name: 'Bob Johnson', phone: '+1 234 567 8902', status: 'notice_period' },
-  ];
-
-  const filteredRenters = mockRenters.filter(
-    (r) => r.name.toLowerCase().includes(search.toLowerCase()) || r.phone.includes(search)
+  const availableRenters = (renters || []).filter((renter) =>
+    renter.name.toLowerCase().includes(search.toLowerCase()) ||
+    renter.phone.includes(search)
   );
 
   const handleAssign = async () => {
-    if (!selectedRenter) return;
+    if (!selectedRenterId || !unitId) return;
     setAssigning(true);
     try {
       const { unitsRepository } = await import('../repository/unitsRepository');
-      await unitsRepository.assignRenter(Number(unitId), selectedRenter);
+      await unitsRepository.assignRenter(Number(unitId), selectedRenterId);
       router.back();
-    } catch {
-      // Error handled
+    } catch (_error) {
+      Alert.alert('Error', 'Failed to assign renter. Please try again.');
     } finally {
       setAssigning(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
+        <Text style={styles.loadingText}>Loading renters...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
@@ -48,11 +47,14 @@ export default function AssignRenterScreen() {
           <Text style={styles.backButton}>Cancel</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Assign Renter</Text>
-        <TouchableOpacity onPress={handleAssign} disabled={!selectedRenter || assigning}>
+        <TouchableOpacity
+          onPress={handleAssign}
+          disabled={!selectedRenterId || assigning}
+        >
           <Text
             style={[
               styles.saveButton,
-              { color: selectedRenter && !assigning ? '#4f46e5' : '#9ca3af' },
+              { color: selectedRenterId && !assigning ? '#4f46e5' : '#9ca3af' },
             ]}
           >
             {assigning ? 'Assigning...' : 'Assign'}
@@ -72,32 +74,42 @@ export default function AssignRenterScreen() {
         </View>
 
         <View style={styles.rentersList}>
-          {filteredRenters.map((renter) => (
-            <TouchableOpacity
-              key={renter.id}
-              style={[
-                styles.renterItem,
-                {
-                  backgroundColor: '#fff',
-                  borderColor: selectedRenter === renter.id ? '#4f46e5' : '#f3f4f6',
-                },
-              ]}
-              onPress={() => setSelectedRenter(renter.id)}
-            >
-              <View style={styles.renterInfo}>
-                <Text style={styles.renterName}>{renter.name}</Text>
-                <Text style={styles.renterPhone}>{renter.phone}</Text>
-              </View>
-              <Text
-                style={[
-                  styles.renterStatus,
-                  { color: renter.status === 'active' ? '#16a34a' : '#d97706' },
-                ]}
-              >
-                {renter.status}
+          {availableRenters.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyIcon}>👥</Text>
+              <Text style={styles.emptyTitle}>No renters found</Text>
+              <Text style={styles.emptyDescription}>
+                {search ? 'Try a different search term.' : 'Add renters first to assign them.'}
               </Text>
-            </TouchableOpacity>
-          ))}
+            </View>
+          ) : (
+            availableRenters.map((renter) => (
+              <TouchableOpacity
+                key={renter.id}
+                style={[
+                  styles.renterItem,
+                  {
+                    backgroundColor: '#fff',
+                    borderColor: selectedRenterId === renter.id ? '#4f46e5' : '#f3f4f6',
+                  },
+                ]}
+                onPress={() => setSelectedRenterId(renter.id)}
+              >
+                <View style={styles.renterInfo}>
+                  <Text style={styles.renterName}>{renter.name}</Text>
+                  <Text style={styles.renterPhone}>{renter.phone}</Text>
+                </View>
+                <Text
+                  style={[
+                    styles.renterStatus,
+                    { color: renter.status === 'active' ? '#16a34a' : '#d97706' },
+                  ]}
+                >
+                  {renter.status.replace(/_/g, ' ')}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
         </View>
       </View>
     </View>
@@ -107,6 +119,12 @@ export default function AssignRenterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingText: {
+    textAlign: 'center',
+    marginTop: Spacing.xl,
+    fontSize: 16,
+    color: '#6b7280',
   },
   header: {
     flexDirection: 'row',
@@ -146,6 +164,25 @@ const styles = StyleSheet.create({
   },
   rentersList: {
     gap: Spacing.sm,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 80,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: Spacing.md,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: Spacing.sm,
+  },
+  emptyDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
   },
   renterItem: {
     flexDirection: 'row',

@@ -1,17 +1,28 @@
 import { Spacing } from '@/constants/theme';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useUnitDocuments } from '../hooks/useUnitDocuments';
 
 export default function UnitDocumentsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { documents, isLoading } = useUnitDocuments(Number(id));
+  const { documents, isLoading, error, refresh } = useUnitDocuments(Number(id));
 
   if (isLoading) {
     return (
       <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
         <Text style={styles.loadingText}>Loading documents...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={refresh}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -27,7 +38,9 @@ export default function UnitDocumentsScreen() {
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>📄</Text>
             <Text style={styles.emptyTitle}>No documents</Text>
-            <Text style={styles.emptyDescription}>Documents will appear here once uploaded.</Text>
+            <Text style={styles.emptyDescription}>
+              Documents will appear here once uploaded.
+            </Text>
           </View>
         ) : (
           documents.map((doc) => (
@@ -51,6 +64,25 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xl,
     fontSize: 16,
     color: '#6b7280',
+  },
+  errorText: {
+    textAlign: 'center',
+    marginTop: Spacing.xl,
+    fontSize: 16,
+    color: '#dc2626',
+  },
+  retryButton: {
+    marginTop: Spacing.md,
+    backgroundColor: '#4f46e5',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',
@@ -91,6 +123,7 @@ const styles = StyleSheet.create({
   emptyDescription: {
     fontSize: 14,
     color: '#6b7280',
+    textAlign: 'center',
   },
   docItem: {
     flexDirection: 'row',

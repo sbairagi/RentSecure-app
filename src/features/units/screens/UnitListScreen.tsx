@@ -18,6 +18,17 @@ import { useUnits } from '../hooks/useUnits';
 import { useUnitSubscriptionLimits } from '../hooks/useUnitSubscriptionLimits';
 import type { SortOption, UnitFilters } from '../types/units';
 
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = React.useState(value);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debounced;
+}
+
 export default function UnitListScreen() {
   const router = useRouter();
   const { units, isLoading, isFetching, error, refresh } = useUnits();
@@ -29,12 +40,14 @@ export default function UnitListScreen() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [filters, setFilters] = useState<UnitFilters>({});
 
+  const debouncedSearch = useDebouncedValue(search, 300);
+
   const canCreate = limits?.can_create_unit ?? true;
 
   const filtered = useMemo(() => {
     let list = [...units];
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter(
         (u) =>
           u.unit.toLowerCase().includes(q) ||
@@ -58,7 +71,7 @@ export default function UnitListScreen() {
         break;
     }
     return list;
-  }, [units, search, sortBy]);
+  }, [units, debouncedSearch, sortBy]);
 
   const handleAdd = () => {
     router.push('/(drawer)/(tabs)/units/add');

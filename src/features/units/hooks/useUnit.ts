@@ -39,6 +39,8 @@ export const useUnit = (id: number | string) => {
     mutationFn: () => unitsRepository.deleteUnit(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['units', 'list'] });
+      queryClient.invalidateQueries({ queryKey: UNIT_QUERY_KEY(id) });
+      queryClient.invalidateQueries({ queryKey: ['owner'] });
     },
   });
 
