@@ -1,97 +1,95 @@
 import { useDocumentsStore } from '../../store/documentsStore';
-import type { Document } from '../../types/documents';
+import type { UnitDocument, UnitImage } from '../../types/documents';
 
-const mockDocument: Document = {
+const mockUnitDocument: UnitDocument = {
   id: 1,
-  owner: 1,
-  parent: null,
-  name: 'test.pdf',
-  file: '/media/test.pdf',
-  file_hash: 'abc123',
-  mime_type: 'application/pdf',
-  size: 1024,
-  document_type: 'pdf',
-  thumbnail: null,
-  is_favorite: false,
-  is_archived: false,
-  is_shared: false,
-  share_token: null,
-  metadata: {},
-  version: 1,
-  previous_version: null,
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
+  unit: 1,
+  renter: null,
+  document: '/media/unit_documents/2024/01/15/test.pdf',
+  file_hash: 'a1b2c3d4e5f6',
+  uploaded_at: '2024-01-15T10:00:00Z',
+};
+
+const mockUnitImage: UnitImage = {
+  id: 1,
+  unit: 1,
+  renter: null,
+  image: '/media/unit_images/2024/01/15/test.jpg',
+  image_hash: 'f6e5d4c3b2a1',
+  uploaded_at: '2024-01-15T10:00:00Z',
 };
 
 describe('documentsStore', () => {
   beforeEach(() => {
     useDocumentsStore.setState({
       documents: [],
+      images: [],
       selectedDocument: null,
-      usageLimits: null,
+      selectedImage: null,
       filters: {},
       uploadProgress: null,
       isLoading: false,
       error: null,
       lastFetched: null,
-      selectedIds: new Set(),
-      isSelectionMode: false,
     });
     jest.clearAllMocks();
   });
 
   describe('setDocuments', () => {
     it('should set documents', () => {
-      useDocumentsStore.getState().setDocuments([mockDocument]);
+      useDocumentsStore.getState().setDocuments([mockUnitDocument]);
       const state = useDocumentsStore.getState();
       expect(state.documents).toHaveLength(1);
       expect(state.documents[0].id).toBe(1);
     });
   });
 
+  describe('setImages', () => {
+    it('should set images', () => {
+      useDocumentsStore.getState().setImages([mockUnitImage]);
+      const state = useDocumentsStore.getState();
+      expect(state.images).toHaveLength(1);
+      expect(state.images[0].id).toBe(1);
+    });
+  });
+
   describe('setSelectedDocument', () => {
     it('should set selected document', () => {
-      useDocumentsStore.getState().setSelectedDocument(mockDocument);
+      useDocumentsStore.getState().setSelectedDocument(mockUnitDocument);
       const state = useDocumentsStore.getState();
       expect(state.selectedDocument?.id).toBe(1);
     });
   });
 
+  describe('setSelectedImage', () => {
+    it('should set selected image', () => {
+      useDocumentsStore.getState().setSelectedImage(mockUnitImage);
+      const state = useDocumentsStore.getState();
+      expect(state.selectedImage?.id).toBe(1);
+    });
+  });
+
   describe('setFilters', () => {
     it('should merge filters', () => {
-      useDocumentsStore.getState().setFilters({ type: 'pdf' });
-      useDocumentsStore.getState().setFilters({ is_favorite: true });
+      useDocumentsStore.getState().setFilters({ unit: 1 });
+      useDocumentsStore.getState().setFilters({ renter: 2 });
       const state = useDocumentsStore.getState();
-      expect(state.filters.type).toBe('pdf');
-      expect(state.filters.is_favorite).toBe(true);
+      expect(state.filters.unit).toBe(1);
+      expect(state.filters.renter).toBe(2);
     });
   });
 
-  describe('toggleSelection', () => {
-    it('should toggle document selection', () => {
-      useDocumentsStore.getState().toggleSelection(1);
-      expect(useDocumentsStore.getState().selectedIds.has(1)).toBe(true);
-      useDocumentsStore.getState().toggleSelection(1);
-      expect(useDocumentsStore.getState().selectedIds.has(1)).toBe(false);
-    });
-  });
-
-  describe('selectAll', () => {
-    it('should select all documents', () => {
-      useDocumentsStore.getState().selectAll([1, 2, 3]);
+  describe('setUploadProgress', () => {
+    it('should set upload progress', () => {
+      useDocumentsStore.getState().setUploadProgress({
+        loaded: 50,
+        total: 100,
+        progress: 50,
+        status: 'uploading',
+      });
       const state = useDocumentsStore.getState();
-      expect(state.selectedIds.size).toBe(3);
-      expect(state.isSelectionMode).toBe(true);
-    });
-  });
-
-  describe('clearSelection', () => {
-    it('should clear selection', () => {
-      useDocumentsStore.getState().selectAll([1, 2]);
-      useDocumentsStore.getState().clearSelection();
-      const state = useDocumentsStore.getState();
-      expect(state.selectedIds.size).toBe(0);
-      expect(state.isSelectionMode).toBe(false);
+      expect(state.uploadProgress?.progress).toBe(50);
+      expect(state.uploadProgress?.status).toBe('uploading');
     });
   });
 
@@ -113,7 +111,7 @@ describe('documentsStore', () => {
 
   describe('clearDocuments', () => {
     it('should clear all state', () => {
-      useDocumentsStore.getState().setDocuments([mockDocument]);
+      useDocumentsStore.getState().setDocuments([mockUnitDocument]);
       useDocumentsStore.getState().clearDocuments();
       const state = useDocumentsStore.getState();
       expect(state.documents).toHaveLength(0);
@@ -121,15 +119,13 @@ describe('documentsStore', () => {
     });
   });
 
-  describe('initDocuments', () => {
-    it('should initialize from cache', async () => {
-      const { mmkvStorage } = await import('@/services/storage/mmkv');
-      jest.spyOn(mmkvStorage, 'getItem').mockResolvedValue(
-        JSON.stringify({ data: [mockDocument], timestamp: Date.now() })
-      );
-      await useDocumentsStore.getState().initDocuments();
+  describe('clearImages', () => {
+    it('should clear all state', () => {
+      useDocumentsStore.getState().setImages([mockUnitImage]);
+      useDocumentsStore.getState().clearImages();
       const state = useDocumentsStore.getState();
-      expect(state.documents).toHaveLength(1);
+      expect(state.images).toHaveLength(0);
+      expect(state.error).toBeNull();
     });
   });
 });

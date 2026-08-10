@@ -23,10 +23,11 @@ export const documentUploadSchema = z.object({
     )
     .refine(
       (file) => {
+        const allowedTypes = DOCUMENT_CONSTANTS.ALLOWED_MIME_TYPES as readonly string[];
         if (file instanceof File)
-          return DOCUMENT_CONSTANTS.ALLOWED_MIME_TYPES.includes(file.type);
+          return allowedTypes.includes(file.type);
         if (typeof file === 'object' && file !== null && 'type' in file)
-          return DOCUMENT_CONSTANTS.ALLOWED_MIME_TYPES.includes((file as any).type);
+          return allowedTypes.includes((file as any).type);
         return true;
       },
       'File type not supported'

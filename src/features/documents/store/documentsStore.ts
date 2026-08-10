@@ -1,58 +1,49 @@
-import { mmkvStorage } from '@/services/storage/mmkv';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import type {
-  Document,
+  UnitDocument,
+  UnitImage,
   DocumentFilters,
-  DocumentListResponse,
   DocumentUploadProgress,
-  DocumentUsageLimits,
 } from '../types';
 
 interface DocumentsState {
-  documents: Document[];
-  selectedDocument: Document | null;
-  usageLimits: DocumentUsageLimits | null;
+  documents: UnitDocument[];
+  images: UnitImage[];
+  selectedDocument: UnitDocument | null;
+  selectedImage: UnitImage | null;
   filters: DocumentFilters;
   uploadProgress: DocumentUploadProgress | null;
   isLoading: boolean;
   error: string | null;
   lastFetched: number | null;
-  selectedIds: Set<number | string>;
-  isSelectionMode: boolean;
 }
 
 interface DocumentsActions {
-  setDocuments: (documents: Document[]) => void;
-  setSelectedDocument: (document: Document | null) => void;
-  setUsageLimits: (limits: DocumentUsageLimits | null) => void;
+  setDocuments: (documents: UnitDocument[]) => void;
+  setImages: (images: UnitImage[]) => void;
+  setSelectedDocument: (document: UnitDocument | null) => void;
+  setSelectedImage: (image: UnitImage | null) => void;
   setFilters: (filters: Partial<DocumentFilters>) => void;
   setUploadProgress: (progress: DocumentUploadProgress | null) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   clearDocuments: () => void;
-  toggleSelection: (id: number | string) => void;
-  selectAll: (ids: (number | string)[]) => void;
-  clearSelection: () => void;
-  setSelectionMode: (isSelectionMode: boolean) => void;
-  initDocuments: () => Promise<void>;
-  cacheDocuments: (data: DocumentListResponse) => Promise<void>;
-  getCachedDocuments: () => Promise<DocumentListResponse | null>;
+  clearImages: () => void;
 }
 
 type DocumentsStore = DocumentsState & DocumentsActions;
 
 const initialState: DocumentsState = {
   documents: [],
+  images: [],
   selectedDocument: null,
-  usageLimits: null,
+  selectedImage: null,
   filters: {},
   uploadProgress: null,
   isLoading: false,
   error: null,
   lastFetched: null,
-  selectedIds: new Set(),
-  isSelectionMode: false,
 };
 
 export const useDocumentsStore = create<DocumentsStore>()(
@@ -68,6 +59,14 @@ export const useDocumentsStore = create<DocumentsStore>()(
           lastFetched: Date.now(),
         }),
 
+      setImages: (images) =>
+        set({
+          images,
+          isLoading: false,
+          error: null,
+          lastFetched: Date.now(),
+        }),
+
       setSelectedDocument: (selectedDocument) =>
         set({
           selectedDocument,
@@ -75,9 +74,11 @@ export const useDocumentsStore = create<DocumentsStore>()(
           error: null,
         }),
 
-      setUsageLimits: (usageLimits) =>
+      setSelectedImage: (selectedImage) =>
         set({
-          usageLimits,
+          selectedImage,
+          isLoading: false,
+          error: null,
         }),
 
       setFilters: (filters) =>
@@ -104,79 +105,11 @@ export const useDocumentsStore = create<DocumentsStore>()(
           isLoading: false,
         }),
 
-      toggleSelection: (id) =>
-        set((state) => {
-          const newSelection = new Set(state.selectedIds);
-          if (newSelection.has(id)) {
-            newSelection.delete(id);
-          } else {
-            newSelection.add(id);
-          }
-          return {
-            selectedIds: newSelection,
-            isSelectionMode: newSelection.size > 0,
-          };
-        }),
-
-      selectAll: (ids) =>
+      clearImages: () =>
         set({
-          selectedIds: new Set(ids),
-          isSelectionMode: true,
+          ...initialState,
+          isLoading: false,
         }),
-
-      clearSelection: () =>
-        set({
-          selectedIds: new Set(),
-          isSelectionMode: false,
-        }),
-
-      setSelectionMode: (isSelectionMode) =>
-        set({
-          isSelectionMode,
-          selectedIds: isSelectionMode ? get().selectedIds : new Set(),
-        }),
-
-      initDocuments: async () => {
-        try {
-          const cached = await get().getCachedDocuments();
-          if (cached) {
-            const list = Array.isArray(cached) ? cached : cached.results || [];
-            set({ documents: list, isLoading: false, lastFetched: Date.now() });
-          } else {
-            set({ isLoading: false });
-          }
-        } catch {
-          set({ isLoading: false });
-        }
-      },
-
-      cacheDocuments: async (data) => {
-        try {
-          const list = Array.isArray(data) ? data : data.results || [];
-          await mmkvStorage.setItem(
-            'documents_cache',
-            JSON.stringify({ data: list, timestamp: Date.now() })
-          );
-        } catch {
-          // Ignore cache errors
-        }
-      },
-
-      getCachedDocuments: async (): Promise<DocumentListResponse | null> => {
-        try {
-          const cached = await mmkvStorage.getItem('documents_cache');
-          if (!cached) return null;
-          const parsed = JSON.parse(cached) as { data: Document[]; timestamp: number };
-          const isStale = Date.now() - parsed.timestamp > 2 * 60 * 1000;
-          if (isStale) {
-            await mmkvStorage.removeItem('documents_cache');
-            return null;
-          }
-          return { results: parsed.data } as DocumentListResponse;
-        } catch {
-          return null;
-        }
-      },
     }),
     { name: 'DocumentsStore' }
   )

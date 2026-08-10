@@ -1,84 +1,36 @@
 import { http, HttpResponse } from 'msw';
-import { mockDocument, mockDocumentListResponse, mockDocumentVersion, mockDocumentShareResponse, mockDocumentUsageLimits, mockFolderNode } from './data';
+import { mockUnitDocument, mockUnitImage, mockDocumentListResponse, mockImageListResponse } from './data';
 
 export const documentsHandlers = [
-  http.get('/api/documents/', () => {
+  http.get('/properties/unit-all-documents/', () => {
     return HttpResponse.json(mockDocumentListResponse);
   }),
 
-  http.get('/api/documents/1', () => {
-    return HttpResponse.json(mockDocument);
+  http.post('/properties/unit-all-documents/', () => {
+    return HttpResponse.json(mockUnitDocument, { status: 201 });
   }),
 
-  http.post('/api/documents/', () => {
-    return HttpResponse.json(mockDocument, { status: 201 });
+  http.patch('/properties/unit-all-documents/1', () => {
+    return HttpResponse.json({ ...mockUnitDocument, document: '/media/unit_documents/2024/01/15/updated.pdf' });
   }),
 
-  http.patch('/api/documents/1', () => {
-    return HttpResponse.json({ ...mockDocument, name: 'Updated Document' });
-  }),
-
-  http.delete('/api/documents/1', () => {
+  http.delete('/properties/unit-all-documents/1', () => {
     return HttpResponse.json(null, { status: 204 });
   }),
 
-  http.post('/api/documents/upload', () => {
-    return HttpResponse.json(mockDocument, { status: 201 });
+  http.get('/properties/unit-images/', () => {
+    return HttpResponse.json(mockImageListResponse);
   }),
 
-  http.get('/api/documents/1/download', () => {
-    return HttpResponse.json({ url: 'https://example.com/download/doc_1' });
+  http.post('/properties/unit-images/', () => {
+    return HttpResponse.json(mockUnitImage, { status: 201 });
   }),
 
-  http.get('/api/documents/1/preview', () => {
-    return HttpResponse.json({ url: 'https://example.com/preview/doc_1' });
+  http.patch('/properties/unit-images/1', () => {
+    return HttpResponse.json({ ...mockUnitImage, image: '/media/unit_images/2024/01/15/updated.jpg' });
   }),
 
-  http.post('/api/documents/1/share', () => {
-    return HttpResponse.json(mockDocumentShareResponse);
-  }),
-
-  http.post('/api/documents/1/favorite', () => {
-    return HttpResponse.json({ ...mockDocument, is_favorite: true });
-  }),
-
-  http.post('/api/documents/1/archive', () => {
-    return HttpResponse.json({ ...mockDocument, is_archived: true });
-  }),
-
-  http.post('/api/documents/1/restore', () => {
-    return HttpResponse.json({ ...mockDocument, is_archived: false });
-  }),
-
-  http.get('/api/documents/1/versions', () => {
-    return HttpResponse.json([mockDocumentVersion]);
-  }),
-
-  http.get('/api/documents/duplicates', () => {
-    return HttpResponse.json([mockDocument]);
-  }),
-
-  http.get('/api/documents/folders', () => {
-    return HttpResponse.json([mockFolderNode]);
-  }),
-
-  http.get('/api/documents/usage-limits', () => {
-    return HttpResponse.json(mockDocumentUsageLimits);
-  }),
-
-  http.post('/api/documents/bulk-delete', () => {
+  http.delete('/properties/unit-images/1', () => {
     return HttpResponse.json(null, { status: 204 });
-  }),
-
-  http.post('/api/documents/bulk-move', () => {
-    return HttpResponse.json(null, { status: 204 });
-  }),
-
-  http.post('/api/documents/bulk-download', () => {
-    return new HttpResponse(new Blob(), { status: 200 });
-  }),
-
-  http.get('/api/documents/search', () => {
-    return HttpResponse.json([mockDocument]);
   }),
 ];

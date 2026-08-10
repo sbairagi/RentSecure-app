@@ -1,5 +1,7 @@
-export { DocumentsScreen } from './DocumentsScreen';
-export { DocumentDetailsScreen } from './DocumentDetailsScreen';
-export { DocumentUploadScreen } from './DocumentUploadScreen';
-export { DocumentPreviewScreen } from './DocumentPreviewScreen';
-export { DocumentSearchScreen } from './DocumentSearchScreen';
+import DocumentsScreen from './DocumentsScreen';
+import DocumentDetailsScreen from './DocumentDetailsScreen';
+import DocumentUploadScreen from './DocumentUploadScreen';
+import DocumentPreviewScreen from './DocumentPreviewScreen';
+import DocumentSearchScreen from './DocumentSearchScreen';
+
+export { DocumentsScreen, DocumentDetailsScreen, DocumentUploadScreen, DocumentPreviewScreen, DocumentSearchScreen };

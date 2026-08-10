@@ -1,117 +1,62 @@
 import { documentsApi } from '../services/documentsApi';
 import type {
-  Document,
-  DocumentCreatePayload,
+  UnitDocument,
+  UnitImage,
+  DocumentUploadPayload,
+  DocumentUploadProgress,
   DocumentFilters,
   DocumentListResponse,
-  DocumentShareResponse,
-  DocumentUpdatePayload,
-  DocumentUsageLimits,
-  DocumentVersion,
-  FolderNode,
-  SortOption,
+  PickedAsset,
 } from '../types';
 
 export const documentsRepository = {
-  fetchDocuments: async (params?: DocumentFilters): Promise<DocumentListResponse> => {
-    return documentsApi.list(params);
+  listDocuments: async (params?: DocumentFilters): Promise<DocumentListResponse> => {
+    return documentsApi.listDocuments(params);
   },
 
-  fetchDocument: async (id: number | string): Promise<Document> => {
-    return documentsApi.retrieve(id);
+  listImages: async (params?: DocumentFilters): Promise<DocumentListResponse> => {
+    return documentsApi.listImages(params);
   },
 
-  createDocument: async (data: DocumentCreatePayload): Promise<Document> => {
-    return documentsApi.create(data);
+  retrieveDocument: async (id: number | string): Promise<UnitDocument> => {
+    return documentsApi.retrieveDocument(id);
   },
 
-  updateDocument: async (
-    id: number | string,
-    data: DocumentUpdatePayload
-  ): Promise<Document> => {
-    return documentsApi.update(id, data);
+  retrieveImage: async (id: number | string): Promise<UnitImage> => {
+    return documentsApi.retrieveImage(id);
+  },
+
+  createDocument: async (
+    data: DocumentUploadPayload,
+    onProgress?: (progress: DocumentUploadProgress) => void
+  ): Promise<UnitDocument> => {
+    return documentsApi.createDocument(data, onProgress);
+  },
+
+  createImage: async (
+    data: DocumentUploadPayload,
+    onProgress?: (progress: DocumentUploadProgress) => void
+  ): Promise<UnitImage> => {
+    return documentsApi.createImage(data, onProgress);
+  },
+
+  updateDocument: async (id: number | string, data: DocumentUploadPayload): Promise<UnitDocument> => {
+    return documentsApi.updateDocument(id, data);
+  },
+
+  updateImage: async (id: number | string, data: DocumentUploadPayload): Promise<UnitImage> => {
+    return documentsApi.updateImage(id, data);
   },
 
   deleteDocument: async (id: number | string): Promise<void> => {
-    return documentsApi.remove(id);
+    return documentsApi.deleteDocument(id);
   },
 
-  uploadDocument: async (
-    formData: FormData,
-    onProgress?: (progress: number) => void
-  ): Promise<Document> => {
-    return documentsApi.upload(formData, onProgress);
+  deleteImage: async (id: number | string): Promise<void> => {
+    return documentsApi.deleteImage(id);
   },
 
-  downloadDocument: async (id: number | string): Promise<Blob> => {
-    return documentsApi.download(id);
-  },
-
-  previewDocument: async (id: number | string): Promise<{ url: string }> => {
-    return documentsApi.preview(id);
-  },
-
-  moveDocument: async (id: number | string, parentId: number | null): Promise<Document> => {
-    return documentsApi.move(id, parentId);
-  },
-
-  copyDocument: async (id: number | string, parentId: number | null): Promise<Document> => {
-    return documentsApi.copy(id, parentId);
-  },
-
-  shareDocument: async (
-    id: number | string,
-    visibility: 'private' | 'shared' | 'public',
-    expires_in?: number
-  ): Promise<DocumentShareResponse> => {
-    return documentsApi.share(id, { visibility, expires_in });
-  },
-
-  toggleFavorite: async (id: number | string): Promise<Document> => {
-    return documentsApi.toggleFavorite(id);
-  },
-
-  archiveDocument: async (id: number | string): Promise<Document> => {
-    return documentsApi.archive(id);
-  },
-
-  restoreDocument: async (id: number | string): Promise<Document> => {
-    return documentsApi.restore(id);
-  },
-
-  getVersions: async (id: number | string): Promise<DocumentVersion[]> => {
-    return documentsApi.getVersions(id);
-  },
-
-  getDuplicates: async (): Promise<Document[]> => {
-    return documentsApi.getDuplicates();
-  },
-
-  getFolders: async (): Promise<FolderNode[]> => {
-    return documentsApi.getFolders();
-  },
-
-  getUsageLimits: async (): Promise<DocumentUsageLimits> => {
-    return documentsApi.getUsageLimits();
-  },
-
-  bulkDelete: async (ids: (number | string)[]): Promise<void> => {
-    return documentsApi.bulkDelete(ids);
-  },
-
-  bulkMove: async (ids: (number | string)[], parentId: number | null): Promise<void> => {
-    return documentsApi.bulkMove(ids, parentId);
-  },
-
-  bulkDownload: async (ids: (number | string)[]): Promise<Blob> => {
-    return documentsApi.bulkDownload(ids);
-  },
-
-  search: async (query: string): Promise<Document[]> => {
-    return documentsApi.search(query);
-  },
-
-  updateMetadata: async (id: number | string, metadata: Record<string, any>): Promise<Document> => {
-    return documentsApi.updateMetadata(id, metadata);
+  buildFormData: (asset: PickedAsset, unit: number, renter?: number | null): FormData => {
+    return documentsApi.buildFormData(asset, unit, renter);
   },
 };

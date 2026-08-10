@@ -1,8 +1,14 @@
-import { Colors, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import type { MetadataField } from '../types';
+import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
+
+interface MetadataField {
+  key: string;
+  label: string;
+  value: any;
+  type: 'string' | 'number' | 'boolean' | 'date' | 'array';
+}
 
 interface MetadataViewerProps {
   metadata: Record<string, any>;

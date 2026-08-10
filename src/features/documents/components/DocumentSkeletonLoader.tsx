@@ -1,75 +1,61 @@
-import { Colors, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import type { DocumentSkeletonLoaderProps } from '../types';
+import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator } from 'react-native-paper';
+import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
 
-export const DocumentSkeletonLoader: React.FC<DocumentSkeletonLoaderProps> = ({
-  type = 'list',
-}) => {
+export const DocumentSkeletonLoader: React.FC = () => {
   const theme = useTheme();
-
-  if (type === 'detail') {
-    return (
-      <View style={styles.container}>
-        <View style={[styles.skeletonHeader, { backgroundColor: Colors.skeleton }]} />
-        <View style={styles.skeletonContent}>
-          {[...Array(6)].map((_, i) => (
-            <View key={i} style={[styles.skeletonRow, { backgroundColor: Colors.skeleton }]} />
-          ))}
-        </View>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
-      {[...Array(4)].map((_, i) => (
-        <View
-          key={i}
-          style={[styles.skeletonCard, { backgroundColor: Colors.skeleton }]}
-        >
-          <View style={[styles.skeletonLine, { backgroundColor: Colors.skeletonShine }]} />
-          <View style={[styles.skeletonLineShort, { backgroundColor: Colors.skeletonShine }]} />
+      {[1, 2, 3].map((i) => (
+        <View key={i} style={[styles.skeleton, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={[styles.skeletonIcon, { backgroundColor: theme.border }]} />
+          <View style={styles.skeletonText}>
+            <View style={[styles.skeletonLine, { backgroundColor: theme.border }]} />
+            <View style={[styles.skeletonLineShort, { backgroundColor: theme.border }]} />
+          </View>
         </View>
       ))}
+      <ActivityIndicator size="large" style={styles.loader} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    padding: Spacing.md,
+  },
+  skeleton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
+  },
+  skeletonIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
+    marginRight: Spacing.md,
+  },
+  skeletonText: {
     flex: 1,
-    padding: Spacing.md,
-  },
-  skeletonCard: {
-    borderRadius: 12,
-    padding: Spacing.md,
-    marginBottom: Spacing.md,
-    height: 100,
-  },
-  skeletonHeader: {
-    height: 200,
-    borderRadius: 12,
-    margin: Spacing.md,
-  },
-  skeletonContent: {
-    padding: Spacing.md,
-  },
-  skeletonRow: {
-    height: 16,
-    borderRadius: 4,
-    marginBottom: Spacing.md,
+    gap: Spacing.sm,
   },
   skeletonLine: {
-    height: 16,
+    height: 12,
     borderRadius: 4,
-    marginBottom: Spacing.sm,
-    width: '70%',
+    width: '80%',
   },
   skeletonLineShort: {
-    height: 16,
+    height: 10,
     borderRadius: 4,
     width: '40%',
+  },
+  loader: {
+    marginTop: Spacing.lg,
   },
 });

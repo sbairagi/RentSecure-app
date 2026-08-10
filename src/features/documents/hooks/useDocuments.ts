@@ -1,36 +1,22 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { documentsRepository } from '../repository/documentsRepository';
 import { useDocumentsStore } from '../store/documentsStore';
 import type { DocumentFilters, DocumentListResponse } from '../types';
 
 const DOCUMENTS_QUERY_KEY = (params?: DocumentFilters) => ['documents', 'list', params];
+const IMAGES_QUERY_KEY = (params?: DocumentFilters) => ['images', 'list', params];
 
 export const useDocuments = (params?: DocumentFilters) => {
   const queryClient = useQueryClient();
-  const { setDocuments, setError, cacheDocuments } = useDocumentsStore();
 
   const { data, isLoading, isFetching, error } = useQuery<DocumentListResponse>({
     queryKey: DOCUMENTS_QUERY_KEY(params),
-    queryFn: () => documentsRepository.fetchDocuments(params),
+    queryFn: () => documentsRepository.listDocuments(params),
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     retry: 2,
   });
-
-  useEffect(() => {
-    if (data) {
-      cacheDocuments(data);
-      const list = Array.isArray(data) ? data : data.results || [];
-      setDocuments(list);
-    }
-  }, [data, setDocuments, cacheDocuments]);
-
-  useEffect(() => {
-    if (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load documents');
-    }
-  }, [error, setError]);
 
   const refresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: DOCUMENTS_QUERY_KEY(params) });
@@ -44,6 +30,33 @@ export const useDocuments = (params?: DocumentFilters) => {
     isFetching,
     error: error instanceof Error ? error.message : null,
     refresh,
-    total: Array.isArray(data) ? data.length : data?.count || 0,
+    total: data?.count ?? documents.length,
+  };
+};
+
+export const useImages = (params?: DocumentFilters) => {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isFetching, error } = useQuery<DocumentListResponse>({
+    queryKey: IMAGES_QUERY_KEY(params),
+    queryFn: () => documentsRepository.listImages(params),
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    retry: 2,
+  });
+
+  const refresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: IMAGES_QUERY_KEY(params) });
+  }, [params, queryClient]);
+
+  const images = useDocumentsStore((state) => state.images);
+
+  return {
+    images,
+    isLoading,
+    isFetching,
+    error: error instanceof Error ? error.message : null,
+    refresh,
+    total: data?.count ?? images.length,
   };
 };

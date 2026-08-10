@@ -1,49 +1,112 @@
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Title, Button, HelperText } from 'react-native-paper';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Title, Button, HelperText } from 'react-native-paper';
+import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
 import { useUploadDocument } from '../hooks/useUploadDocument';
 import { UploadProgress } from '../components/UploadProgress';
 import { DOCUMENT_CONSTANTS } from '../constants/documents';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
+import { documentHelpers } from '../utils/documentHelpers';
+
+type PickerMode = 'document' | 'image';
 
 export default function DocumentUploadScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const [name, setName] = useState('');
-  const [selectedFile, setSelectedFile] = useState<{ uri: string; name: string; size: number; mimeType: string } | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<{ uri: string; name: string; size?: number; mimeType?: string; mode: PickerMode } | null>(null);
   const { upload, isUploading, resetProgress } = useUploadDocument();
 
-  const handlePickFile = async () => {
-    // In a real app, use expo-document-picker or expo-image-picker
-    // For demo, we simulate selection
-    const mockFile = {
-      uri: 'file:///tmp/test.pdf',
-      name: 'document.pdf',
-      size: 1024 * 1024,
-      mimeType: 'application/pdf',
-    };
-    setSelectedFile(mockFile);
-    setName(mockFile.name);
+  const requestPermission = async (mode: PickerMode) => {
+    if (mode === 'image') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handlePickDocument = async () => {
+    setPickerMode('document');
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: [...DOCUMENT_CONSTANTS.ALLOWED_MIME_TYPES],
+        copyToCacheDirectory: true,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const mimeType = asset.mimeType || 'application/octet-stream';
+        if (!DOCUMENT_CONSTANTS.ALLOWED_MIME_TYPES.includes(mimeType as any)) {
+          alert('File type not supported.');
+          return;
+        }
+        setSelectedAsset({
+          uri: asset.uri,
+          name: asset.name,
+          size: asset.size,
+          mimeType,
+          mode: 'document',
+        });
+      }
+    } catch (error) {
+      console.error('Document picker error:', error);
+    }
+  };
+
+  const handlePickImage = async () => {
+    const granted = await requestPermission('image');
+    if (!granted) return;
+    setPickerMode('image');
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: false,
+        quality: 1,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const mimeType = asset.mimeType || 'image/jpeg';
+        setSelectedAsset({
+          uri: asset.uri,
+          name: asset.fileName || `image_${Date.now()}.jpg`,
+          size: asset.fileSize,
+          mimeType,
+          mode: 'image',
+        });
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+    }
   };
 
   const handleUpload = async () => {
-    if (!selectedFile || !name.trim()) return;
+    if (!selectedAsset) return;
 
-    const formData = new FormData();
-    formData.append('name', name.trim());
-    formData.append('file', {
-      uri: selectedFile.uri,
-      name: selectedFile.name,
-      type: selectedFile.mimeType,
-    } as any);
-    formData.append('document_type', 'pdf');
-
-    await upload({ name: name.trim(), file: formData });
+    const unitId = 1; // In a real app, get from selected unit context
+    try {
+      await upload.mutateAsync({
+        asset: {
+          uri: selectedAsset.uri,
+          name: selectedAsset.name,
+          mimeType: selectedAsset.mimeType,
+          size: selectedAsset.size,
+          type: selectedAsset.mode,
+        },
+        unit: unitId,
+      });
+      setSelectedAsset(null);
+      router.back();
+    } catch (error) {
+      console.error('Upload error:', error);
+    }
   };
 
-  const formatSize = (bytes: number) => {
+  const formatSize = (bytes?: number) => {
+    if (!bytes) return 'Unknown size';
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -57,41 +120,44 @@ export default function DocumentUploadScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.back}>← Back</Text>
         </TouchableOpacity>
-        <Title style={[styles.title, { color: theme.text }]}>Upload Document</Title>
+        <Title style={[styles.title, { color: theme.text }]}>Upload</Title>
         <View style={{ width: 50 }} />
       </View>
 
       <View style={styles.form}>
         <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.text }]}>Document Name</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: theme.card, color: theme.text, borderColor: theme.border }]}
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter document name"
-            placeholderTextColor={theme.subText}
-          />
+          <Text style={[styles.label, { color: theme.text }]}>Select File</Text>
+          <View style={styles.pickerRow}>
+            <Button mode="outlined" onPress={handlePickDocument} style={styles.pickerButton}>
+              📄 Document
+            </Button>
+            <Button mode="outlined" onPress={handlePickImage} style={styles.pickerButton}>
+              🖼️ Image
+            </Button>
+          </View>
         </View>
 
-        <View style={styles.field}>
-          <Text style={[styles.label, { color: theme.text }]}>File</Text>
-          <TouchableOpacity
-            style={[styles.filePicker, { backgroundColor: theme.card, borderColor: theme.border }]}
-            onPress={handlePickFile}
-          >
-            <Text style={styles.filePickerText}>
-              {selectedFile ? selectedFile.name : 'Tap to select file'}
+        {selectedAsset && (
+          <View style={[styles.fileCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.fileIcon, { color: theme.text }]}>
+              {documentHelpers.getDocumentIcon(
+                selectedAsset.mimeType?.startsWith('image/') ? 'image' : documentHelpers.getDocumentType(selectedAsset.mimeType || '')
+              )}
             </Text>
-            {selectedFile && (
-              <Text style={[styles.fileSize, { color: theme.subText }]}>
-                {formatSize(selectedFile.size)}
+            <View style={styles.fileInfo}>
+              <Text style={[styles.fileName, { color: theme.text }]} numberOfLines={1}>
+                {selectedAsset.name}
               </Text>
-            )}
-          </TouchableOpacity>
-          <HelperText type="info" visible={!!selectedFile}>
-            Max file size: {DOCUMENT_CONSTANTS.MAX_FILE_SIZE / 1024 / 1024}MB
-          </HelperText>
-        </View>
+              <Text style={[styles.fileMeta, { color: theme.subText }]}>
+                {selectedAsset.mimeType} • {formatSize(selectedAsset.size)}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        <HelperText type="info" visible={!!selectedAsset}>
+          Max file size: {DOCUMENT_CONSTANTS.MAX_FILE_SIZE / 1024 / 1024}MB
+        </HelperText>
 
         {isUploading && (
           <UploadProgress
@@ -108,7 +174,7 @@ export default function DocumentUploadScreen() {
         <Button
           mode="contained"
           onPress={handleUpload}
-          disabled={!selectedFile || !name.trim() || isUploading}
+          disabled={!selectedAsset || isUploading}
           style={styles.uploadButton}
         >
           Upload
@@ -149,26 +215,35 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: Spacing.sm,
   },
-  input: {
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    fontSize: 16,
+  pickerRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
   },
-  filePicker: {
-    borderRadius: 8,
-    borderWidth: 1,
+  pickerButton: {
+    flex: 1,
+  },
+  fileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
     padding: Spacing.md,
-    minHeight: 60,
-    justifyContent: 'center',
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
   },
-  filePickerText: {
-    fontSize: 16,
+  fileIcon: {
+    fontSize: 32,
+    marginRight: Spacing.md,
   },
-  fileSize: {
+  fileInfo: {
+    flex: 1,
+  },
+  fileName: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  fileMeta: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 2,
   },
   uploadButton: {
     marginTop: Spacing.lg,

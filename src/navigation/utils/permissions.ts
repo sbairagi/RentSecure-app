@@ -9,7 +9,7 @@ export const FEATURE_PERMISSIONS: Record<string, Permission[]> = {
   payments: ['payment:read', 'payment:write'],
   invoices: ['payment:read', 'payment:write'],
   agreements: ['agreement:read', 'agreement:write'],
-  documents: ['agreement:read'],
+  documents: ['document:read', 'document:write'],
   reports: ['report:read'],
   subscription: ['subscription:read', 'subscription:write'],
   settings: ['settings:read', 'settings:write'],
@@ -49,6 +49,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'notification:write',
     'maintenance:read',
     'maintenance:write',
+    'document:read',
+    'document:write',
   ],
   admin: [
     'dashboard:read',
@@ -77,6 +79,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'notification:write',
     'maintenance:read',
     'maintenance:write',
+    'document:read',
+    'document:write',
   ],
   property_owner: [
     'dashboard:read',
@@ -103,6 +107,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'notification:write',
     'maintenance:read',
     'maintenance:write',
+    'document:read',
+    'document:write',
   ],
   ca_partner: [
     'dashboard:read',
@@ -113,6 +119,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'agreement:read',
     'agreement:write',
     'notification:read',
+    'document:read',
   ],
   caretaker: [
     'dashboard:read',
@@ -124,6 +131,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'agreement:read',
     'notification:read',
     'notification:write',
+    'document:read',
   ],
   support_executive: [
     'dashboard:read',
@@ -133,8 +141,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'report:read',
     'notification:read',
     'notification:write',
+    'document:read',
   ],
-  renter: ['dashboard:read', 'agreement:read', 'payment:read', 'notification:read'],
+  renter: ['dashboard:read', 'agreement:read', 'payment:read', 'notification:read', 'document:read'],
   user: [],
 };
 

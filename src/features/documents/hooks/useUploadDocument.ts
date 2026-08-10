@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { documentsRepository } from '../repository/documentsRepository';
 import { useDocumentsStore } from '../store/documentsStore';
-import type { DocumentCreatePayload, DocumentUploadProgress } from '../types';
+import type { PickedAsset } from '../types';
 
 const UPLOAD_QUERY_KEY = ['documents', 'upload'];
 
@@ -11,28 +11,37 @@ export const useUploadDocument = () => {
   const { setUploadProgress, setError } = useDocumentsStore();
   const [isUploading, setIsUploading] = useState(false);
 
-  const { mutateAsync: upload, isPending } = useMutation({
+  const upload = useMutation({
     mutationKey: UPLOAD_QUERY_KEY,
-    mutationFn: async (payload: DocumentCreatePayload) => {
+    mutationFn: async ({ asset, unit, renter }: { asset: PickedAsset; unit: number; renter?: number | null }): Promise<any> => {
       setIsUploading(true);
       setUploadProgress({
         loaded: 0,
         total: 100,
         progress: 0,
-        status: 'uploading',
+        status: 'preparing',
       });
 
-      return documentsRepository.uploadDocument(
-        payload.file,
-        (progress) => {
-          setUploadProgress({
-            loaded: progress,
-            total: 100,
-            progress,
-            status: progress < 100 ? 'uploading' : 'processing',
-          });
-        }
-      );
+      const formData = documentsRepository.buildFormData(asset, unit, renter);
+
+      try {
+        const result = await documentsRepository.createDocument(
+          { unit, renter, file: formData },
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
+        return result;
+      } catch (error) {
+        setUploadProgress({
+          loaded: 0,
+          total: 100,
+          progress: 0,
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Upload failed',
+        });
+        throw error;
+      }
     },
     onSuccess: () => {
       setUploadProgress({
@@ -42,15 +51,9 @@ export const useUploadDocument = () => {
         status: 'complete',
       });
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['images'] });
     },
     onError: (error) => {
-      setUploadProgress({
-        loaded: 0,
-        total: 100,
-        progress: 0,
-        status: 'error',
-        error: error instanceof Error ? error.message : 'Upload failed',
-      });
       setError(error instanceof Error ? error.message : 'Upload failed');
     },
     onSettled: () => {
@@ -65,7 +68,72 @@ export const useUploadDocument = () => {
   return {
     upload,
     isUploading,
-    isPending,
+    resetProgress,
+  };
+};
+
+export const useUploadImage = () => {
+  const queryClient = useQueryClient();
+  const { setUploadProgress, setError } = useDocumentsStore();
+  const [isUploading, setIsUploading] = useState(false);
+
+  const upload = useMutation({
+    mutationKey: ['images', 'upload'],
+    mutationFn: async ({ asset, unit, renter }: { asset: PickedAsset; unit: number; renter?: number | null }): Promise<any> => {
+      setIsUploading(true);
+      setUploadProgress({
+        loaded: 0,
+        total: 100,
+        progress: 0,
+        status: 'preparing',
+      });
+
+      const formData = documentsRepository.buildFormData(asset, unit, renter);
+
+      try {
+        const result = await documentsRepository.createImage(
+          { unit, renter, file: formData },
+          (progress) => {
+            setUploadProgress(progress);
+          }
+        );
+        return result;
+      } catch (error) {
+        setUploadProgress({
+          loaded: 0,
+          total: 100,
+          progress: 0,
+          status: 'error',
+          error: error instanceof Error ? error.message : 'Upload failed',
+        });
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      setUploadProgress({
+        loaded: 100,
+        total: 100,
+        progress: 100,
+        status: 'complete',
+      });
+      queryClient.invalidateQueries({ queryKey: ['images'] });
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+    },
+    onError: (error) => {
+      setError(error instanceof Error ? error.message : 'Upload failed');
+    },
+    onSettled: () => {
+      setIsUploading(false);
+    },
+  });
+
+  const resetProgress = () => {
+    setUploadProgress(null);
+  };
+
+  return {
+    upload,
+    isUploading,
     resetProgress,
   };
 };

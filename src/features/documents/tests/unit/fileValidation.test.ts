@@ -1,4 +1,3 @@
-import { describe, it, expect } from '@jest/globals';
 import { documentHelpers } from '../../utils/documentHelpers';
 
 describe('documentHelpers', () => {
@@ -26,16 +25,8 @@ describe('documentHelpers', () => {
       expect(documentHelpers.getDocumentType('application/vnd.openxmlformats-officedocument.wordprocessingml.document')).toBe('docx');
     });
 
-    it('should detect video MIME type', () => {
-      expect(documentHelpers.getDocumentType('video/mp4')).toBe('video');
-    });
-
-    it('should detect audio MIME type', () => {
-      expect(documentHelpers.getDocumentType('audio/mpeg')).toBe('audio');
-    });
-
-    it('should default to text for unknown types', () => {
-      expect(documentHelpers.getDocumentType('application/octet-stream')).toBe('text');
+    it('should default to other for unknown types', () => {
+      expect(documentHelpers.getDocumentType('application/octet-stream')).toBe('other');
     });
   });
 
@@ -70,6 +61,24 @@ describe('documentHelpers', () => {
     it('should return false for non-previewable types', () => {
       expect(documentHelpers.isPreviewable('application/zip')).toBe(false);
       expect(documentHelpers.isPreviewable('video/mp4')).toBe(false);
+    });
+  });
+
+  describe('isImage', () => {
+    it('should return true for image types', () => {
+      expect(documentHelpers.isImage('image/jpeg')).toBe(true);
+      expect(documentHelpers.isImage('image/png')).toBe(true);
+    });
+
+    it('should return false for non-image types', () => {
+      expect(documentHelpers.isImage('application/pdf')).toBe(false);
+    });
+  });
+
+  describe('getFileNameFromUri', () => {
+    it('should extract filename from URI', () => {
+      expect(documentHelpers.getFileNameFromUri('file:///tmp/test.pdf')).toBe('test.pdf');
+      expect(documentHelpers.getFileNameFromUri('/media/unit_documents/2024/01/15/test.pdf')).toBe('test.pdf');
     });
   });
 

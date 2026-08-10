@@ -1,171 +1,120 @@
 import { apiService } from '@/services/api/apiClient';
-import { API_CONFIG } from '@/services/api/endpoints';
 import { DOCUMENT_CONSTANTS } from '../constants/documents';
 import type {
-  Document,
-  DocumentCreatePayload,
+  UnitDocument,
+  UnitImage,
+  DocumentUploadPayload,
+  DocumentUploadProgress,
   DocumentFilters,
   DocumentListResponse,
-  DocumentShareResponse,
-  DocumentUpdatePayload,
-  DocumentUsageLimits,
-  DocumentVersion,
-  FolderNode,
-  SortOption,
+  PickedAsset,
 } from '../types';
 
 export const documentsApi = {
-  list: async (params?: DocumentFilters): Promise<DocumentListResponse> => {
+  listDocuments: async (params?: DocumentFilters): Promise<DocumentListResponse> => {
     const searchParams = new URLSearchParams();
+    if (params?.unit) searchParams.set('unit', String(params.unit));
+    if (params?.renter !== undefined && params?.renter !== null) searchParams.set('renter', String(params.renter));
     if (params?.search) searchParams.set('search', params.search);
-    if (params?.type) searchParams.set('type', params.type);
-    if (params?.parent !== undefined && params?.parent !== null)
-      searchParams.set('parent', String(params.parent));
-    if (params?.is_favorite !== undefined)
-      searchParams.set('is_favorite', String(params.is_favorite));
-    if (params?.is_archived !== undefined)
-      searchParams.set('is_archived', String(params.is_archived));
-    if (params?.date_from) searchParams.set('date_from', params.date_from);
-    if (params?.date_to) searchParams.set('date_to', params.date_to);
     if (params?.ordering) searchParams.set('ordering', params.ordering);
-    if (params?.page) searchParams.set('page', String(params.page));
     const query = searchParams.toString();
     return apiService.get<DocumentListResponse>(
-      `${DOCUMENT_CONSTANTS.API.LIST}${query ? `?${query}` : ''}`
+      `${DOCUMENT_CONSTANTS.API.LIST_DOCUMENTS}${query ? `?${query}` : ''}`
     );
   },
 
-  retrieve: async (id: number | string): Promise<Document> => {
-    return apiService.get<Document>(DOCUMENT_CONSTANTS.API.DETAIL(id));
-  },
-
-  create: async (data: DocumentCreatePayload): Promise<Document> => {
-    return apiService.post<Document>(DOCUMENT_CONSTANTS.API.CREATE, data);
-  },
-
-  update: async (
-    id: number | string,
-    data: DocumentUpdatePayload
-  ): Promise<Document> => {
-    return apiService.patch<Document>(DOCUMENT_CONSTANTS.API.UPDATE(id), data);
-  },
-
-  remove: async (id: number | string): Promise<void> => {
-    return apiService.delete<void>(DOCUMENT_CONSTANTS.API.DELETE(id));
-  },
-
-  upload: async (
-    formData: FormData,
-    onProgress?: (progress: number) => void
-  ): Promise<Document> => {
-    return apiService.upload<Document>(
-      DOCUMENT_CONSTANTS.API.UPLOAD,
-      formData,
-      onProgress
+  listImages: async (params?: DocumentFilters): Promise<DocumentListResponse> => {
+    const searchParams = new URLSearchParams();
+    if (params?.unit) searchParams.set('unit', String(params.unit));
+    if (params?.renter !== undefined && params?.renter !== null) searchParams.set('renter', String(params.renter));
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.ordering) searchParams.set('ordering', params.ordering);
+    const query = searchParams.toString();
+    return apiService.get<DocumentListResponse>(
+      `${DOCUMENT_CONSTANTS.API.LIST_IMAGES}${query ? `?${query}` : ''}`
     );
   },
 
-  download: async (id: number | string): Promise<Blob> => {
-    const token = await getAuthToken();
-    const response = await fetch(DOCUMENT_CONSTANTS.API.DOWNLOAD(id), {
-      headers: {
-        Authorization: token ? `${API_CONFIG.BEARER_PREFIX}${token}` : '',
-      },
-    });
-    if (!response.ok) throw new Error('Download failed');
-    return response.blob();
+  retrieveDocument: async (id: number | string): Promise<UnitDocument> => {
+    return apiService.get<UnitDocument>(DOCUMENT_CONSTANTS.API.DETAIL_DOCUMENT(id));
   },
 
-  preview: async (id: number | string): Promise<{ url: string }> => {
-    return apiService.get<{ url: string }>(DOCUMENT_CONSTANTS.API.PREVIEW(id));
+  retrieveImage: async (id: number | string): Promise<UnitImage> => {
+    return apiService.get<UnitImage>(DOCUMENT_CONSTANTS.API.DETAIL_IMAGE(id));
   },
 
-  move: async (id: number | string, parentId: number | null): Promise<Document> => {
-    return apiService.post<Document>(DOCUMENT_CONSTANTS.API.MOVE(id), { parent: parentId });
-  },
-
-  copy: async (id: number | string, parentId: number | null): Promise<Document> => {
-    return apiService.post<Document>(DOCUMENT_CONSTANTS.API.COPY(id), { parent: parentId });
-  },
-
-  share: async (
-    id: number | string,
-    payload: { visibility: 'private' | 'shared' | 'public'; expires_in?: number }
-  ): Promise<DocumentShareResponse> => {
-    return apiService.post<DocumentShareResponse>(
-      DOCUMENT_CONSTANTS.API.SHARE(id),
-      payload
+  createDocument: async (payload: DocumentUploadPayload, onProgress?: (progress: DocumentUploadProgress) => void): Promise<UnitDocument> => {
+    return apiService.upload<UnitDocument>(
+      DOCUMENT_CONSTANTS.API.CREATE_DOCUMENT,
+      payload.file,
+      (percent) => {
+        onProgress?.({
+          loaded: percent,
+          total: 100,
+          progress: percent,
+          status: percent < 100 ? 'uploading' : 'processing',
+        });
+      }
     );
   },
 
-  toggleFavorite: async (id: number | string): Promise<Document> => {
-    return apiService.post<Document>(DOCUMENT_CONSTANTS.API.FAVORITE(id), {});
+  createImage: async (payload: DocumentUploadPayload, onProgress?: (progress: DocumentUploadProgress) => void): Promise<UnitImage> => {
+    return apiService.upload<UnitImage>(
+      DOCUMENT_CONSTANTS.API.CREATE_IMAGE,
+      payload.file,
+      (percent) => {
+        onProgress?.({
+          loaded: percent,
+          total: 100,
+          progress: percent,
+          status: percent < 100 ? 'uploading' : 'processing',
+        });
+      }
+    );
   },
 
-  archive: async (id: number | string): Promise<Document> => {
-    return apiService.post<Document>(DOCUMENT_CONSTANTS.API.ARCHIVE(id), {});
+  updateDocument: async (id: number | string, payload: DocumentUploadPayload): Promise<UnitDocument> => {
+    return apiService.upload<UnitDocument>(DOCUMENT_CONSTANTS.API.UPDATE_DOCUMENT(id), payload.file);
   },
 
-  restore: async (id: number | string): Promise<Document> => {
-    return apiService.post<Document>(DOCUMENT_CONSTANTS.API.RESTORE(id), {});
+  updateImage: async (id: number | string, payload: DocumentUploadPayload): Promise<UnitImage> => {
+    return apiService.upload<UnitImage>(DOCUMENT_CONSTANTS.API.UPDATE_IMAGE(id), payload.file);
   },
 
-  getVersions: async (id: number | string): Promise<DocumentVersion[]> => {
-    return apiService.get<DocumentVersion[]>(DOCUMENT_CONSTANTS.API.VERSIONS(id));
+  deleteDocument: async (id: number | string): Promise<void> => {
+    return apiService.delete<void>(DOCUMENT_CONSTANTS.API.DELETE_DOCUMENT(id));
   },
 
-  getDuplicates: async (): Promise<Document[]> => {
-    return apiService.get<Document[]>(DOCUMENT_CONSTANTS.API.DUPLICATES);
+  deleteImage: async (id: number | string): Promise<void> => {
+    return apiService.delete<void>(DOCUMENT_CONSTANTS.API.DELETE_IMAGE(id));
   },
 
-  getFolders: async (): Promise<FolderNode[]> => {
-    return apiService.get<FolderNode[]>(DOCUMENT_CONSTANTS.API.FOLDERS);
-  },
+  buildFormData: (asset: PickedAsset, unit: number, renter?: number | null): FormData => {
+    const formData = new FormData();
+    formData.append('unit', String(unit));
+    if (renter !== undefined && renter !== null) {
+      formData.append('renter', String(renter));
+    }
 
-  getUsageLimits: async (): Promise<DocumentUsageLimits> => {
-    return apiService.get<DocumentUsageLimits>(DOCUMENT_CONSTANTS.API.USAGE_LIMITS);
-  },
+    const uri = asset.uri;
+    const name = asset.name || `upload_${Date.now()}`;
+    const mimeType = asset.mimeType || 'application/octet-stream';
+    const type = asset.type === 'image' ? 'image' : 'document';
 
-  bulkDelete: async (ids: (number | string)[]): Promise<void> => {
-    return apiService.post<void>(DOCUMENT_CONSTANTS.API.BULK_DELETE, { ids });
-  },
+    if (type === 'image') {
+      formData.append('image', {
+        uri,
+        name,
+        type: mimeType,
+      } as any);
+    } else {
+      formData.append('document', {
+        uri,
+        name,
+        type: mimeType,
+      } as any);
+    }
 
-  bulkMove: async (ids: (number | string)[], parentId: number | null): Promise<void> => {
-    return apiService.post<void>(DOCUMENT_CONSTANTS.API.BULK_MOVE, { ids, parent: parentId });
-  },
-
-  bulkDownload: async (ids: (number | string)[]): Promise<Blob> => {
-    const token = await getAuthToken();
-    const response = await fetch(DOCUMENT_CONSTANTS.API.BULK_DOWNLOAD, {
-      method: 'POST',
-      headers: {
-        Authorization: token ? `${API_CONFIG.BEARER_PREFIX}${token}` : '',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ids }),
-    });
-    if (!response.ok) throw new Error('Bulk download failed');
-    return response.blob();
-  },
-
-  search: async (query: string): Promise<Document[]> => {
-    return apiService.get<Document[]>(`${DOCUMENT_CONSTANTS.API.SEARCH}?q=${encodeURIComponent(query)}`);
-  },
-
-  updateMetadata: async (
-    id: number | string,
-    metadata: Record<string, any>
-  ): Promise<Document> => {
-    return apiService.patch<Document>(DOCUMENT_CONSTANTS.API.METADATA(id), { metadata });
+    return formData;
   },
 };
-
-async function getAuthToken(): Promise<string | null> {
-  try {
-    const { MMKV } = await import('react-native-mmkv');
-    const mmkv = new MMKV();
-    return mmkv.getString('access_token') ?? null;
-  } catch {
-    return null;
-  }
-}

@@ -1,4 +1,4 @@
-import type { Document } from '../types';
+import type { UnitDocument } from '../types';
 
 export const documentHelpers = {
   formatSize(bytes: number): string {
@@ -9,7 +9,7 @@ export const documentHelpers = {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   },
 
-  getDocumentType(mimeType: string): Document['document_type'] {
+  getDocumentType(mimeType: string): UnitDocument['document'] extends never ? string : string {
     if (mimeType.startsWith('image/')) return 'image';
     if (mimeType === 'application/pdf') return 'pdf';
     if (mimeType === 'application/msword') return 'doc';
@@ -20,10 +20,10 @@ export const documentHelpers = {
     if (mimeType.startsWith('text/') || mimeType === 'text/html') return 'text';
     if (mimeType.startsWith('audio/')) return 'audio';
     if (mimeType.startsWith('video/')) return 'video';
-    return 'text';
+    return 'other';
   },
 
-  getDocumentIcon(documentType: Document['document_type']): string {
+  getDocumentIcon(documentType: string): string {
     const icons: Record<string, string> = {
       image: '🖼️',
       pdf: '📄',
@@ -35,11 +35,12 @@ export const documentHelpers = {
       text: '📃',
       audio: '🎵',
       video: '🎬',
+      other: '📎',
     };
     return icons[documentType] || '📄';
   },
 
-  getDocumentColor(documentType: Document['document_type']): string {
+  getDocumentColor(documentType: string): string {
     const colors: Record<string, string> = {
       image: '#10b981',
       pdf: '#dc2626',
@@ -51,6 +52,7 @@ export const documentHelpers = {
       text: '#6b7280',
       audio: '#8b5cf6',
       video: '#ec4899',
+      other: '#6b7280',
     };
     return colors[documentType] || '#6b7280';
   },
@@ -67,12 +69,9 @@ export const documentHelpers = {
     return mimeType.startsWith('image/');
   },
 
-  isVideo(mimeType: string): boolean {
-    return mimeType.startsWith('video/');
-  },
-
-  isAudio(mimeType: string): boolean {
-    return mimeType.startsWith('audio/');
+  getFileNameFromUri(uri: string): string {
+    const parts = uri.split('/');
+    return parts[parts.length - 1] || uri;
   },
 
   generateShareToken(): string {

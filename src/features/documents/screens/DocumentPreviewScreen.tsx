@@ -1,32 +1,58 @@
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ActivityIndicator, Button } from 'react-native-paper';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useDocumentMutations } from '../hooks/useDocumentMutations';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
+import { Image } from 'expo-image';
+import { useDocumentsStore } from '../store/documentsStore';
+import { API_CONFIG } from '@/services/api/endpoints';
+import { secureStorage } from '@/services/storage/secureStorage';
+import { Button } from 'react-native-paper';
 
 export default function DocumentPreviewScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { previewDocument } = useDocumentMutations();
+  const [previewType, setPreviewType] = useState<'image' | 'pdf' | 'unsupported' | null>(null);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [webViewUri, setWebViewUri] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadPreview = async () => {
       try {
-        const result = await previewDocument(Number(id));
-        setPreviewUrl(result.url);
+        const doc = useDocumentsStore.getState().documents.find((d) => d.id === Number(id));
+        if (!doc) {
+          setError('Document not found');
+          setIsLoading(false);
+          return;
+        }
+
+        const filePath = doc.document;
+        const isImage = true;
+        const isPdf = false;
+
+        if (isImage) {
+          setPreviewType('image');
+          setPreviewUri(filePath);
+        } else if (isPdf) {
+          setPreviewType('pdf');
+          const token = await secureStorage.getAccessToken();
+          const baseUrl = API_CONFIG.BASE_URL.replace(/\/$/, '');
+          const webUri = `${baseUrl}${filePath}${filePath.includes('?') ? '&' : '?'}access_token=${token}`;
+          setWebViewUri(webUri);
+        } else {
+          setPreviewType('unsupported');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load preview');
       } finally {
         setIsLoading(false);
       }
     };
+
     loadPreview();
   }, [id]);
 
@@ -48,7 +74,7 @@ export default function DocumentPreviewScreen() {
     );
   }
 
-  if (error || !previewUrl) {
+  if (error || !previewType || previewType === 'unsupported') {
     return (
       <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
         <View style={styles.header}>
@@ -59,7 +85,9 @@ export default function DocumentPreviewScreen() {
           <View style={{ width: 50 }} />
         </View>
         <View style={styles.error}>
-          <Text style={[styles.errorText, { color: theme.subText }]}>{error || 'Preview unavailable'}</Text>
+          <Text style={[styles.errorText, { color: theme.subText }]}>
+            {error || 'Preview not available for this file type.'}
+          </Text>
           <Button mode="contained" onPress={() => router.back()} style={styles.retryButton}>
             Go Back
           </Button>
@@ -77,16 +105,30 @@ export default function DocumentPreviewScreen() {
         <Text style={[styles.title, { color: theme.text }]}>Preview</Text>
         <View style={{ width: 50 }} />
       </View>
-      <WebView
-        source={{ uri: previewUrl }}
-        style={styles.webview}
-        startInLoadingState
-        renderLoading={() => (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" />
-          </View>
-        )}
-      />
+      {previewType === 'image' && previewUri ? (
+        <Image
+          source={{ uri: previewUri }}
+          style={styles.image}
+          contentFit="contain"
+          onError={() => setError('Failed to load image')}
+        />
+      ) : (
+        previewType === 'pdf' &&
+        webViewUri && (
+          <WebView
+            source={{ uri: webViewUri }}
+            style={styles.webview}
+            startInLoadingState
+            renderLoading={() => (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" />
+              </View>
+            )}
+            javaScriptEnabled={false}
+            domStorageEnabled={false}
+          />
+        )
+      )}
     </View>
   );
 }
@@ -134,11 +176,18 @@ const styles = StyleSheet.create({
   retryButton: {
     backgroundColor: '#4f46e5',
   },
+  image: {
+    flex: 1,
+  },
   webview: {
     flex: 1,
   },
   loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.9)',

@@ -1,8 +1,8 @@
-import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { ProgressBar } from 'react-native-paper';
+import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
 import type { DocumentUploadProgress } from '../types';
 
 interface UploadProgressProps {
@@ -26,6 +26,8 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({ progress, onCanc
 
   const getStatusLabel = () => {
     switch (progress.status) {
+      case 'preparing':
+        return 'Preparing...';
       case 'uploading':
         return 'Uploading...';
       case 'processing':
@@ -46,15 +48,9 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({ progress, onCanc
           {getStatusLabel()}
         </Text>
         {onCancel && progress.status === 'uploading' && (
-          <Text
-            onPress={onCancel}
-            style={styles.cancel}
-            accessible
-            accessibilityRole="button"
-            accessibilityLabel="Cancel upload"
-          >
-            Cancel
-          </Text>
+          <TouchableOpacity onPress={onCancel} accessible accessibilityRole="button" accessibilityLabel="Cancel upload">
+            <Text style={styles.cancel}>Cancel</Text>
+          </TouchableOpacity>
         )}
       </View>
       <ProgressBar

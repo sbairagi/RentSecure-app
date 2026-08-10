@@ -1,37 +1,30 @@
-import { Spacing } from '@/constants/theme';
-import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Title, Button } from 'react-native-paper';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
 
 interface DocumentEmptyStateProps {
   onAction?: () => void;
 }
 
-export default function DocumentEmptyState({ onAction }: DocumentEmptyStateProps) {
-  const router = useRouter();
-
-  const handleAction = () => {
-    if (onAction) {
-      onAction();
-    } else {
-      router.push('/(drawer)/(tabs)/documents/upload');
-    }
-  };
+export const DocumentEmptyState: React.FC<DocumentEmptyStateProps> = ({ onAction }) => {
+  const theme = useTheme();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>📁</Text>
-      <Title style={styles.title}>No Documents Yet</Title>
-      <Text style={styles.description}>
-        Upload your first document to manage it securely.
+      <Text style={styles.icon}>📭</Text>
+      <Text style={[styles.title, { color: theme.text }]}>No documents yet</Text>
+      <Text style={[styles.description, { color: theme.subText }]}>
+        Upload your first document to get started.
       </Text>
-      <Button mode="contained" onPress={handleAction} style={styles.button}>
-        Upload Document
-      </Button>
+      {onAction && (
+        <TouchableOpacity onPress={onAction} style={[styles.button, { backgroundColor: '#4f46e5' }]}>
+          <Text style={styles.buttonText}>Upload Document</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -45,17 +38,23 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   title: {
-    marginTop: Spacing.md,
+    fontSize: 20,
+    fontWeight: '700',
     marginBottom: Spacing.sm,
-    color: '#111827',
   },
   description: {
     fontSize: 14,
-    color: '#6b7280',
     textAlign: 'center',
     marginBottom: Spacing.lg,
   },
   button: {
-    backgroundColor: '#4f46e5',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

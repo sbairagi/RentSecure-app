@@ -1,35 +1,30 @@
-import { Colors, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTheme } from '@/hooks/use-theme';
+import { Spacing } from '@/constants/theme';
+import { Button } from 'react-native-paper';
 
 interface DocumentErrorStateProps {
   message: string;
   onRetry?: () => void;
 }
 
-export default function DocumentErrorState({ message, onRetry }: DocumentErrorStateProps) {
+export const DocumentErrorState: React.FC<DocumentErrorStateProps> = ({ message, onRetry }) => {
   const theme = useTheme();
 
   return (
     <View style={styles.container}>
       <Text style={styles.icon}>⚠️</Text>
       <Text style={[styles.title, { color: theme.text }]}>Something went wrong</Text>
-      <Text style={[styles.message, { color: theme.subText }]}>{message}</Text>
+      <Text style={[styles.description, { color: theme.subText }]}>{message}</Text>
       {onRetry && (
-        <Text
-          onPress={onRetry}
-          style={styles.retry}
-          accessible
-          accessibilityRole="button"
-          accessibilityLabel="Retry"
-        >
-          Tap to retry
-        </Text>
+        <Button mode="contained" onPress={onRetry} style={styles.retryButton}>
+          Retry
+        </Button>
       )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -39,22 +34,20 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
   },
   icon: {
-    fontSize: 48,
+    fontSize: 64,
     marginBottom: Spacing.md,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     marginBottom: Spacing.sm,
   },
-  message: {
+  description: {
     fontSize: 14,
     textAlign: 'center',
     marginBottom: Spacing.lg,
   },
-  retry: {
-    color: '#4f46e5',
-    fontSize: 14,
-    fontWeight: '600',
+  retryButton: {
+    backgroundColor: '#4f46e5',
   },
 });

@@ -1,12 +1,5 @@
 import { documentsRepository } from '../../repository/documentsRepository';
-import {
-  mockDocument,
-  mockDocumentListResponse,
-  mockDocumentShareResponse,
-  mockDocumentVersion,
-  mockDocumentUsageLimits,
-  mockFolderNode,
-} from '../../tests/mocks/data';
+import { mockUnitDocument, mockUnitImage, mockDocumentListResponse, mockImageListResponse, mockPickedAsset } from '../../tests/mocks/data';
 
 jest.mock('../../repository/documentsRepository');
 
@@ -15,35 +8,45 @@ describe('documentsRepository', () => {
     jest.clearAllMocks();
   });
 
-  describe('fetchDocuments', () => {
+  describe('listDocuments', () => {
     it('should fetch documents with filters', async () => {
-      (documentsRepository.fetchDocuments as jest.Mock).mockResolvedValue(mockDocumentListResponse);
-      const result = await documentsRepository.fetchDocuments({ type: 'pdf' });
+      (documentsRepository.listDocuments as jest.Mock).mockResolvedValue(mockDocumentListResponse);
+      const result = await documentsRepository.listDocuments({ unit: 1 });
       expect(result).toEqual(mockDocumentListResponse);
     });
   });
 
-  describe('fetchDocument', () => {
-    it('should fetch a single document', async () => {
-      (documentsRepository.fetchDocument as jest.Mock).mockResolvedValue(mockDocument);
-      const result = await documentsRepository.fetchDocument(1);
-      expect(result).toEqual(mockDocument);
+  describe('listImages', () => {
+    it('should fetch images with filters', async () => {
+      (documentsRepository.listImages as jest.Mock).mockResolvedValue(mockImageListResponse);
+      const result = await documentsRepository.listImages({ unit: 1 });
+      expect(result).toEqual(mockImageListResponse);
     });
   });
 
   describe('createDocument', () => {
     it('should create a document', async () => {
-      (documentsRepository.createDocument as jest.Mock).mockResolvedValue(mockDocument);
-      const result = await documentsRepository.createDocument({ name: 'test.pdf', file: new FormData() });
-      expect(result).toEqual(mockDocument);
+      (documentsRepository.createDocument as jest.Mock).mockResolvedValue(mockUnitDocument);
+      const result = await documentsRepository.createDocument(
+        { unit: 1, file: new FormData() },
+        (progress) => {
+          expect(progress.status).toBe('uploading');
+        }
+      );
+      expect(result).toEqual(mockUnitDocument);
     });
   });
 
-  describe('updateDocument', () => {
-    it('should update a document', async () => {
-      (documentsRepository.updateDocument as jest.Mock).mockResolvedValue({ ...mockDocument, name: 'updated.pdf' });
-      const result = await documentsRepository.updateDocument(1, { name: 'updated.pdf' });
-      expect(result.name).toBe('updated.pdf');
+  describe('createImage', () => {
+    it('should create an image', async () => {
+      (documentsRepository.createImage as jest.Mock).mockResolvedValue(mockUnitImage);
+      const result = await documentsRepository.createImage(
+        { unit: 1, file: new FormData() },
+        (progress) => {
+          expect(progress.status).toBe('uploading');
+        }
+      );
+      expect(result).toEqual(mockUnitImage);
     });
   });
 
@@ -54,49 +57,23 @@ describe('documentsRepository', () => {
     });
   });
 
-  describe('bulkDelete', () => {
-    it('should bulk delete documents', async () => {
-      (documentsRepository.bulkDelete as jest.Mock).mockResolvedValue(undefined);
-      await expect(documentsRepository.bulkDelete([1, 2, 3])).resolves.toBeUndefined();
+  describe('deleteImage', () => {
+    it('should delete an image', async () => {
+      (documentsRepository.deleteImage as jest.Mock).mockResolvedValue(undefined);
+      await expect(documentsRepository.deleteImage(1)).resolves.toBeUndefined();
     });
   });
 
-  describe('bulkMove', () => {
-    it('should bulk move documents', async () => {
-      (documentsRepository.bulkMove as jest.Mock).mockResolvedValue(undefined);
-      await expect(documentsRepository.bulkMove([1, 2], 5)).resolves.toBeUndefined();
+  describe('buildFormData', () => {
+    it('should build form data for document', () => {
+      const formData = documentsRepository.buildFormData(mockPickedAsset, 1, null);
+      expect(formData).toBeInstanceOf(FormData);
     });
-  });
 
-  describe('shareDocument', () => {
-    it('should share a document', async () => {
-      (documentsRepository.shareDocument as jest.Mock).mockResolvedValue(mockDocumentShareResponse);
-      const result = await documentsRepository.shareDocument(1, { visibility: 'shared' });
-      expect(result).toEqual(mockDocumentShareResponse);
-    });
-  });
-
-  describe('getVersions', () => {
-    it('should fetch versions', async () => {
-      (documentsRepository.getVersions as jest.Mock).mockResolvedValue([mockDocumentVersion]);
-      const result = await documentsRepository.getVersions(1);
-      expect(result).toHaveLength(1);
-    });
-  });
-
-  describe('getUsageLimits', () => {
-    it('should fetch usage limits', async () => {
-      (documentsRepository.getUsageLimits as jest.Mock).mockResolvedValue(mockDocumentUsageLimits);
-      const result = await documentsRepository.getUsageLimits();
-      expect(result).toEqual(mockDocumentUsageLimits);
-    });
-  });
-
-  describe('getFolders', () => {
-    it('should fetch folders', async () => {
-      (documentsRepository.getFolders as jest.Mock).mockResolvedValue([mockFolderNode]);
-      const result = await documentsRepository.getFolders();
-      expect(result).toHaveLength(1);
+    it('should build form data for image', () => {
+      const asset = { ...mockPickedAsset, type: 'image' as const };
+      const formData = documentsRepository.buildFormData(asset, 1, null);
+      expect(formData).toBeInstanceOf(FormData);
     });
   });
 });
