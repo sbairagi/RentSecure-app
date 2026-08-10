@@ -2,7 +2,8 @@ export type RenterStatus = 'active' | 'notice_period' | 'revoked' | 'deactivated
 
 export interface Renter {
   id: number;
-  owner: number;
+  unit: number;
+  user: number | null;
   name: string;
   email: string;
   phone: string;
@@ -41,42 +42,16 @@ export interface Renter {
   kyc_status: string;
   onboarding_token: string;
   onboarding_link_sent_at: string | null;
-  unit: number;
-  user: number | null;
+  unit_name?: string;
+  building_name?: string;
+  address_line?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
   photo?: string | null;
   current_unit?: number | null;
-  building_name?: string | null;
-  unit_name?: string | null;
-  address_line?: string | null;
-  city?: string | null;
-  state?: string | null;
-  country?: string | null;
-  postal_code?: string | null;
-  security_deposit?: string | null;
   is_verified?: boolean;
-  is_archived?: boolean;
-}
-
-export interface RenterUnitSummary {
-  id: number;
-  unit: string;
-  unit_type: string;
-  building_name: string;
-  address_line: string;
-  city: string;
-  state: string;
-  country: string;
-  postal_code: string;
-}
-
-export interface RenterBuildingSummary {
-  id: number;
-  name: string;
-  address_line: string;
-  city: string;
-  state: string;
-  country: string;
-  postal_code: string;
 }
 
 export interface RenterWithRelations extends Renter {
@@ -99,7 +74,7 @@ export interface RenterDocument {
 export interface KycDocument {
   id: number;
   renter: number;
-  document_type: KycDocumentType;
+  document_type: string;
   document_number: string;
   document: string;
   file_hash: string;
@@ -119,10 +94,10 @@ export interface RenterPayment {
   renter: number;
   rent_record: number | null;
   amount: string;
-  payment_method: PaymentMethod;
+  payment_method: string;
   payment_date: string;
   due_date: string;
-  status: PaymentStatus;
+  status: string;
   transaction_id: string;
   notes: string;
   created_at: string;
@@ -143,6 +118,29 @@ export interface RenterAgreement {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface RentAgreement {
+  id: number;
+  renter: number;
+  unit: number;
+  agreement_start_date: string;
+  agreement_end_date: string;
+  document: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RenterSummary {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: RenterStatus;
+  rent_amount: string;
+  start_date: string;
+  end_date: string | null;
 }
 
 export interface RenterTimelineEntry {
@@ -189,8 +187,32 @@ export interface RenterProfile {
   status: RenterStatus;
   is_verified: boolean;
   notes: string;
-  unit?: RenterUnitSummary | null;
-  building?: RenterBuildingSummary | null;
+  unit: RenterUnitSummary | null;
+  building: RenterBuildingSummary | null;
+}
+
+export interface RenterUnitSummary {
+  id: number;
+  unit: string;
+  unit_type: string;
+  building: number;
+  building_name: string;
+  address_line: string;
+  landmark: string;
+  city: string;
+  state: string;
+  country: string;
+  postal_code: string;
+}
+
+export interface RenterBuildingSummary {
+  id: number;
+  name: string;
+  address_line: string;
+  city: string;
+  state: string;
+  country: string;
+  postal_code: string;
 }
 
 export type RenterStatusConfig = {
@@ -199,31 +221,31 @@ export type RenterStatusConfig = {
   backgroundColor: string;
 };
 
-export type RenterListResponse =
-  | Renter[]
-  | {
-      count: number;
-      next: string | null;
-      previous: string | null;
-      results: Renter[];
-    };
+export type RenterListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Renter[];
+};
 
 export interface RenterCreatePayload {
   name: string;
-  email?: string | null;
   phone: string;
-  emergency_contact_name: string;
-  emergency_contact_number: string;
   rent_amount: string;
   start_date: string;
+  unit: number;
+  email?: string;
+  alternate_phone?: string;
+  emergency_contact_name?: string;
+  emergency_contact_number?: string;
   end_date?: string | null;
-  unit?: number | null;
   notes?: string;
+  whatsapp_number?: string;
+  rent_due_date?: string;
 }
 
 export interface RenterUpdatePayload extends Partial<RenterCreatePayload> {
   status?: RenterStatus;
-  is_archived?: boolean;
 }
 
 export interface RenterFilters {
@@ -231,7 +253,6 @@ export interface RenterFilters {
   status?: RenterStatus | '';
   building?: number | null;
   unit?: number | null;
-  is_archived?: boolean;
   ordering?: string;
   page?: number;
 }
@@ -314,18 +335,6 @@ export interface Unit {
   notes: string;
   created_at: string;
   updated_at: string;
-  current_renter?: RenterSummary | null;
-}
-
-export interface RenterSummary {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  status: RenterStatus;
-  rent_amount: string;
-  start_date: string;
-  end_date: string | null;
 }
 
 export interface Building {
@@ -399,18 +408,6 @@ export interface PoliceVerification {
   status?: string;
   submitted_at?: string | null;
   verified_at?: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface RentAgreement {
-  id: number;
-  renter: number;
-  unit: number;
-  agreement_start_date: string;
-  agreement_end_date: string;
-  document: string | null;
-  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

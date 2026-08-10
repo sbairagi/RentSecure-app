@@ -2,16 +2,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 import { rentersRepository } from '../repository/rentersRepository';
 import { useRentersStore } from '../store/rentersStore';
+import { queryKeys } from '@/providers/queryClient';
 import type { RenterFilters, RenterListResponse } from '../types/renters';
-
-const RENTERS_QUERY_KEY = (params?: RenterFilters) => ['renters', 'list', params];
 
 export const useRenters = (params?: RenterFilters) => {
   const queryClient = useQueryClient();
   const { setRenters, setError, cacheRenters } = useRentersStore();
 
   const { data, isLoading, isFetching, error } = useQuery<RenterListResponse>({
-    queryKey: RENTERS_QUERY_KEY(params),
+    queryKey: queryKeys.renters.list(params),
     queryFn: () => rentersRepository.fetchRenters(params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -21,7 +20,7 @@ export const useRenters = (params?: RenterFilters) => {
   useEffect(() => {
     if (data) {
       cacheRenters(data);
-      const list = Array.isArray(data) ? data : data.results || [];
+      const list = data.results || [];
       setRenters(list);
     }
   }, [data, setRenters, cacheRenters]);
@@ -33,7 +32,7 @@ export const useRenters = (params?: RenterFilters) => {
   }, [error, setError]);
 
   const refresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: RENTERS_QUERY_KEY(params) });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.renters.list(params) });
   }, [params, queryClient]);
 
   const renters = useRentersStore((state) => state.renters);
@@ -44,6 +43,6 @@ export const useRenters = (params?: RenterFilters) => {
     isFetching,
     error: error instanceof Error ? error.message : null,
     refresh,
-    total: Array.isArray(data) ? data.length : data?.count || 0,
+    total: data?.count || 0,
   };
 };

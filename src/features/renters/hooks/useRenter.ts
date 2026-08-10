@@ -2,9 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 import { rentersRepository } from '../repository/rentersRepository';
 import { useRentersStore } from '../store/rentersStore';
+import { queryKeys } from '@/providers/queryClient';
 import type { Renter, RenterAssignUnitPayload, RenterTransferUnitPayload } from '../types/renters';
 
-const RENTER_QUERY_KEY = (id: number | string) => ['renters', 'detail', id];
+const RENTER_QUERY_KEY = (id: number | string) => queryKeys.renters.detail(String(id));
 
 export const useRenter = (id: number | string) => {
   const queryClient = useQueryClient();
@@ -32,7 +33,8 @@ export const useRenter = (id: number | string) => {
   const deleteMutation = useMutation({
     mutationFn: () => rentersRepository.deleteRenter(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['renters', 'list'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.renters.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.renters.statusSummary });
     },
   });
 
@@ -40,26 +42,12 @@ export const useRenter = (id: number | string) => {
     await deleteMutation.mutateAsync();
   }, [deleteMutation]);
 
-  const rateMutation = useMutation({
-    mutationFn: (args: { rating: number; review?: string }) =>
-      rentersRepository.rateRenter(id, args.rating, args.review),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: RENTER_QUERY_KEY(id) });
-    },
-  });
-
-  const rate = useCallback(
-    async (rating: number, review?: string) => {
-      await rateMutation.mutateAsync({ rating, review });
-    },
-    [rateMutation]
-  );
-
   const updateStatusMutation = useMutation({
     mutationFn: (status: string) => rentersRepository.updateRenterStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RENTER_QUERY_KEY(id) });
-      queryClient.invalidateQueries({ queryKey: ['renters', 'list'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.renters.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.renters.statusSummary });
     },
   });
 
@@ -74,7 +62,8 @@ export const useRenter = (id: number | string) => {
     mutationFn: (end_date?: string) => rentersRepository.vacateRenter(id, end_date),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RENTER_QUERY_KEY(id) });
-      queryClient.invalidateQueries({ queryKey: ['renters', 'list'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.renters.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.renters.statusSummary });
     },
   });
 
@@ -89,7 +78,7 @@ export const useRenter = (id: number | string) => {
     mutationFn: (payload: RenterAssignUnitPayload) => rentersRepository.assignUnit(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RENTER_QUERY_KEY(id) });
-      queryClient.invalidateQueries({ queryKey: ['renters', 'list'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.renters.list() });
     },
   });
 
@@ -104,7 +93,7 @@ export const useRenter = (id: number | string) => {
     mutationFn: (payload: RenterTransferUnitPayload) => rentersRepository.transferUnit(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RENTER_QUERY_KEY(id) });
-      queryClient.invalidateQueries({ queryKey: ['renters', 'list'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.renters.list() });
     },
   });
 
@@ -122,8 +111,6 @@ export const useRenter = (id: number | string) => {
     refresh,
     deleteRenter,
     isDeleting: deleteMutation.isPending,
-    rate,
-    isRating: rateMutation.isPending,
     updateStatus,
     isUpdatingStatus: updateStatusMutation.isPending,
     vacate,

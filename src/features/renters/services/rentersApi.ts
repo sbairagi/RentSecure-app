@@ -34,8 +34,6 @@ export const rentersApi = {
     if (params?.status) searchParams.set('status', params.status);
     if (params?.building) searchParams.set('building', String(params.building));
     if (params?.unit) searchParams.set('unit', String(params.unit));
-    if (params?.is_archived !== undefined)
-      searchParams.set('is_archived', String(params.is_archived));
     if (params?.ordering) searchParams.set('ordering', params.ordering);
     if (params?.page) searchParams.set('page', String(params.page));
     const query = searchParams.toString();

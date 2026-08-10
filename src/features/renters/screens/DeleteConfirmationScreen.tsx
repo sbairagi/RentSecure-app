@@ -1,60 +1,73 @@
 import { Spacing } from '@/constants/theme';
+import { useRenter } from '@/features/renters/hooks/useRenter';
+import { RouteGuard } from '@/navigation/components/RouteGuard';
+import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useRenter } from '../hooks/useRenter';
+import { Button, Title, useTheme } from 'react-native-paper';
 
 export default function DeleteConfirmationScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { renter, isLoading, deleteRenter } = useRenter(Number(id));
+  const theme = useTheme();
   const [deleting, setDeleting] = useState(false);
-
+  
   const handleDelete = async () => {
     setDeleting(true);
     try {
       await deleteRenter();
       router.replace('/(drawer)/(tabs)/renters/list');
-    } catch {
+    } catch (err: any) {
       setDeleting(false);
+      // Error is handled by the hook
     }
   };
-
+  
   if (isLoading) {
     return (
-      <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
+      <RouteGuard requireAuth>
+        <PermissionGuard permissions={['renter:write']}>
+          <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
+            <Text style={styles.loadingText}>Loading...</Text>
+          </View>
+        </PermissionGuard>
+      </RouteGuard>
     );
   }
-
+  
   return (
-    <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
-      <View style={[styles.card, { backgroundColor: '#fff' }]}>
-        <Text style={styles.icon}>🗑️</Text>
-        <Text style={styles.title}>Delete Renter</Text>
-        <Text style={styles.description}>
-          Are you sure you want to delete renter &ldquo;{renter?.name}&rdquo;? This action cannot be
-          undone and all associated data will be permanently removed.
-        </Text>
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.cancelButton, { borderColor: '#e5e7eb' }]}
-            onPress={() => router.back()}
-            disabled={deleting}
-          >
-            <Text style={[styles.cancelButtonText, { color: '#374151' }]}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.deleteButton, { backgroundColor: deleting ? '#9ca3af' : '#dc2626' }]}
-            onPress={handleDelete}
-            disabled={deleting}
-          >
-            <Text style={styles.deleteButtonText}>{deleting ? 'Deleting...' : 'Delete'}</Text>
-          </TouchableOpacity>
+    <RouteGuard requireAuth>
+      <PermissionGuard permissions={['renter:write']}>
+        <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
+          <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
+            <Text style={styles.icon}>🗑️</Text>
+            <Title style={styles.title}>Delete Renter</Title>
+            <Text style={styles.description}>
+              Are you sure you want to delete renter "{renter?.name}"? This action cannot be
+              undone. All associated payment records and documents will be permanently removed.
+            </Text>
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={[styles.cancelButton, { borderColor: theme.colors.outline }]}
+                onPress={() => router.back()}
+                disabled={deleting}
+              >
+                <Text style={[styles.cancelButtonText, { color: theme.colors.onSurface }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.deleteButton, { backgroundColor: deleting ? '#9ca3af' : '#dc2626' }]}
+                onPress={handleDelete}
+                disabled={deleting}
+              >
+                <Text style={styles.deleteButtonText}>{deleting ? 'Deleting...' : 'Delete'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      </View>
-    </View>
+      </PermissionGuard>
+    </RouteGuard>
   );
 }
 

@@ -50,7 +50,7 @@ export const formatPaymentStatus = (status: PaymentStatus): string => {
 };
 
 export const formatKycDocumentType = (type: KycDocument): string => {
-  return RENTER_CONSTANTS.KYC_DOCUMENT_TYPE_LABELS[type.document_type] || type.document_type;
+  return RENTER_CONSTANTS.KYC_DOCUMENT_TYPE_LABELS[type.document_type as keyof typeof RENTER_CONSTANTS.KYC_DOCUMENT_TYPE_LABELS] || type.document_type;
 };
 
 export const filterRenters = (renters: Renter[], filters: RenterFilters): Renter[] => {
@@ -72,9 +72,6 @@ export const filterRenters = (renters: Renter[], filters: RenterFilters): Renter
       return false;
     }
     if (filters.unit && renter.unit_name !== String(filters.unit)) {
-      return false;
-    }
-    if (filters.is_archived !== undefined && renter.is_archived !== filters.is_archived) {
       return false;
     }
     return true;
@@ -112,7 +109,7 @@ export const isRenterOnNotice = (renter: Renter): boolean => {
 };
 
 export const isRenterArchived = (renter: Renter): boolean => {
-  return renter.is_archived ?? false;
+  return renter.status === 'deactivated' || renter.status === 'revoked';
 };
 
 export const getRenterFullAddress = (renter: Renter): string => {
@@ -155,7 +152,7 @@ export const generateCSV = (renters: Renter[]): string => {
     renter.rent_amount,
     renter.start_date,
     renter.end_date || '',
-    renter.unit_name || (renter.current_unit ? String(renter.current_unit) : ''),
+    renter.unit_name || '',
     renter.building_name || '',
     renter.city || '',
     renter.state || '',

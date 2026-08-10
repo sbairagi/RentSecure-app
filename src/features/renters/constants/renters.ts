@@ -1,5 +1,4 @@
 import type {
-  KycDocument,
   KycDocumentType,
   PaymentMethod,
   PaymentStatus,
@@ -125,7 +124,6 @@ export const RENTER_CONSTANTS = {
     STATUS: 'status',
     BUILDING: 'building',
     UNIT: 'unit',
-    ARCHIVED: 'is_archived',
   } as const,
 
   PAYMENT_METHODS: {
