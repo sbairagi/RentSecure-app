@@ -14,6 +14,8 @@ import { ErrorBoundary } from '@/core/observability/error';
 import { initSentry } from '@/core/observability/monitoring/sentry';
 import { environment } from '@/config/environment';
 import { queryClient } from './queryClient';
+import { OfflineBanner } from '@/core/offline/network/OfflineBanner';
+import { initializeSync } from '@/core/offline/sync/syncEngine';
 
 function ProvidersInner({ children }: { children: React.ReactNode }) {
   const _themeMode = useThemeStore((s) => s.mode);
@@ -30,6 +32,9 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     networkManager.startMonitoring();
+    initializeSync().catch((error) => {
+      console.error('Failed to initialize offline sync:', error);
+    });
     return () => {
       networkManager.stopMonitoring();
     };
@@ -46,6 +51,7 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
           </ErrorBoundary>
           <FlashMessage position="top" />
           <GlobalLoader />
+          <OfflineBanner />
         </QueryClientProvider>
       </I18nextProvider>
     </SafeAreaProvider>
