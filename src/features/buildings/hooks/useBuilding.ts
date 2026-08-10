@@ -4,7 +4,7 @@ import { buildingsRepository } from '../repository/buildingsRepository';
 import { useBuildingsStore } from '../store/buildingsStore';
 import type { Building } from '../types/buildings';
 
-const BUILDING_QUERY_KEY = (id: number | string) => ['building', id];
+const BUILDING_QUERY_KEY = (id: number | string) => ['owner', 'building', id];
 
 export const useBuilding = (id: number | string) => {
   const queryClient = useQueryClient();

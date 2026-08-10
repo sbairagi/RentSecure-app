@@ -27,7 +27,6 @@ export interface BuildingStats {
   totalUnits: number;
   occupiedUnits: number;
   vacantUnits: number;
-  monthlyRevenue: number;
 }
 
 export interface BuildingAnalytics {
@@ -38,15 +37,6 @@ export interface BuildingAnalytics {
   vacant_units: number;
   occupancy_rate: number;
 }
-
-export type BuildingListResponse =
-  | Building[]
-  | {
-      count: number;
-      next: string | null;
-      previous: string | null;
-      results: Building[];
-    };
 
 export interface BuildingCreatePayload {
   name: string;

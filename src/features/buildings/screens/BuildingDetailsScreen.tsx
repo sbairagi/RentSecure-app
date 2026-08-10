@@ -2,6 +2,8 @@ import { Radius, Spacing } from '@/constants/theme';
 import { Button } from '@/design-system/buttons/Button';
 import { BuildingStatsRow } from '@/features/buildings/components/BuildingStatsRow';
 import { useBuilding } from '@/features/buildings/hooks/useBuilding';
+import { useBuildings } from '@/features/buildings/hooks/useBuildings';
+import { useIsOffline } from '@/core/offline';
 import {
   formatBuildingAddress,
   getBuildingStatus,
@@ -16,8 +18,15 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 export default function BuildingDetailsScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const isOffline = useIsOffline();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { building, isLoading, error, refresh } = useBuilding(Number(id));
+  const { deleteBuilding, isDeleting } = useBuildings();
+
+  const handleDelete = async () => {
+    await deleteBuilding(Number(id));
+    router.replace('/(drawer)/(tabs)/buildings/list');
+  };
 
   if (isLoading) {
     return (
@@ -77,15 +86,32 @@ export default function BuildingDetailsScreen() {
           <BuildingStatsRow building={building} />
           <View style={styles.actions}>
             <Button
-              title="Edit"
+              title="View Units"
               variant="outlined"
-              onPress={() => router.push(`/(drawer)/(tabs)/buildings/${building.id}/edit`)}
+              onPress={() =>
+                router.push(`/(drawer)/(tabs)/units/list?building=${building.id}`)
+              }
             />
-            <Button
-              title="Delete"
-              variant="ghost"
-              onPress={() => router.push(`/(drawer)/(tabs)/buildings/${building.id}/delete`)}
-            />
+            <PermissionGuard permissions={['building:write']}>
+              <Button
+                title="Edit"
+                variant="outlined"
+                onPress={() =>
+                  router.push(`/(drawer)/(tabs)/buildings/${building.id}/edit`)
+                }
+                disabled={isOffline}
+              />
+            </PermissionGuard>
+            <PermissionGuard permissions={['building:write']}>
+              <Button
+                title="Delete"
+                variant="ghost"
+                onPress={() =>
+                  router.push(`/(drawer)/(tabs)/buildings/${building.id}/delete`)
+                }
+                disabled={isOffline}
+              />
+            </PermissionGuard>
           </View>
         </ScrollView>
       </PermissionGuard>
@@ -128,6 +154,7 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'flex-end',
     gap: Spacing.sm,
     paddingHorizontal: Spacing.md,

@@ -15,17 +15,20 @@ export const BuildingLimitBanner: React.FC<BuildingLimitBannerProps> = ({
 }) => {
   const theme = useTheme();
   const router = useRouter();
-  const { usageLimits, addOns } = useSubscriptionStore();
+  const { usageLimits, addOns, subscription } = useSubscriptionStore();
 
   const limit = usageLimits.find((l) => l.feature_key === featureKey);
   const hasAddOn = addOns.some((a) => a.name === featureKey && a.is_recurring);
   const currentUsage = limit?.usage_count || 0;
+  const planName = subscription?.plan?.name || 'free';
 
   if (hasAddOn) return null;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.primary + '10' }]}>
-      <Text style={[styles.text, { color: theme.text }]}>Building limit: {currentUsage} used</Text>
+      <Text style={[styles.text, { color: theme.text }]}>
+        Building limit: {currentUsage} used on {planName} plan
+      </Text>
       <Button
         title="Upgrade"
         variant="primary"

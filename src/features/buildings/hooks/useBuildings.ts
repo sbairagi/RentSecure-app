@@ -3,27 +3,21 @@ import { useCallback } from 'react';
 import { showMessage } from 'react-native-flash-message';
 import { buildingsRepository } from '../repository/buildingsRepository';
 import { useBuildingsStore } from '../store/buildingsStore';
-import type { BuildingCreatePayload, BuildingUpdatePayload } from '../types/buildings';
+import type { Building, BuildingCreatePayload, BuildingUpdatePayload } from '../types/buildings';
 
-const BUILDINGS_QUERY_KEY = ['buildings'];
+const BUILDINGS_QUERY_KEY = ['owner', 'buildings', 'list'];
+const BUILDING_DETAIL_QUERY_KEY = (id: number | string) => ['owner', 'building', id];
 
-export const useBuildings = (params?: {
-  search?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  ordering?: string;
-}) => {
+export const useBuildings = () => {
   const queryClient = useQueryClient();
-  const { setBuildings, setError } = useBuildingsStore();
+  const { setError } = useBuildingsStore();
 
-  const { data, isLoading, isFetching, error, refetch } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery<Building[]>({
     queryKey: BUILDINGS_QUERY_KEY,
     queryFn: async () => {
-      const result = await buildingsRepository.fetchBuildings(params);
-      const list = Array.isArray(result) ? result : result.results || [];
-      useBuildingsStore.getState().cacheBuildings(list);
-      return list;
+      const result = await buildingsRepository.fetchBuildings();
+      useBuildingsStore.getState().cacheBuildings(result);
+      return result;
     },
     staleTime: 2 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -51,8 +45,9 @@ export const useBuildings = (params?: {
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number | string; payload: BuildingUpdatePayload }) =>
       buildingsRepository.updateBuilding(id, payload),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: BUILDINGS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: BUILDING_DETAIL_QUERY_KEY(variables.id) });
       showMessage({ message: 'Building updated successfully', type: 'success' });
     },
     onError: (err: any) => {
@@ -91,8 +86,11 @@ export const useBuildings = (params?: {
     error: error?.message || null,
     refresh,
     createBuilding: createMutation.mutate,
+    createBuildingAsync: createMutation.mutateAsync,
     updateBuilding: updateMutation.mutate,
+    updateBuildingAsync: updateMutation.mutateAsync,
     deleteBuilding: deleteMutation.mutate,
+    deleteBuildingAsync: deleteMutation.mutateAsync,
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,

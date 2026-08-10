@@ -1,27 +1,10 @@
 import { apiService } from '@/services/api/apiClient';
 import { BUILDING_CONSTANTS } from '../constants/buildingConstants';
-import type { Building, BuildingAnalytics, BuildingListResponse } from '../types/buildings';
+import type { Building, BuildingAnalytics } from '../types/buildings';
 
 export const buildingsApi = {
-  list: async (params?: {
-    search?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    ordering?: string;
-    page?: number;
-  }): Promise<BuildingListResponse> => {
-    const searchParams = new URLSearchParams();
-    if (params?.search) searchParams.set('search', params.search);
-    if (params?.city) searchParams.set('city', params.city);
-    if (params?.state) searchParams.set('state', params.state);
-    if (params?.country) searchParams.set('country', params.country);
-    if (params?.ordering) searchParams.set('ordering', params.ordering);
-    if (params?.page) searchParams.set('page', String(params.page));
-    const query = searchParams.toString();
-    return apiService.get<BuildingListResponse>(
-      `${BUILDING_CONSTANTS.API.LIST}${query ? `?${query}` : ''}`
-    );
+  list: async (): Promise<Building[]> => {
+    return apiService.get<Building[]>(BUILDING_CONSTANTS.API.LIST);
   },
 
   retrieve: async (id: number | string): Promise<Building> => {

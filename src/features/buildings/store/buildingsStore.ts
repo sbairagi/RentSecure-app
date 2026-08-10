@@ -1,6 +1,6 @@
 import { mmkvStorage } from '@/services/storage/mmkv';
 import { create } from 'zustand';
-import type { Building, BuildingListResponse } from '../types/buildings';
+import type { Building } from '../types/buildings';
 
 interface BuildingsState {
   buildings: Building[];
@@ -17,8 +17,8 @@ interface BuildingsActions {
   setError: (error: string | null) => void;
   clearBuildings: () => void;
   initBuildings: () => Promise<void>;
-  cacheBuildings: (data: BuildingListResponse) => Promise<void>;
-  getCachedBuildings: () => Promise<BuildingListResponse | null>;
+  cacheBuildings: (data: Building[]) => Promise<void>;
+  getCachedBuildings: () => Promise<Building[] | null>;
 }
 
 type BuildingsStore = BuildingsState & BuildingsActions;
@@ -67,8 +67,7 @@ export const useBuildingsStore = create<BuildingsStore>((set, get) => ({
     try {
       const cached = await get().getCachedBuildings();
       if (cached) {
-        const list = Array.isArray(cached) ? cached : cached.results || [];
-        set({ buildings: list, isLoading: false, lastFetched: Date.now() });
+        set({ buildings: cached, isLoading: false, lastFetched: Date.now() });
       } else {
         set({ isLoading: false });
       }
@@ -79,17 +78,16 @@ export const useBuildingsStore = create<BuildingsStore>((set, get) => ({
 
   cacheBuildings: async (data) => {
     try {
-      const list = Array.isArray(data) ? data : data.results || [];
       await mmkvStorage.setItem(
         'buildings_cache',
-        JSON.stringify({ data: list, timestamp: Date.now() })
+        JSON.stringify({ data: data, timestamp: Date.now() })
       );
     } catch {
       // Ignore cache errors
     }
   },
 
-  getCachedBuildings: async (): Promise<BuildingListResponse | null> => {
+  getCachedBuildings: async (): Promise<Building[] | null> => {
     try {
       const cached = await mmkvStorage.getItem('buildings_cache');
       if (!cached) return null;
@@ -99,7 +97,7 @@ export const useBuildingsStore = create<BuildingsStore>((set, get) => ({
         await mmkvStorage.removeItem('buildings_cache');
         return null;
       }
-      return { results: parsed.data } as BuildingListResponse;
+      return parsed.data;
     } catch {
       return null;
     }

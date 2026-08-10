@@ -7,8 +7,7 @@ export const computeBuildingStats = (building: Building) => {
     (u) => u.status === 'occupied' || u.is_vacant === false
   ).length;
   const vacantUnits = totalUnits - occupiedUnits;
-  const monthlyRevenue = 0;
-  return { totalUnits, occupiedUnits, vacantUnits, monthlyRevenue };
+  return { totalUnits, occupiedUnits, vacantUnits };
 };
 
 export const getBuildingStatus = (building: Building): 'active' | 'archived' => {

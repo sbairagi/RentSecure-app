@@ -27,10 +27,6 @@ export const BuildingStatsRow: React.FC<BuildingStatsRowProps> = ({ building }) 
         <Text style={[styles.statValue, { color: theme.text }]}>{stats.vacantUnits}</Text>
         <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Vacant</Text>
       </View>
-      <View style={styles.statItem}>
-        <Text style={[styles.statValue, { color: theme.text }]}>N/A</Text>
-        <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Revenue</Text>
-      </View>
     </View>
   );
 };

@@ -27,9 +27,6 @@ export const BuildingCard: React.FC<BuildingCardProps> = ({ building, onPress })
           <Text style={[styles.statusText, { color: statusColor }]}>{status}</Text>
         </View>
       </View>
-      <Text style={[styles.property, { color: theme.textSecondary }]} numberOfLines={1}>
-        {building.name}
-      </Text>
       <Text style={[styles.address, { color: theme.textSecondary }]} numberOfLines={1}>
         {formatBuildingAddress(building)}
       </Text>
@@ -45,10 +42,6 @@ export const BuildingCard: React.FC<BuildingCardProps> = ({ building, onPress })
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: theme.text }]}>{stats.vacantUnits}</Text>
           <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Vacant</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: theme.text }]}>N/A</Text>
-          <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Revenue</Text>
         </View>
       </View>
     </AppCard>
@@ -76,10 +69,6 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 11,
     fontWeight: '500',
-  },
-  property: {
-    fontSize: 13,
-    marginBottom: Spacing.xs,
   },
   address: {
     fontSize: 12,
