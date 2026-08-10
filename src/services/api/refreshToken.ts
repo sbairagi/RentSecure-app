@@ -2,6 +2,7 @@ import axios, { InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from './endpoints';
 import { createApiError } from './errorHandler';
 import { logger } from './logger';
+import { secureStorage } from '@/services/storage/secureStorage';
 
 class RefreshTokenManager {
   private isRefreshing = false;
@@ -53,9 +54,7 @@ class RefreshTokenManager {
 
   private async getRefreshToken(): Promise<string | null> {
     try {
-      const { MMKV } = await import('react-native-mmkv');
-      const mmkv = new MMKV();
-      return mmkv.getString('refresh_token') ?? null;
+      return await secureStorage.getRefreshToken();
     } catch {
       return null;
     }
@@ -63,10 +62,8 @@ class RefreshTokenManager {
 
   private async saveTokens(accessToken: string, refreshToken: string): Promise<void> {
     try {
-      const { MMKV } = await import('react-native-mmkv');
-      const mmkv = new MMKV();
-      mmkv.set('access_token', accessToken);
-      mmkv.set('refresh_token', refreshToken);
+      await secureStorage.setAccessToken(accessToken);
+      await secureStorage.setRefreshToken(refreshToken);
     } catch (error) {
       logger.error('Failed to save tokens', error as Error);
     }
@@ -83,11 +80,7 @@ class RefreshTokenManager {
 
   private async handleRefreshFailure(): Promise<void> {
     try {
-      const { MMKV } = await import('react-native-mmkv');
-      const mmkv = new MMKV();
-      mmkv.delete('access_token');
-      mmkv.delete('refresh_token');
-      mmkv.delete('auth_user');
+      await secureStorage.clearAuth();
     } catch (error) {
       logger.error('Failed to clear tokens', error as Error);
     }

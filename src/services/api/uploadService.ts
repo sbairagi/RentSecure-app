@@ -1,6 +1,7 @@
 import { File, UploadType } from 'expo-file-system';
 import { createApiError } from './errorHandler';
 import { logger } from './logger';
+import { secureStorage } from '@/services/storage/secureStorage';
 import type { UploadProgress } from './types';
 
 export type UploadFile = {
@@ -125,9 +126,7 @@ class UploadService {
 
   private async getAuthToken(): Promise<string | null> {
     try {
-      const { MMKV } = await import('react-native-mmkv');
-      const mmkv = new MMKV();
-      return mmkv.getString('access_token') ?? null;
+      return await secureStorage.getAccessToken();
     } catch {
       return null;
     }

@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { HttpsEnforcer } from '@/core/security/network/httpsEnforcer';
 
 /**
  * Application environment configuration.
@@ -126,7 +127,16 @@ export const environment: EnvironmentConfig = {
   // - On web: LAN IPs are auto-replaced with `localhost` because the
   //   browser runs on the same machine as Django.
   // - On native: the LAN IP is preserved so the phone can reach the Mac.
-  apiUrl: resolveApiUrl(getEnvValue('API_URL', 'http://localhost:8000/api')),
+  apiUrl: (() => {
+    const rawUrl = resolveApiUrl(getEnvValue('API_URL', 'http://localhost:8000/api'));
+    const validation = HttpsEnforcer.validateApiBaseUrl(rawUrl);
+    if (!validation.isValid) {
+      throw new Error(
+        `Invalid API URL: ${validation.error}. In production, API_URL must use HTTPS.`
+      );
+    }
+    return validation.sanitizedUrl || rawUrl;
+  })(),
   apiTimeout: getEnvNumber('API_TIMEOUT', 30000),
   apiRetryCount: getEnvNumber('API_RETRY_COUNT', 3),
   appName: getEnvValue('APP_NAME', 'SecureNest'),

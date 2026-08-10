@@ -101,6 +101,38 @@ class SecureStorageService {
   async getBiometricEnabled(): Promise<string | null> {
     return this.getItem('biometric_enabled');
   }
+
+  async getSessionExpiry(): Promise<number | null> {
+    const value = await this.getItem('session_expires_at');
+    if (!value) return null;
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? null : parsed;
+  }
+
+  async setSessionExpiry(expiresAt: number): Promise<void> {
+    await this.setItem('session_expires_at', expiresAt.toString());
+  }
+
+  async getLastActivity(): Promise<number | null> {
+    const value = await this.getItem('last_activity_at');
+    if (!value) return null;
+    const parsed = parseInt(value, 10);
+    return isNaN(parsed) ? null : parsed;
+  }
+
+  async setLastActivity(timestamp: number): Promise<void> {
+    await this.setItem('last_activity_at', timestamp.toString());
+  }
+
+  async clearSession(): Promise<void> {
+    await Promise.all([
+      this.removeItem(SECURE_STORAGE_KEYS.ACCESS_TOKEN),
+      this.removeItem(SECURE_STORAGE_KEYS.REFRESH_TOKEN),
+      this.removeItem(SECURE_STORAGE_KEYS.USER),
+      this.removeItem('session_expires_at'),
+      this.removeItem('last_activity_at'),
+    ]);
+  }
 }
 
 export const secureStorage = new SecureStorageService();

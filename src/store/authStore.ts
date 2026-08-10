@@ -1,6 +1,6 @@
 import { INACTIVITY_TIMEOUT, SESSION_TIMEOUT } from '@/constants/auth.constants';
 import { authApi } from '@/services/auth/auth';
-import { mmkvStorage } from '@/services/storage/mmkv';
+import { secureStorage } from '@/services/storage/secureStorage';
 import type { User, UserRole } from '@/types';
 import { create } from 'zustand';
 
@@ -63,8 +63,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   setTokens: async (accessToken, refreshToken) => {
     try {
-      await mmkvStorage.setItem('access_token', accessToken);
-      await mmkvStorage.setItem('refresh_token', refreshToken);
+      await secureStorage.setItem('access_token', accessToken);
+      await secureStorage.setItem('refresh_token', refreshToken);
       set({ accessToken, refreshToken });
     } catch (error) {
       set({ error: 'Failed to save tokens' });
@@ -82,11 +82,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       const sessionExpiresAt = Date.now() + SESSION_TIMEOUT;
       const lastActivityAt = Date.now();
 
-      await mmkvStorage.setItem('auth_user', JSON.stringify(user));
-      await mmkvStorage.setItem('access_token', accessToken);
-      await mmkvStorage.setItem('refresh_token', refreshToken);
-      await mmkvStorage.setItem('session_expires_at', sessionExpiresAt.toString());
-      await mmkvStorage.setItem('last_activity_at', lastActivityAt.toString());
+      await secureStorage.setItem('auth_user', JSON.stringify(user));
+      await secureStorage.setItem('access_token', accessToken);
+      await secureStorage.setItem('refresh_token', refreshToken);
+      await secureStorage.setItem('session_expires_at', sessionExpiresAt.toString());
+      await secureStorage.setItem('last_activity_at', lastActivityAt.toString());
 
       set({
         user,
@@ -117,11 +117,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           // Ignore logout API errors
         }
       }
-      await mmkvStorage.removeItem('auth_user');
-      await mmkvStorage.removeItem('access_token');
-      await mmkvStorage.removeItem('refresh_token');
-      await mmkvStorage.removeItem('session_expires_at');
-      await mmkvStorage.removeItem('last_activity_at');
+      await secureStorage.removeItem('auth_user');
+      await secureStorage.removeItem('access_token');
+      await secureStorage.removeItem('refresh_token');
+      await secureStorage.removeItem('session_expires_at');
+      await secureStorage.removeItem('last_activity_at');
       set({
         user: null,
         accessToken: null,
@@ -145,19 +145,19 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     })),
 
   refresh: async (accessToken, refreshToken) => {
-    await mmkvStorage.setItem('access_token', accessToken);
+    await secureStorage.setItem('access_token', accessToken);
     if (refreshToken) {
-      await mmkvStorage.setItem('refresh_token', refreshToken);
+      await secureStorage.setItem('refresh_token', refreshToken);
     }
     set({ accessToken, refreshToken });
   },
 
   clearSession: async () => {
-    await mmkvStorage.removeItem('auth_user');
-    await mmkvStorage.removeItem('access_token');
-    await mmkvStorage.removeItem('refresh_token');
-    await mmkvStorage.removeItem('session_expires_at');
-    await mmkvStorage.removeItem('last_activity_at');
+    await secureStorage.removeItem('auth_user');
+    await secureStorage.removeItem('access_token');
+    await secureStorage.removeItem('refresh_token');
+    await secureStorage.removeItem('session_expires_at');
+    await secureStorage.removeItem('last_activity_at');
     set({
       user: null,
       accessToken: null,
@@ -173,13 +173,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   setSessionExpiry: (expiresAt) => {
-    mmkvStorage.setItem('session_expires_at', expiresAt.toString());
+    secureStorage.setItem('session_expires_at', expiresAt.toString());
     set({ sessionExpiresAt: expiresAt });
   },
 
   updateLastActivity: () => {
     const lastActivityAt = Date.now();
-    mmkvStorage.setItem('last_activity_at', lastActivityAt.toString());
+    secureStorage.setItem('last_activity_at', lastActivityAt.toString());
     set({ lastActivityAt });
   },
 

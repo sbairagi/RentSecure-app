@@ -8,6 +8,7 @@ import { Platform } from 'react-native';
 import { API_CONFIG } from './endpoints';
 import { useGlobalLoaderStore } from './globalLoader';
 import { logger } from './logger';
+import { secureStorage } from '@/services/storage/secureStorage';
 import { networkManager } from './networkManager';
 import { requestQueue } from './requestQueue';
 import { refreshTokenManager } from './refreshToken';
@@ -260,9 +261,7 @@ class ApiClient {
 
   private async getAccessToken(): Promise<string | null> {
     try {
-      const { MMKV } = await import('react-native-mmkv');
-      const mmkv = new MMKV();
-      return mmkv.getString('access_token') ?? null;
+      return await secureStorage.getAccessToken();
     } catch {
       return null;
     }
@@ -270,11 +269,7 @@ class ApiClient {
 
   private async clearAuthData(): Promise<void> {
     try {
-      const { MMKV } = await import('react-native-mmkv');
-      const mmkv = new MMKV();
-      mmkv.delete('access_token');
-      mmkv.delete('refresh_token');
-      mmkv.delete('auth_user');
+      await secureStorage.clearAuth();
     } catch (error) {
       logger.error('Failed to clear auth data', error as Error);
     }

@@ -5,6 +5,7 @@
  * This file is kept for reference but is not the active interceptor.
  */
 import axios, { InternalAxiosRequestConfig } from 'axios';
+import { secureStorage } from '@/services/storage/secureStorage';
 import { API_CONFIG } from './endpoints';
 import { createApiError } from './errorHandler';
 import { attachRequestHeaders } from './interceptors';
@@ -186,9 +187,7 @@ export async function responseErrorInterceptor(error: any): Promise<any> {
 
 async function getAccessToken(): Promise<string | null> {
   try {
-    const { MMKV } = await import('react-native-mmkv');
-    const mmkv = new MMKV();
-    return mmkv.getString('access_token') ?? null;
+    return await secureStorage.getAccessToken();
   } catch {
     return null;
   }
@@ -196,9 +195,7 @@ async function getAccessToken(): Promise<string | null> {
 
 async function getRefreshTokenFromStorage(): Promise<string | null> {
   try {
-    const { MMKV } = await import('react-native-mmkv');
-    const mmkv = new MMKV();
-    return mmkv.getString('refresh_token') ?? null;
+    return await secureStorage.getRefreshToken();
   } catch {
     return null;
   }
@@ -206,10 +203,8 @@ async function getRefreshTokenFromStorage(): Promise<string | null> {
 
 async function saveTokens(accessToken: string, refreshToken: string): Promise<void> {
   try {
-    const { MMKV } = await import('react-native-mmkv');
-    const mmkv = new MMKV();
-    mmkv.set('access_token', accessToken);
-    mmkv.set('refresh_token', refreshToken);
+    await secureStorage.setAccessToken(accessToken);
+    await secureStorage.setRefreshToken(refreshToken);
   } catch (error) {
     logger.error('Failed to save tokens', error as Error);
   }
