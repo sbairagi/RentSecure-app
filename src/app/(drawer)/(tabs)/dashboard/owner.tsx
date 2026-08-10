@@ -10,7 +10,7 @@ import {
   DashboardSubscriptionWidget,
 } from '@/features/dashboard/components';
 import { useDashboard } from '@/features/dashboard/hooks';
-import type { FeatureUsage, SubscriptionPlan } from '@/features/dashboard/types/dashboard';
+import type { FeatureUsage, PlanLimit, SubscriptionPlan } from '@/features/dashboard/types/dashboard';
 import { useAuthStore } from '@/store/authStore';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useRouter } from 'expo-router';
@@ -29,7 +29,7 @@ export default function OwnerDashboardScreen() {
   const netInfo = useNetInfo();
   const user = useAuthStore((s) => s.user);
 
-  const { data: dashboardData, isLoading, error, pullToRefresh } = useDashboard();
+  const { data: dashboardData, summary, isLoading, error, pullToRefresh } = useDashboard();
 
   const [refreshing, setRefreshing] = React.useState(false);
 
@@ -52,6 +52,17 @@ export default function OwnerDashboardScreen() {
   }, []);
 
   const userName = user?.fullName || user?.firstName || 'User';
+
+  const unreadCount = dashboardData?.notifications?.unread_count || 0;
+
+  const subscription: SubscriptionPlan | null = dashboardData?.subscription || null;
+  const planLimits: PlanLimit[] = dashboardData?.plan_limits || [];
+  const featureUsage: FeatureUsage[] = dashboardData?.feature_usage || [];
+
+  const isSubscriptionExpired = useMemo(() => {
+    if (!subscription) return false;
+    return subscription.is_subscription_expired;
+  }, [subscription]);
 
   const stats = useMemo(() => {
     if (!dashboardData?.stats) return null;
@@ -125,8 +136,8 @@ export default function OwnerDashboardScreen() {
     }));
   }, [dashboardData]);
 
-  const subscription: SubscriptionPlan | null = dashboardData?.subscription || null;
-  const featureUsage: FeatureUsage[] = dashboardData?.feature_usage || [];
+  const recentPayments = dashboardData?.recent?.rent_payments || [];
+  const payouts = dashboardData?.payouts || { success: 0, pending: 0, failed: 0 };
 
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
@@ -192,13 +203,28 @@ export default function OwnerDashboardScreen() {
           accessibilityLabel="Search"
           accessibilityHint="Open global search"
         />
-        <IconButton
-          icon="bell-outline"
-          size={24}
-          onPress={() => router.push('/(drawer)/(tabs)/notifications')}
-          style={styles.headerIcon}
-          iconColor={theme.colors.onSurfaceVariant}
-        />
+        <View style={styles.headerIcon}>
+          <IconButton
+            icon="bell-outline"
+            size={24}
+            onPress={() => router.push('/(drawer)/(tabs)/notifications')}
+            iconColor={theme.colors.onSurfaceVariant}
+            accessibilityLabel="Notifications"
+            accessibilityHint="Open notifications"
+          />
+          {unreadCount > 0 && (
+            <View
+              style={[
+                styles.notificationBadge,
+                { backgroundColor: '#EF4444' },
+              ]}
+            >
+              <Text style={styles.notificationBadgeText}>
+                {unreadCount > 99 ? '99+' : String(unreadCount)}
+              </Text>
+            </View>
+          )}
+        </View>
         <IconButton
           icon="cog-outline"
           size={24}
@@ -257,6 +283,108 @@ export default function OwnerDashboardScreen() {
               color={stat.color}
             />
           </Animated.View>
+        ))}
+      </View>
+    );
+  };
+
+  const renderFinancialSummary = () => {
+    if (isLoading || !summary) {
+      return (
+        <View style={styles.financialCard}>
+          <Text style={{ color: theme.colors.onSurfaceVariant }}>Loading financial summary...</Text>
+        </View>
+      );
+    }
+
+    const financialItems = [
+      {
+        label: 'Total Rent Collected',
+        value: `₹${summary.total_rent_collected}`,
+        icon: '💰',
+        color: '#059669',
+      },
+      {
+        label: 'Pending Rent',
+        value: `₹${summary.pending_rent}`,
+        icon: '⏳',
+        color: '#D97706',
+      },
+      {
+        label: 'Payouts Success',
+        value: payouts.success.toString(),
+        icon: '✅',
+        color: '#059669',
+      },
+      {
+        label: 'Payouts Pending',
+        value: payouts.pending.toString(),
+        icon: '🔄',
+        color: '#D97706',
+      },
+    ];
+
+    return (
+      <View style={styles.financialGrid}>
+        {financialItems.map((item) => (
+          <View key={item.label} style={[styles.financialItem, { backgroundColor: theme.colors.surfaceVariant }]}>
+            <Text style={styles.financialIcon}>{item.icon}</Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 4 }}>
+              {item.label}
+            </Text>
+            <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontWeight: '600', marginTop: 2 }}>
+              {item.value}
+            </Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  const renderRecentPayments = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.recentPaymentsContainer}>
+          <Text style={{ color: theme.colors.onSurfaceVariant }}>Loading recent payments...</Text>
+        </View>
+      );
+    }
+
+    if (recentPayments.length === 0) {
+      return (
+        <View style={styles.recentPaymentsContainer}>
+          <Text style={{ color: theme.colors.onSurfaceVariant }}>No rent payments yet.</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.recentPaymentsContainer}>
+        {recentPayments.slice(0, 5).map((payment) => (
+          <View
+            key={payment.id}
+            style={[
+              styles.paymentItem,
+              { borderBottomColor: theme.colors.outlineVariant },
+            ]}
+          >
+            <View style={styles.paymentLeft}>
+              <Text variant="bodyMedium" style={{ color: theme.colors.onSurface, fontWeight: '500' }}>
+                {payment.renter_name || 'Unknown'}
+              </Text>
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
+                {payment.unit_name} {payment.building_name ? `• ${payment.building_name}` : ''}
+              </Text>
+            </View>
+            <View style={styles.paymentRight}>
+              <Text variant="bodyMedium" style={{ color: theme.colors.onSurface, fontWeight: '600' }}>
+                ₹{payment.amount}
+              </Text>
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 2 }}>
+                {payment.payment_method}
+              </Text>
+            </View>
+          </View>
         ))}
       </View>
     );
@@ -388,7 +516,7 @@ export default function OwnerDashboardScreen() {
               marginTop: 16,
             }}
           >
-            Something went wrong
+            Unable to load dashboard
           </Text>
           <Text
             variant="bodyMedium"
@@ -425,6 +553,22 @@ export default function OwnerDashboardScreen() {
       >
         {renderStatsGrid()}
 
+        {!isLoading && summary && (
+          <View style={styles.section}>
+            <Text
+              variant="titleMedium"
+              style={{
+                color: theme.colors.onSurface,
+                fontWeight: '600',
+                marginBottom: 12,
+              }}
+            >
+              Financial Summary
+            </Text>
+            {renderFinancialSummary()}
+          </View>
+        )}
+
         <View style={styles.section}>
           <Text
             variant="titleMedium"
@@ -448,9 +592,26 @@ export default function OwnerDashboardScreen() {
               marginBottom: 12,
             }}
           >
+            Recent Rent Payments
+          </Text>
+          {renderRecentPayments()}
+        </View>
+
+        <View style={styles.section}>
+          <Text
+            variant="titleMedium"
+            style={{
+              color: theme.colors.onSurface,
+              fontWeight: '600',
+              marginBottom: 12,
+            }}
+          >
             Quick Actions
           </Text>
-          <DashboardQuickActions />
+          <DashboardQuickActions
+            subscriptionExpired={isSubscriptionExpired}
+            onUpgrade={() => router.push('/(drawer)/(tabs)/subscription')}
+          />
         </View>
 
         <View style={styles.section}>
@@ -480,9 +641,39 @@ export default function OwnerDashboardScreen() {
           <DashboardSubscriptionWidget
             subscription={subscription}
             featureUsage={featureUsage}
+            planLimits={planLimits}
             onUpgrade={() => router.push('/(drawer)/(tabs)/subscription')}
           />
         </View>
+
+        {isSubscriptionExpired && (
+          <View style={styles.section}>
+            <View
+              style={[
+                styles.expiredBanner,
+                { backgroundColor: `${theme.colors.error}15`, borderColor: theme.colors.error },
+              ]}
+            >
+              <Text variant="bodyMedium" style={{ color: theme.colors.error, fontWeight: '600' }}>
+                Your subscription has expired
+              </Text>
+              <Text
+                variant="bodySmall"
+                style={{ color: theme.colors.onSurfaceVariant, marginTop: 4 }}
+              >
+                Renew now to continue accessing all features.
+              </Text>
+              <Button
+                mode="contained"
+                onPress={() => router.push('/(drawer)/(tabs)/subscription')}
+                style={[styles.renewButton, { backgroundColor: theme.colors.error }]}
+                labelStyle={{ color: theme.colors.onError, fontWeight: '600' }}
+              >
+                Renew Subscription
+              </Button>
+            </View>
+          </View>
+        )}
 
         <View style={{ height: 24 }} />
       </ScrollView>
@@ -535,6 +726,23 @@ const styles = StyleSheet.create({
   },
   headerIcon: {
     margin: 0,
+    position: 'relative',
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    borderRadius: 9,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  notificationBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
   },
   scrollContent: {
     paddingTop: 16,
@@ -587,5 +795,62 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 4,
     minWidth: 120,
+  },
+  financialCard: {
+    padding: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center',
+  },
+  financialGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  financialItem: {
+    flex: 1,
+    minWidth: '45%',
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  financialIcon: {
+    fontSize: 24,
+  },
+  recentPaymentsContainer: {
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+  },
+  paymentItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+  },
+  paymentLeft: {
+    flex: 1,
+  },
+  paymentRight: {
+    alignItems: 'flex-end',
+  },
+  expiredBanner: {
+    marginHorizontal: 16,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  renewButton: {
+    marginTop: 12,
+    borderRadius: 12,
+    paddingVertical: 4,
+    minWidth: 160,
   },
 });

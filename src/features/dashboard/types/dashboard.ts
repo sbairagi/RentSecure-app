@@ -94,6 +94,12 @@ export interface SubscriptionPlan {
   end_date: string;
   is_active_subscription: boolean;
   is_yearly: boolean;
+  is_subscription_expired: boolean;
+}
+
+export interface PlanLimit {
+  feature_key: string;
+  value: string;
 }
 
 export interface FeatureUsage {
@@ -131,6 +137,7 @@ export interface DashboardResponse {
     unread_count: number;
   };
   subscription: SubscriptionPlan | null;
+  plan_limits: PlanLimit[];
   feature_usage: FeatureUsage[];
   payouts: Payouts;
 }

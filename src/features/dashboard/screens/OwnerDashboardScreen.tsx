@@ -365,7 +365,11 @@ export default function OwnerDashboardScreen() {
           >
             Quick Actions
           </Text>
-          <DashboardQuickActions />
+          <DashboardQuickActions
+            subscriptionExpired={subscription?.is_subscription_expired || false}
+            planLimits={dashboardData?.plan_limits || []}
+            onUpgrade={() => router.push('/(drawer)/(tabs)/subscription')}
+          />
         </View>
 
         <View style={styles.section}>
@@ -392,6 +396,7 @@ export default function OwnerDashboardScreen() {
           <DashboardSubscriptionWidget
             subscription={subscription}
             featureUsage={featureUsage}
+            planLimits={dashboardData?.plan_limits || []}
             onUpgrade={() => router.push('/(drawer)/(tabs)/subscription')}
           />
         </View>

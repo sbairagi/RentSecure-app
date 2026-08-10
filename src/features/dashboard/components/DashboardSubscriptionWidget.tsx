@@ -2,42 +2,45 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Card, ProgressBar, Text, useTheme } from 'react-native-paper';
 
-interface SubscriptionPlan {
-  id: number;
-  name: string;
-  monthly_price: string;
-  yearly_price: string;
-  features: string;
-  is_active: boolean;
-  start_date: string;
-  end_date: string;
-  is_active_subscription: boolean;
-  is_yearly: boolean;
-}
-
-interface FeatureUsage {
-  feature_key: string;
-  usage_count: number;
-  updated_at: string;
-}
+import type { FeatureUsage, PlanLimit, SubscriptionPlan } from '../types/dashboard';
 
 interface SubscriptionWidgetProps {
   subscription: SubscriptionPlan | null;
   featureUsage: FeatureUsage[];
+  planLimits: PlanLimit[];
   onUpgrade: () => void;
 }
 
-const FEATURE_LIMITS: Record<string, { label: string; limit: number }> = {
-  buildings: { label: 'Buildings', limit: 10 },
-  units: { label: 'Units', limit: 50 },
-  renters: { label: 'Renters', limit: 100 },
-  agreements: { label: 'Agreements', limit: 200 },
-  reports: { label: 'Reports', limit: 50 },
+const DEFAULT_FEATURE_LIMITS: Record<string, { label: string; limit: number }> = {
+  max_buildings: { label: 'Buildings', limit: 10 },
+  max_units: { label: 'Units', limit: 50 },
+  max_renters: { label: 'Renters', limit: 100 },
+  max_caretakers: { label: 'Caretakers', limit: 50 },
+  max_unit_images: { label: 'Unit Images', limit: 100 },
+  max_document_uploads: { label: 'Documents', limit: 50 },
+  tax_notifications: { label: 'Tax Notifications', limit: 12 },
+  whatsapp_alerts: { label: 'WhatsApp Alerts', limit: 100 },
+  rent_agreement_drafting: { label: 'Agreements', limit: 20 },
+  export_pdf_dossier: { label: 'PDF Exports', limit: 10 },
+};
+
+const FEATURE_LABELS: Record<string, string> = {
+  max_buildings: 'Buildings',
+  max_units: 'Units',
+  max_renters: 'Renters',
+  max_caretakers: 'Caretakers',
+  max_unit_images: 'Unit Images',
+  max_document_uploads: 'Documents',
+  tax_notifications: 'Tax Notifications',
+  whatsapp_alerts: 'WhatsApp Alerts',
+  rent_agreement_drafting: 'Agreements',
+  export_pdf_dossier: 'PDF Exports',
 };
 
 export const DashboardSubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
   subscription,
   featureUsage,
+  planLimits,
   onUpgrade,
 }) => {
   const theme = useTheme();
@@ -61,11 +64,24 @@ export const DashboardSubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
     return () => clearInterval(interval);
   }, [subscription]);
 
+  const getLimit = (featureKey: string): number | undefined => {
+    const fromPlan = planLimits.find((l) => l.feature_key === featureKey);
+    if (fromPlan) {
+      const parsed = parseInt(fromPlan.value, 10);
+      if (!Number.isNaN(parsed)) return parsed;
+      if (fromPlan.value.toLowerCase() === 'unlimited') return Infinity;
+      return undefined;
+    }
+    const fallback = DEFAULT_FEATURE_LIMITS[featureKey];
+    return fallback?.limit;
+  };
+
   const getUsagePercentage = (featureKey: string) => {
     const usage = featureUsage.find((f) => f.feature_key === featureKey);
-    const limitInfo = FEATURE_LIMITS[featureKey];
-    if (!usage || !limitInfo) return 0;
-    return Math.min(usage.usage_count / limitInfo.limit, 1);
+    const limit = getLimit(featureKey);
+    if (!usage || limit === undefined) return 0;
+    if (limit === Infinity) return 0;
+    return Math.min(usage.usage_count / limit, 1);
   };
 
   const getUsageCount = (featureKey: string) => {
@@ -81,8 +97,13 @@ export const DashboardSubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
   };
 
   const isNearLimit = (featureKey: string) => {
-    return getUsagePercentage(featureKey) >= 0.8;
+    const limit = getLimit(featureKey);
+    const usage = featureUsage.find((f) => f.feature_key === featureKey);
+    if (!usage || limit === undefined || limit === Infinity) return false;
+    return usage.usage_count / limit >= 0.8;
   };
+
+  const displayFeatures = Object.keys(FEATURE_LABELS);
 
   return (
     <Card
@@ -137,7 +158,11 @@ export const DashboardSubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
         {subscription && (
           <View style={[styles.renewalInfo, { backgroundColor: theme.colors.surfaceVariant }]}>
             <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-              {daysRemaining > 0 ? `${daysRemaining} days remaining` : 'Expired'}
+              {subscription.is_subscription_expired
+                ? 'Expired'
+                : daysRemaining > 0
+                  ? `${daysRemaining} days remaining`
+                  : 'Expired'}
             </Text>
           </View>
         )}
@@ -149,40 +174,45 @@ export const DashboardSubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
           >
             Feature Usage
           </Text>
-          {Object.entries(FEATURE_LIMITS).map(([key, info]) => {
+          {displayFeatures.map((key) => {
+            const limit = getLimit(key);
+            if (limit === undefined) return null;
             const percentage = getUsagePercentage(key);
             const count = getUsageCount(key);
+            const nearLimit = isNearLimit(key);
             return (
               <View key={key} style={styles.featureItem}>
                 <View style={styles.featureHeader}>
                   <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                    {info.label}
+                    {FEATURE_LABELS[key]}
                   </Text>
                   <Text
                     variant="bodySmall"
                     style={{ color: theme.colors.onSurface, fontWeight: '500' }}
                   >
-                    {count} / {info.limit}
+                    {limit === Infinity ? `${count} / ∞` : `${count} / ${limit}`}
                   </Text>
                 </View>
-                <ProgressBar
-                  progress={percentage}
-                  color={isNearLimit(key) ? theme.colors.error : theme.colors.primary}
-                  style={styles.progressBar}
-                />
+                {limit !== Infinity && (
+                  <ProgressBar
+                    progress={percentage}
+                    color={nearLimit ? theme.colors.error : theme.colors.primary}
+                    style={styles.progressBar}
+                  />
+                )}
               </View>
             );
           })}
         </View>
 
-        {!subscription?.is_active_subscription && (
+        {subscription && !subscription.is_active_subscription && (
           <Button
             mode="contained"
             onPress={onUpgrade}
             style={[styles.upgradeButton, { backgroundColor: theme.colors.primary }]}
             labelStyle={{ color: theme.colors.onPrimary, fontWeight: '600' }}
           >
-            Upgrade Plan
+            {subscription.is_subscription_expired ? 'Renew Plan' : 'Upgrade Plan'}
           </Button>
         )}
       </Card.Content>
