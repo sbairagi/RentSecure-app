@@ -51,6 +51,7 @@ const DRAWER_ITEMS: Record<UserRole, { label: string; icon: string; href: string
     { label: 'Renters', icon: '👥', href: '/(drawer)/(tabs)/renters' },
     { label: 'Caretakers', icon: '🛡️', href: '/(drawer)/(tabs)/caretakers' },
     { label: 'Visitors', icon: '📋', href: '/(drawer)/(tabs)/visitors' },
+    { label: 'Rent Records', icon: '📋', href: '/(drawer)/(tabs)/rents' },
     { label: 'Payments', icon: '💳', href: '/(drawer)/(tabs)/payments' },
     { label: 'Search', icon: '🔍', href: '/(drawer)/(tabs)/search' },
     { label: 'Payment History', icon: '📋', href: '/(drawer)/(tabs)/payments/history' },
@@ -69,7 +70,8 @@ const DRAWER_ITEMS: Record<UserRole, { label: string; icon: string; href: string
   ],
   renter: [
     { label: 'Dashboard', icon: '📊', href: '/(drawer)/(tabs)/dashboard' },
-    { label: 'Rent Records', icon: '📋', href: '/(drawer)/(tabs)/payments' },
+    { label: 'Rent Records', icon: '📋', href: '/(drawer)/(tabs)/rents/renter' },
+    { label: 'Payments', icon: '💳', href: '/(drawer)/(tabs)/payments' },
     { label: 'Search', icon: '🔍', href: '/(drawer)/(tabs)/search' },
     { label: 'Agreements', icon: '📄', href: '/(drawer)/(tabs)/agreements' },
     { label: 'Maintenance', icon: '🔧', href: '/(drawer)/(tabs)/maintenance' },
