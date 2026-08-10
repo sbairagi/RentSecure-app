@@ -15,6 +15,7 @@ import { useSubscriptionPlans, useCurrentSubscription } from '../hooks';
 import { PlanCard } from '../components/PlanCard';
 import { EmptyState } from '../components/EmptyState';
 import { paymentService } from '../services/paymentService';
+import { useSubscriptionFeatureStore } from '../store/subscriptionStore';
 import { showMessage } from 'react-native-flash-message';
 import { formatCurrency } from '../utils/formatting';
 
@@ -26,6 +27,7 @@ export default function PurchaseConfirmationScreen() {
   const { planId } = useLocalSearchParams<{ planId: string }>();
   const { data: plans, isLoading } = useSubscriptionPlans();
   const { data: subscription } = useCurrentSubscription();
+  const { setPendingPayment } = useSubscriptionFeatureStore();
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -60,17 +62,29 @@ export default function PurchaseConfirmationScreen() {
   const handlePurchase = async () => {
     setIsProcessing(true);
     try {
-      // NOTE: Subscription payment API does not exist on backend yet
-      // When backend adds the API, this will work:
-      // const order = await paymentService.createOrder({
-      //   planId: plan.id,
-      //   billingCycle,
-      // });
-      // Then open Razorpay checkout with order.order_id
-      
-      showMessage({
-        message: 'Payment integration coming soon. Backend subscription payment API is required.',
-        type: 'info',
+      const order = await paymentService.createOrder({
+        planId: plan.id,
+        billingCycle,
+      });
+
+      setPendingPayment({
+        orderId: order.order_id,
+        planId: plan.id,
+        billingCycle,
+        status: 'pending',
+        createdAt: Date.now(),
+      });
+
+      router.push({
+        pathname: '/(drawer)/(tabs)/subscription/razorpay-checkout',
+        params: {
+          orderId: order.order_id,
+          amount: order.amount,
+          currency: order.currency,
+          keyId: order.key_id,
+          name: plan.name,
+          description: `${plan.name} ${billingCycle} subscription`,
+        },
       });
     } catch (error) {
       showMessage({

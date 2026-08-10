@@ -3,6 +3,9 @@ import { create } from 'zustand';
 
 export type PlanName = 'free' | 'pro' | 'elite';
 export type BillingCycle = 'monthly' | 'yearly';
+export type PaymentStatus = 'idle' | 'pending' | 'processing' | 'success' | 'failed' | 'cancelled';
+
+const PENDING_PAYMENT_KEY = 'subscription_pending_payment';
 
 export interface Subscription {
   subscription: import('../types').UserSubscription | null;
@@ -14,6 +17,13 @@ export interface Subscription {
   isLoading: boolean;
   error: string | null;
   lastUpdated: number;
+  pendingPayment: {
+    orderId: string | null;
+    planId: number | null;
+    billingCycle: BillingCycle | null;
+    status: PaymentStatus;
+    createdAt: number;
+  } | null;
 }
 
 export interface SubscriptionActions {
@@ -26,7 +36,10 @@ export interface SubscriptionActions {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearSubscription: () => void;
+  setPendingPayment: (payment: Subscription['pendingPayment']) => void;
+  clearPendingPayment: () => void;
   refresh: () => Promise<void>;
+  recoverPendingPayment: () => Promise<void>;
 }
 
 type SubscriptionStore = Subscription & SubscriptionActions;
@@ -41,6 +54,7 @@ const initialState: Subscription = {
   isLoading: true,
   error: null,
   lastUpdated: 0,
+  pendingPayment: null,
 };
 
 export const useSubscriptionFeatureStore = create<SubscriptionStore>((set, get) => ({
@@ -95,6 +109,33 @@ export const useSubscriptionFeatureStore = create<SubscriptionStore>((set, get) 
       isLoading: false,
     }),
 
+  setPendingPayment: (pendingPayment) => {
+    try {
+      if (pendingPayment) {
+        mmkvStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify(pendingPayment));
+      } else {
+        mmkvStorage.removeItem(PENDING_PAYMENT_KEY);
+      }
+    } catch {
+      // storage error - non-critical
+    }
+    set({
+      pendingPayment,
+      lastUpdated: Date.now(),
+    });
+  },
+
+  clearPendingPayment: () => {
+    try {
+      mmkvStorage.removeItem(PENDING_PAYMENT_KEY);
+    } catch {
+      // storage error - non-critical
+    }
+    set({
+      pendingPayment: null,
+    });
+  },
+
   refresh: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -111,6 +152,37 @@ export const useSubscriptionFeatureStore = create<SubscriptionStore>((set, get) 
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to refresh subscription',
+        isLoading: false,
+      });
+    }
+  },
+
+  recoverPendingPayment: async () => {
+    const { pendingPayment } = get();
+    if (!pendingPayment || pendingPayment.status !== 'pending') {
+      return;
+    }
+
+    const fiveMinutes = 5 * 60 * 1000;
+    if (Date.now() - pendingPayment.createdAt > fiveMinutes) {
+      get().clearPendingPayment();
+      return;
+    }
+
+    set({ isLoading: true, error: null });
+    try {
+      const { subscriptionService } = await import('../services/subscriptionService');
+      const data = await subscriptionService.loadFromBootstrap();
+      set({
+        subscription: data.subscription,
+        addOns: data.addOns,
+        usageLimits: data.usageLimits,
+        isLoading: false,
+        lastUpdated: Date.now(),
+      });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Failed to recover payment status',
         isLoading: false,
       });
     }

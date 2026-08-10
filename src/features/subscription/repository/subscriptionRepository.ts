@@ -88,20 +88,29 @@ export const subscriptionRepository = {
     return apiService.get(SUBSCRIPTION_CONSTANTS.API.BOOTSTRAP);
   },
 
-  // Payment APIs - these do NOT exist on backend yet
-  async createSubscriptionOrder(_data: {
+  // Payment APIs
+  async createSubscriptionOrder(data: {
     planId?: number;
     addOnData?: { name: string; amount: string };
     billingCycle: 'monthly' | 'yearly';
   }): Promise<PaymentOrderResponse> {
-    throw new Error('Subscription payment API not yet implemented on backend');
+    const payload: Record<string, any> = { billing_cycle: data.billingCycle };
+    if (data.planId) payload.plan_id = data.planId;
+    if (data.addOnData) payload.addon_data = data.addOnData;
+    return apiService.post<PaymentOrderResponse>(SUBSCRIPTION_CONSTANTS.API.CREATE_ORDER, payload);
   },
 
-  async verifySubscriptionPayment(_data: PaymentVerificationRequest): Promise<PaymentVerificationResponse> {
-    throw new Error('Subscription payment verification API not yet implemented on backend');
+  async verifySubscriptionPayment(data: PaymentVerificationRequest): Promise<PaymentVerificationResponse> {
+    return apiService.post<PaymentVerificationResponse>(SUBSCRIPTION_CONSTANTS.API.VERIFY_PAYMENT, data);
   },
 
   async getPaymentHistory(): Promise<SubscriptionPayment[]> {
-    throw new Error('Subscription payment history API not yet implemented on backend');
+    const response = await apiService.get<SubscriptionPayment[] | { results: SubscriptionPayment[] }>(
+      SUBSCRIPTION_CONSTANTS.API.PAYMENT_HISTORY
+    );
+    if (Array.isArray(response)) {
+      return response;
+    }
+    return (response as { results: SubscriptionPayment[] }).results ?? [];
   },
 };

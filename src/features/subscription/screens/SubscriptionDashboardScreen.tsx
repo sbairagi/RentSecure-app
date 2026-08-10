@@ -23,6 +23,7 @@ import { AddOnCard } from '../components/AddOnCard';
 import { EmptyState } from '../components/EmptyState';
 import { FEATURE_LABELS } from '../types/limits';
 import { useTranslation } from 'react-i18next';
+import { useSubscriptionFeatureStore } from '../store/subscriptionStore';
 
 export default function SubscriptionDashboardScreen() {
   const theme = useTheme();
@@ -32,9 +33,13 @@ export default function SubscriptionDashboardScreen() {
   const { data: effectiveLimits } = useEffectiveLimits();
   const { data: addOns } = useAddOns();
   const refresh = useRefreshSubscription();
+  const { pendingPayment, recoverPendingPayment } = useSubscriptionFeatureStore();
 
   React.useEffect(() => {
     refresh();
+    if (pendingPayment) {
+      recoverPendingPayment();
+    }
   }, []);
 
   if (isExpired) {

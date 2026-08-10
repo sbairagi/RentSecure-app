@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import {
   Text,
@@ -11,6 +11,7 @@ import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { PaymentStatusBadge } from '../components/PaymentStatusBadge';
 import { EmptyState } from '../components/EmptyState';
+import { useSubscriptionFeatureStore } from '../store/subscriptionStore';
 
 type PaymentStatusType = 'pending' | 'processing' | 'success' | 'failed' | 'cancelled';
 
@@ -19,6 +20,14 @@ export default function PaymentStatusScreen() {
   const router = useRouter();
   const { status, orderId } = useLocalSearchParams<{ status: PaymentStatusType; orderId: string }>();
   const paymentStatus = status || 'pending';
+  const { refresh, clearPendingPayment } = useSubscriptionFeatureStore();
+
+  useEffect(() => {
+    if (paymentStatus === 'success') {
+      clearPendingPayment();
+      refresh();
+    }
+  }, [paymentStatus, clearPendingPayment, refresh]);
 
   const getStatusMessage = () => {
     switch (paymentStatus) {
@@ -94,8 +103,8 @@ export default function PaymentStatusScreen() {
                   Retry Payment
                 </Button>
               )}
-              {(paymentStatus === 'pending' || paymentStatus === 'processing') && (
-                <Button mode="contained" onPress={() => router.back()} style={styles.button}>
+              {paymentStatus === 'processing' && (
+                <Button mode="contained" onPress={refresh} loading={false} style={styles.button}>
                   Refresh Status
                 </Button>
               )}

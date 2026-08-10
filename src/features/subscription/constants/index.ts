@@ -8,11 +8,9 @@ export const SUBSCRIPTION_CONSTANTS = {
     ADD_ON_DETAIL: (id: number | string) => `/api/addon-purchases/${id}/`,
     USAGE_LIMITS: '/api/usage-limits/',
     BOOTSTRAP: '/auth/bootstrap/',
-    // These do NOT exist yet on backend - kept for future
     CREATE_ORDER: '/api/subscription-orders/create/',
     VERIFY_PAYMENT: '/api/subscription-payments/verify/',
     PAYMENT_HISTORY: '/api/subscription-payments/',
-    INVOICES: '/api/subscription-invoices/',
     UPGRADE: (id: number | string) => `/api/user-subscriptions/${id}/upgrade/`,
     DOWNGRADE: (id: number | string) => `/api/user-subscriptions/${id}/downgrade/`,
     CANCEL: (id: number | string) => `/api/user-subscriptions/${id}/cancel/`,
