@@ -8,7 +8,8 @@ import {
   formatBuildingAddress,
   getBuildingStatus,
 } from '@/features/buildings/utils/buildingHelpers';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/hooks/useTheme';
+import { useAuthStore } from '@/store/authStore';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,9 +20,10 @@ export default function BuildingDetailsScreen() {
   const theme = useTheme();
   const router = useRouter();
   const isOffline = useIsOffline();
+  const user = useAuthStore((s) => s.user);
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { building, isLoading, error, refresh } = useBuilding(Number(id));
-  const { deleteBuilding, isDeleting } = useBuildings();
+  const { building, isLoading, error, refresh } = useBuilding(Number(id), user?.id);
+  const { deleteBuilding, isDeleting } = useBuildings(user?.id);
 
   const handleDelete = async () => {
     await deleteBuilding(Number(id));

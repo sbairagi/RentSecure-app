@@ -7,6 +7,8 @@ import { useBuilding } from '@/features/buildings/hooks/useBuilding';
 import { useBuildings } from '@/features/buildings/hooks/useBuildings';
 import { useIsOffline } from '@/core/offline';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuthStore } from '@/store/authStore';
+import { ApiError } from '@/services/api/errorHandler';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -27,9 +29,10 @@ export default function EditBuildingScreen() {
   const theme = useTheme();
   const router = useRouter();
   const isOffline = useIsOffline();
+  const user = useAuthStore((s) => s.user);
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { building, isLoading, error } = useBuilding(Number(id));
-  const { updateBuilding, isUpdating } = useBuildings();
+  const { building, isLoading, error } = useBuilding(Number(id), user?.id);
+  const { updateBuilding, isUpdating } = useBuildings(user?.id);
   const {
     control,
     handleSubmit,
@@ -60,8 +63,18 @@ export default function EditBuildingScreen() {
   }, [building, reset]);
 
   const onSubmit = async (data: FormValues) => {
-    await updateBuilding({ id: Number(id), payload: data });
-    router.back();
+    try {
+      await updateBuilding({ id: Number(id), payload: data });
+      router.back();
+    } catch (err: any) {
+      const apiError = err instanceof ApiError ? err : null;
+      if (apiError?.details) {
+        Object.entries(apiError.details).forEach(([field, messages]) => {
+          const message = Array.isArray(messages) ? messages[0] : String(messages);
+          control.setError(field as keyof FormValues, { message });
+        });
+      }
+    }
   };
 
   if (isLoading) {

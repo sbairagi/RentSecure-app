@@ -6,12 +6,14 @@ import { Button } from '@/design-system/buttons/Button';
 import { useBuildings } from '@/features/buildings/hooks/useBuildings';
 import { useIsOffline } from '@/core/offline';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuthStore } from '@/store/authStore';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { StyleSheet, View } from 'react-native';
+import { ApiError } from '@/services/api/errorHandler';
 
 type FormValues = {
   name: string;
@@ -26,7 +28,8 @@ export default function AddBuildingScreen() {
   const theme = useTheme();
   const router = useRouter();
   const isOffline = useIsOffline();
-  const { createBuildingAsync, isCreating } = useBuildings();
+  const user = useAuthStore((s) => s.user);
+  const { createBuildingAsync, isCreating } = useBuildings(user?.id);
   const {
     control,
     handleSubmit,
@@ -52,8 +55,14 @@ export default function AddBuildingScreen() {
       } else {
         router.back();
       }
-    } catch {
-      // Error is already handled by the mutation's onError
+    } catch (err: any) {
+      const apiError = err instanceof ApiError ? err : null;
+      if (apiError?.details) {
+        Object.entries(apiError.details).forEach(([field, messages]) => {
+          const message = Array.isArray(messages) ? messages[0] : String(messages);
+          control.setError(field as keyof FormValues, { message });
+        });
+      }
     }
   };
 

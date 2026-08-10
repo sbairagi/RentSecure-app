@@ -5,6 +5,7 @@ import { useBuilding } from '@/features/buildings/hooks/useBuilding';
 import { useBuildings } from '@/features/buildings/hooks/useBuildings';
 import { useIsOffline } from '@/core/offline';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuthStore } from '@/store/authStore';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -15,9 +16,10 @@ export default function DeleteConfirmationScreen() {
   const theme = useTheme();
   const router = useRouter();
   const isOffline = useIsOffline();
+  const user = useAuthStore((s) => s.user);
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { building } = useBuilding(Number(id));
-  const { deleteBuilding, isDeleting } = useBuildings();
+  const { building } = useBuilding(Number(id), user?.id);
+  const { deleteBuilding, isDeleting } = useBuildings(user?.id);
 
   const handleDelete = async () => {
     await deleteBuilding(Number(id));

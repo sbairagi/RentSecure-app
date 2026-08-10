@@ -3,6 +3,7 @@ import { Button } from '@/design-system/buttons/Button';
 import { useBuilding } from '@/features/buildings/hooks/useBuilding';
 import { useBuildingAnalytics } from '@/features/buildings/hooks/useBuildingAnalytics';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuthStore } from '@/store/authStore';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useLocalSearchParams } from 'expo-router';
@@ -11,9 +12,10 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function BuildingAnalyticsScreen() {
   const theme = useTheme();
+  const user = useAuthStore((s) => s.user);
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { building, isLoading } = useBuilding(Number(id));
-  const { data: analytics, error: analyticsError, refetch } = useBuildingAnalytics(Number(id));
+  const { building, isLoading } = useBuilding(Number(id), user?.id);
+  const { data: analytics, error: analyticsError, refetch } = useBuildingAnalytics(Number(id), user?.id);
 
   if (isLoading) {
     return (
@@ -27,22 +29,21 @@ export default function BuildingAnalyticsScreen() {
     );
   }
 
-  const displayAnalytics =
-    analytics ||
-    (building
-      ? {
-          building_id: building.id,
-          building_name: building.name,
-          total_units: building.units?.length || 0,
-          occupied_units: (building.units || []).filter(
-            (u: any) => u.status === 'occupied' || u.is_vacant === false
-          ).length,
-          vacant_units: (building.units || []).filter(
-            (u: any) => u.status === 'vacant' || u.is_vacant === true
-          ).length,
-          occupancy_rate: 0,
-        }
-      : null);
+  const totalUnits = building?.units_count ?? analytics?.total_units ?? 0;
+  const occupiedUnits = building?.occupied_units_count ?? analytics?.occupied_units ?? 0;
+  const vacantUnits = totalUnits - occupiedUnits;
+  const occupancyRate = totalUnits > 0 ? (occupiedUnits / totalUnits) * 100 : 0;
+
+  const displayAnalytics = analytics || building
+    ? {
+        building_id: building?.id ?? analytics?.building_id ?? 0,
+        building_name: building?.name ?? analytics?.building_name ?? '',
+        total_units: totalUnits,
+        occupied_units: occupiedUnits,
+        vacant_units: vacantUnits,
+        occupancy_rate: analytics?.occupancy_rate ?? occupancyRate,
+      }
+    : null;
 
   if (!displayAnalytics) {
     return (
@@ -87,7 +88,7 @@ export default function BuildingAnalyticsScreen() {
               </View>
               <View style={[styles.statBox, { backgroundColor: theme.backgroundElement }]}>
                 <Text style={[styles.statValue, { color: theme.text }]}>
-                  {displayAnalytics.occupancy_rate.toFixed(1)}%
+                  {(displayAnalytics.occupancy_rate || occupancyRate).toFixed(1)}%
                 </Text>
                 <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
                   Occupancy Rate

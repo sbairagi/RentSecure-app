@@ -78,42 +78,44 @@ export function createApiError(error: any, correlationId?: string): ApiError {
     message = ERROR_MESSAGES.NETWORK_ERROR;
   } else if (status === 401) {
     code = 'UNAUTHORIZED';
-    message = data?.message || ERROR_MESSAGES.UNAUTHORIZED;
-    details = data?.details;
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.UNAUTHORIZED;
+    details = data?.error?.details || data?.details;
   } else if (status === 403) {
     code = 'FORBIDDEN';
-    message = data?.message || ERROR_MESSAGES.FORBIDDEN;
-    details = data?.details;
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.FORBIDDEN;
+    details = data?.error?.details || data?.details;
   } else if (status === 404) {
     code = 'NOT_FOUND';
-    message = data?.message || ERROR_MESSAGES.NOT_FOUND;
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.NOT_FOUND;
   } else if (status === 409) {
     code = 'CONFLICT';
-    message = data?.message || ERROR_MESSAGES.CONFLICT;
-    details = data?.details;
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.CONFLICT;
+    details = data?.error?.details || data?.details;
   } else if (status === 422) {
     code = 'VALIDATION_ERROR';
-    message = data?.message || ERROR_MESSAGES.VALIDATION_ERROR;
-    details = normalizeValidationErrors(data?.errors || data?.details);
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.VALIDATION_ERROR;
+    details = normalizeValidationErrors(
+      data?.error?.details || data?.errors || data?.details
+    );
   } else if (status === 429) {
     code = 'RATE_LIMITED';
-    message = data?.message || ERROR_MESSAGES.RATE_LIMITED;
-    details = data?.details;
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.RATE_LIMITED;
+    details = data?.error?.details || data?.details;
   } else if (status === 503) {
     code = 'MAINTENANCE';
-    message = data?.message || ERROR_MESSAGES.MAINTENANCE;
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.MAINTENANCE;
   } else if (status === 502 || status === 504) {
     code = 'SERVER_ERROR';
-    message = data?.message || ERROR_MESSAGES.SERVER_ERROR;
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.SERVER_ERROR;
   } else if (status && status >= 500) {
     code = 'SERVER_ERROR';
-    message = data?.message || ERROR_MESSAGES.SERVER_ERROR;
+    message = data?.error?.message || data?.message || ERROR_MESSAGES.SERVER_ERROR;
   } else if (axiosError?.message) {
     message = axiosError.message;
   }
 
-  if (data?.message && status !== 401 && status !== 403) {
-    message = data.message;
+  if (data?.error?.message && status !== 401 && status !== 403) {
+    message = data.error.message;
   }
 
   return new ApiError({

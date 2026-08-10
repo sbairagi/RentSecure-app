@@ -8,6 +8,7 @@ import { useIsOffline } from '@/core/offline';
 import { useBuildings } from '@/features/buildings/hooks/useBuildings';
 import type { Building } from '@/features/buildings/types/buildings';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuthStore } from '@/store/authStore';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
@@ -18,7 +19,8 @@ export default function BuildingListScreen() {
   const theme = useTheme();
   const router = useRouter();
   const isOffline = useIsOffline();
-  const { buildings, isLoading, isFetching, error, refresh } = useBuildings();
+  const user = useAuthStore((s) => s.user);
+  const { buildings, isLoading, isFetching, error, refresh } = useBuildings(user?.id);
 
   const handleAdd = () => {
     router.push('/(drawer)/(tabs)/buildings/add');

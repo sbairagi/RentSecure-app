@@ -1,11 +1,11 @@
 import type { Building } from '../types/buildings';
 
 export const computeBuildingStats = (building: Building) => {
-  const units = building.units || [];
-  const totalUnits = units.length;
-  const occupiedUnits = units.filter(
-    (u) => u.status === 'occupied' || u.is_vacant === false
-  ).length;
+  const totalUnits = building.units_count ?? building.units?.length ?? 0;
+  const occupiedUnits = building.occupied_units_count ??
+    (building.units || []).filter(
+      (u) => u.status === 'occupied' || u.is_vacant === false
+    ).length;
   const vacantUnits = totalUnits - occupiedUnits;
   return { totalUnits, occupiedUnits, vacantUnits };
 };

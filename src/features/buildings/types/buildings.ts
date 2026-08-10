@@ -9,6 +9,8 @@ export interface Building {
   owner: number;
   is_archived: boolean;
   created_at: string;
+  units_count?: number;
+  occupied_units_count?: number;
   units?: BuildingUnit[];
 }
 

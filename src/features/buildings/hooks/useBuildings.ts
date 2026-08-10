@@ -5,15 +5,16 @@ import { buildingsRepository } from '../repository/buildingsRepository';
 import { useBuildingsStore } from '../store/buildingsStore';
 import type { Building, BuildingCreatePayload, BuildingUpdatePayload } from '../types/buildings';
 
-const BUILDINGS_QUERY_KEY = ['owner', 'buildings', 'list'];
-const BUILDING_DETAIL_QUERY_KEY = (id: number | string) => ['owner', 'building', id];
+const BUILDINGS_QUERY_KEY = (userId: number | string) => ['owner', userId, 'buildings', 'list'];
+const BUILDING_DETAIL_QUERY_KEY = (userId: number | string, buildingId: number | string) => ['owner', userId, 'building', buildingId];
 
-export const useBuildings = () => {
+export const useBuildings = (userId?: number | string) => {
   const queryClient = useQueryClient();
   const { setError } = useBuildingsStore();
+  const ownerId = userId || 'current';
 
   const { data, isLoading, isFetching, error, refetch } = useQuery<Building[]>({
-    queryKey: BUILDINGS_QUERY_KEY,
+    queryKey: BUILDINGS_QUERY_KEY(ownerId),
     queryFn: async () => {
       const result = await buildingsRepository.fetchBuildings();
       useBuildingsStore.getState().cacheBuildings(result);
@@ -32,7 +33,7 @@ export const useBuildings = () => {
   const createMutation = useMutation({
     mutationFn: (payload: BuildingCreatePayload) => buildingsRepository.createBuilding(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: BUILDINGS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: BUILDINGS_QUERY_KEY(ownerId) });
       showMessage({ message: 'Building created successfully', type: 'success' });
     },
     onError: (err: any) => {
@@ -46,8 +47,8 @@ export const useBuildings = () => {
     mutationFn: ({ id, payload }: { id: number | string; payload: BuildingUpdatePayload }) =>
       buildingsRepository.updateBuilding(id, payload),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: BUILDINGS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: BUILDING_DETAIL_QUERY_KEY(variables.id) });
+      queryClient.invalidateQueries({ queryKey: BUILDINGS_QUERY_KEY(ownerId) });
+      queryClient.invalidateQueries({ queryKey: BUILDING_DETAIL_QUERY_KEY(ownerId, variables.id) });
       showMessage({ message: 'Building updated successfully', type: 'success' });
     },
     onError: (err: any) => {
@@ -60,7 +61,7 @@ export const useBuildings = () => {
   const deleteMutation = useMutation({
     mutationFn: (id: number | string) => buildingsRepository.deleteBuilding(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: BUILDINGS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: BUILDINGS_QUERY_KEY(ownerId) });
       showMessage({ message: 'Building deleted successfully', type: 'success' });
     },
     onError: (err: any) => {

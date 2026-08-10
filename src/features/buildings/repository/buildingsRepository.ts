@@ -29,13 +29,16 @@ export const buildingsRepository = {
       return buildingsApi.retrieve(id).then((b) => ({
         building_id: b.id,
         building_name: b.name,
-        total_units: b.units?.length || 0,
-        occupied_units: (b.units || []).filter(
-          (u: any) => u.status === 'occupied' || u.is_vacant === false
-        ).length,
-        vacant_units: (b.units || []).filter(
-          (u: any) => u.status === 'vacant' || u.is_vacant === true
-        ).length,
+        total_units: b.units_count ?? b.units?.length ?? 0,
+        occupied_units: b.occupied_units_count ??
+          (b.units || []).filter(
+            (u: any) => u.status === 'occupied' || u.is_vacant === false
+          ).length,
+        vacant_units: (b.units_count ?? b.units?.length ?? 0) -
+          (b.occupied_units_count ??
+            (b.units || []).filter(
+              (u: any) => u.status === 'occupied' || u.is_vacant === false
+            ).length),
         occupancy_rate: 0,
       }));
     }
