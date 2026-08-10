@@ -95,6 +95,52 @@ export function useLogoutAllDevices() {
   });
 }
 
+export function useDeactivateAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      return settingsApi.deactivateAccount();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      showMessage({
+        message: 'Account deactivated successfully',
+        type: 'success',
+      });
+    },
+    onError: (err: any) => {
+      showMessage({
+        message: err?.message || 'Failed to deactivate account',
+        type: 'danger',
+      });
+    },
+  });
+}
+
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      return settingsApi.deleteAccount();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      showMessage({
+        message: 'Account deleted successfully',
+        type: 'success',
+      });
+    },
+    onError: (err: any) => {
+      showMessage({
+        message: err?.message || 'Failed to delete account',
+        type: 'danger',
+      });
+    },
+  });
+}
+
 export function useAlertPreferences() {
   return useQuery({
     queryKey: ['settings', 'alertPreferences'],

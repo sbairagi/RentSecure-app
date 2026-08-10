@@ -94,6 +94,13 @@ export default function AccountSettingsScreen() {
       href: '/(drawer)/(tabs)/settings/about',
     },
     {
+      id: 'deactivate',
+      title: 'Deactivate Account',
+      description: 'Temporarily disable your account',
+      icon: 'account-off',
+      href: '/(drawer)/(tabs)/settings/deactivate-account',
+    },
+    {
       id: 'delete',
       title: 'Delete Account',
       description: 'Permanently delete your account',

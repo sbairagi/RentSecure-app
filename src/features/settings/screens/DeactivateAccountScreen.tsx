@@ -4,24 +4,21 @@ import {
   Button,
   IconButton,
   Text,
-  TextInput,
   useTheme,
 } from 'react-native-paper';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
-import { useDeleteAccount } from '../hooks';
+import { useDeactivateAccount } from '../hooks';
 
-export default function DeleteAccountScreen() {
+export default function DeactivateAccountScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const deleteAccount = useDeleteAccount();
-  const [confirmationText, setConfirmationText] = useState('');
+  const deactivateMutation = useDeactivateAccount();
+  const [confirmed, setConfirmed] = useState(false);
 
-  const handleDelete = () => {
-    if (confirmationText !== 'DELETE') {
-      return;
-    }
-    deleteAccount.mutate();
+  const handleDeactivate = () => {
+    if (!confirmed) return;
+    deactivateMutation.mutate();
   };
 
   return (
@@ -30,7 +27,7 @@ export default function DeleteAccountScreen() {
         <View style={styles.header}>
           <IconButton icon="arrow-left" size={24} onPress={() => router.back()} />
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
-            Delete Account
+            Deactivate Account
           </Text>
         </View>
 
@@ -38,50 +35,46 @@ export default function DeleteAccountScreen() {
           <IconButton icon="alert" size={24} iconColor={theme.colors.onErrorContainer} />
           <View style={styles.warningTextContainer}>
             <Text style={[styles.warningTitle, { color: theme.colors.onErrorContainer }]}>
-              This action cannot be undone
+              Deactivate your account?
             </Text>
             <Text style={[styles.warningText, { color: theme.colors.onErrorContainer }]}>
-              Deleting your account will permanently remove all your data, properties, rent records, and documents. This action is irreversible.
+              Your account will be temporarily disabled. You can reactivate it by logging in again. All your data will be preserved.
             </Text>
           </View>
         </View>
 
-        {deleteAccount.isError ? (
+        {deactivateMutation.isError ? (
           <View style={[styles.errorContainer, { backgroundColor: theme.colors.errorContainer }]}>
             <Text style={[styles.errorText, { color: theme.colors.onErrorContainer }]}>
-              {(deleteAccount.error as any)?.message || 'Failed to delete account'}
+              {(deactivateMutation.error as any)?.message || 'Failed to deactivate account'}
             </Text>
           </View>
         ) : null}
 
-        {deleteAccount.isSuccess ? (
+        {deactivateMutation.isSuccess ? (
           <View style={[styles.successContainer, { backgroundColor: theme.colors.tertiaryContainer }]}>
             <Text style={[styles.successText, { color: theme.colors.onTertiaryContainer }]}>
-              Your account deletion request has been submitted.
+              Your account has been deactivated.
             </Text>
           </View>
         ) : (
           <View style={styles.confirmationSection}>
-            <Text style={[styles.confirmationText, { color: theme.colors.onSurface }]}>
-              Type <Text style={{ fontWeight: '700' }}>DELETE</Text> to confirm:
-            </Text>
-            <TextInput
-              value={confirmationText}
-              onChangeText={setConfirmationText}
+            <Button
               mode="outlined"
-              autoCapitalize="characters"
-              style={styles.input}
-              disabled={deleteAccount.isPending}
-            />
+              onPress={() => setConfirmed(!confirmed)}
+              style={styles.confirmButton}
+            >
+              {confirmed ? 'Confirmed' : 'I understand, deactivate my account'}
+            </Button>
             <Button
               mode="contained"
-              onPress={handleDelete}
-              loading={deleteAccount.isPending}
-              disabled={deleteAccount.isPending || confirmationText !== 'DELETE'}
+              onPress={handleDeactivate}
+              loading={deactivateMutation.isPending}
+              disabled={!confirmed || deactivateMutation.isPending}
               buttonColor={theme.colors.error}
               style={styles.button}
             >
-              Delete My Account
+              Deactivate Account
             </Button>
           </View>
         )}
@@ -148,13 +141,10 @@ const styles = StyleSheet.create({
   confirmationSection: {
     paddingHorizontal: 16,
     paddingTop: 24,
+    gap: 12,
   },
-  confirmationText: {
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  input: {
-    marginBottom: 16,
+  confirmButton: {
+    marginBottom: 8,
   },
   button: {
     marginTop: 8,

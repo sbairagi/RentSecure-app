@@ -11,7 +11,7 @@ import {
 } from 'react-native-paper';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
-import { useBiometric, useChangePassword, useLogout, useLogoutAllDevices } from '../hooks';
+import { useBiometric, useChangePassword, useDeactivateAccount, useDeleteAccount, useLogout, useLogoutAllDevices } from '../hooks';
 
 export default function SecuritySettingsScreen() {
   const theme = useTheme();
@@ -19,12 +19,17 @@ export default function SecuritySettingsScreen() {
   const logoutMutation = useLogout();
   const logoutAllMutation = useLogoutAllDevices();
   const changePasswordMutation = useChangePassword();
+  const deactivateMutation = useDeactivateAccount();
+  const deleteMutation = useDeleteAccount();
   const { setup: setupBiometric, disable: disableBiometric } = useBiometric();
   const [biometricEnabled, setBiometricEnabled] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   const handleChangePassword = () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -50,6 +55,20 @@ export default function SecuritySettingsScreen() {
 
   const handleLogoutAll = () => {
     logoutAllMutation.mutate();
+  };
+
+  const handleDeactivate = () => {
+    deactivateMutation.mutate();
+    setShowDeactivateConfirm(false);
+  };
+
+  const handleDelete = () => {
+    if (deleteConfirmText !== 'DELETE') {
+      return;
+    }
+    deleteMutation.mutate();
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText('');
   };
 
   return (
@@ -167,6 +186,82 @@ export default function SecuritySettingsScreen() {
             style={{ backgroundColor: theme.colors.surface }}
           />
         </List.Section>
+
+        <Divider style={{ marginVertical: 8 }} />
+
+        <List.Section>
+          <List.Subheader style={{ color: theme.colors.onSurfaceVariant }}>
+            Account
+          </List.Subheader>
+          <List.Item
+            title="Deactivate Account"
+            description="Temporarily disable your account"
+            left={(props) => <List.Icon {...props} icon="account-off" color={theme.colors.error} />}
+            onPress={() => setShowDeactivateConfirm(true)}
+            style={{ backgroundColor: theme.colors.surface }}
+          />
+          <List.Item
+            title="Delete Account"
+            description="Permanently delete your account"
+            left={(props) => <List.Icon {...props} icon="delete-forever" color={theme.colors.error} />}
+            onPress={() => setShowDeleteConfirm(true)}
+            style={{ backgroundColor: theme.colors.surface }}
+          />
+        </List.Section>
+
+        {showDeactivateConfirm ? (
+          <View style={[styles.confirmContainer, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.confirmText, { color: theme.colors.onSurface }]}>
+              Are you sure you want to deactivate your account? You can reactivate it by logging in again.
+            </Text>
+            <View style={styles.confirmActions}>
+              <Button mode="outlined" onPress={() => setShowDeactivateConfirm(false)} style={styles.confirmButton}>
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                onPress={handleDeactivate}
+                loading={deactivateMutation.isPending}
+                disabled={deactivateMutation.isPending}
+                buttonColor={theme.colors.error}
+                style={styles.confirmButton}
+              >
+                Deactivate
+              </Button>
+            </View>
+          </View>
+        ) : null}
+
+        {showDeleteConfirm ? (
+          <View style={[styles.confirmContainer, { backgroundColor: theme.colors.surface }]}>
+            <Text style={[styles.confirmText, { color: theme.colors.onSurface }]}>
+              This action cannot be undone. Type DELETE to confirm:
+            </Text>
+            <TextInput
+              value={deleteConfirmText}
+              onChangeText={setDeleteConfirmText}
+              mode="outlined"
+              autoCapitalize="characters"
+              style={styles.input}
+              disabled={deleteMutation.isPending}
+            />
+            <View style={styles.confirmActions}>
+              <Button mode="outlined" onPress={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }} style={styles.confirmButton}>
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                onPress={handleDelete}
+                loading={deleteMutation.isPending}
+                disabled={deleteMutation.isPending || deleteConfirmText !== 'DELETE'}
+                buttonColor={theme.colors.error}
+                style={styles.confirmButton}
+              >
+                Delete
+              </Button>
+            </View>
+          </View>
+        ) : null}
       </View>
     </RouteGuard>
   );
@@ -197,5 +292,23 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 8,
+  },
+  confirmContainer: {
+    marginHorizontal: 16,
+    marginVertical: 8,
+    padding: 16,
+    borderRadius: 12,
+  },
+  confirmText: {
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  confirmButton: {
+    minWidth: 100,
   },
 });

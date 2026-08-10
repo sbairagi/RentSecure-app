@@ -60,7 +60,7 @@ export default function ConnectedDevicesScreen() {
           </List.Subheader>
           <List.Item
             title={currentDevice.deviceName}
-            description={`${currentDevice.platform} • ${currentDevice.deviceModel}`}
+            description={`${currentDevice.platform} • ${currentDevice.appVersion} (${currentDevice.buildVersion})`}
             left={(props) => <List.Icon {...props} icon="cellphone" />}
             style={{ backgroundColor: theme.colors.surface }}
           />

@@ -12,3 +12,4 @@ export { default as LoginSessionsScreen } from './LoginSessionsScreen';
 export { default as HelpSupportScreen } from './HelpSupportScreen';
 export { default as AboutScreen } from './AboutScreen';
 export { default as DeleteAccountScreen } from './DeleteAccountScreen';
+export { default as DeactivateAccountScreen } from './DeactivateAccountScreen';

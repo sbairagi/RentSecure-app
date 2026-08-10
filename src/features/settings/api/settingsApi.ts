@@ -36,6 +36,14 @@ export const settingsApi = {
     return apiService.post<{ message: string }>(SETTINGS_ENDPOINTS.LOGOUT_ALL, {});
   },
 
+  deactivateAccount: async (): Promise<{ message: string }> => {
+    return apiService.post<{ message: string }>(SETTINGS_ENDPOINTS.DEACTIVATE_ACCOUNT, {});
+  },
+
+  deleteAccount: async (): Promise<{ message: string }> => {
+    return apiService.post<{ message: string }>(SETTINGS_ENDPOINTS.DELETE_ACCOUNT, { confirm: true });
+  },
+
   getAlertPreferences: async (): Promise<AlertPreferences> => {
     const response = await apiService.get<AlertPreferences>(
       SETTINGS_ENDPOINTS.NOTIFICATION_PREFERENCES_GET

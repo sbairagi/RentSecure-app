@@ -8,6 +8,7 @@ export interface ProfileData {
   role: string;
   permissions: string[];
   username?: string;
+  is_phone_verified?: boolean;
 }
 
 export interface UpdateProfileData {

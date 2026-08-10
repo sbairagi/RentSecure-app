@@ -5,6 +5,8 @@ export const SETTINGS_ENDPOINTS = {
   CHANGE_PASSWORD: API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
   LOGOUT: API_ENDPOINTS.AUTH.LOGOUT,
   LOGOUT_ALL: API_ENDPOINTS.AUTH.LOGOUT_ALL,
+  DEACTIVATE_ACCOUNT: '/auth/deactivate/',
+  DELETE_ACCOUNT: '/auth/delete/',
   NOTIFICATION_PREFERENCES: '/api/owner/update-alert-preferences/',
   NOTIFICATION_PREFERENCES_GET: '/api/owner/update-alert-preferences/',
   BIOMETRIC_SETUP: API_ENDPOINTS.AUTH.BIOMETRIC_SETUP,
@@ -17,4 +19,5 @@ export const SETTINGS_ENDPOINTS = {
   USER_SUBSCRIPTION: '/user-subscriptions/',
   ADD_ON_PURCHASES: '/addon-purchases/',
   USAGE_LIMITS: '/usage-limits/',
+  RENTER_PROFILE: '/renter/profile/',
 } as const;

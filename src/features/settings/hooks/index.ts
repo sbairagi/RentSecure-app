@@ -4,6 +4,8 @@ export {
   useChangePassword,
   useLogout,
   useLogoutAllDevices,
+  useDeactivateAccount,
+  useDeleteAccount,
   useAlertPreferences,
   useUpdateAlertPreferences,
   useNotificationPreference,

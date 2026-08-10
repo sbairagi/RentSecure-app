@@ -8,10 +8,12 @@ import {
 } from 'react-native-paper';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
+import { useLogoutAllDevices } from '../hooks';
 
 export default function LoginSessionsScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const logoutAllMutation = useLogoutAllDevices();
 
   return (
     <RouteGuard requireAuth>
@@ -28,9 +30,18 @@ export default function LoginSessionsScreen() {
             Active Sessions
           </List.Subheader>
           <List.Item
-            title="Session list API not yet available"
-            description="Backend does not expose a session list endpoint. Use Logout All Devices to clear all sessions."
-            left={(props) => <List.Icon {...props} icon="information" />}
+            title="Current Session"
+            description="This device"
+            left={(props) => <List.Icon {...props} icon="cellphone" />}
+            right={(props) => <List.Icon {...props} icon="check-circle" color={theme.colors.primary} />}
+            style={{ backgroundColor: theme.colors.surface }}
+          />
+          <List.Item
+            title="Logout from all other devices"
+            description={logoutAllMutation.isPending ? 'Processing...' : 'Invalidate all other active sessions'}
+            left={(props) => <List.Icon {...props} icon="logout-variant" color={theme.colors.error} />}
+            onPress={() => logoutAllMutation.mutate()}
+            disabled={logoutAllMutation.isPending}
             style={{ backgroundColor: theme.colors.surface }}
           />
         </List.Section>
