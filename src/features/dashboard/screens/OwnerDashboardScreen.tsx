@@ -57,24 +57,20 @@ export default function OwnerDashboardScreen() {
     if (!dashboardData?.stats) return null;
     const s = dashboardData.stats;
     return [
-      { title: 'Total Buildings', value: s.total_buildings, icon: '🏢', color: '#2563EB' },
-      { title: 'Total Units', value: s.total_units, icon: '🚪', color: '#059669' },
-      { title: 'Occupied Units', value: s.occupied_units, icon: '👥', color: '#D97706' },
-      { title: 'Vacant Units', value: s.vacant_units, icon: '🔓', color: '#DC2626' },
-      { title: 'Active Renters', value: s.active_renters, icon: '👤', color: '#7C3AED' },
-      { title: 'Caretakers', value: s.caretakers, icon: '🔑', color: '#0891B2' },
-      {
-        title: 'Monthly Collection',
-        value: `₹${s.monthly_collection}`,
-        icon: '💰',
-        color: '#059669',
-      },
-      {
-        title: 'Pending Collection',
-        value: `₹${s.pending_collection}`,
-        icon: '⏳',
-        color: '#D97706',
-      },
+      { title: 'Total Buildings', value: s.total_buildings, icon: '🏢', color: '#2563EB', route: '/(drawer)/(tabs)/buildings' },
+      { title: 'Total Units', value: s.total_units, icon: '🚪', color: '#059669', route: '/(drawer)/(tabs)/units' },
+      { title: 'Occupied', value: s.occupied_units, icon: '👥', color: '#D97706', route: '/(drawer)/(tabs)/units' },
+      { title: 'Vacant', value: s.vacant_units, icon: '🔓', color: '#DC2626', route: '/(drawer)/(tabs)/units' },
+      { title: 'Active Renters', value: s.active_renters, icon: '👤', color: '#7C3AED', route: '/(drawer)/(tabs)/renters' },
+      { title: 'Notice Period', value: s.notice_period_renters, icon: '📋', color: '#D97706', route: '/(drawer)/(tabs)/renters' },
+      { title: 'Revoked', value: s.revoked_renters, icon: '🚫', color: '#DC2626', route: '/(drawer)/(tabs)/renters' },
+      { title: 'Deactivated', value: s.deactivated_renters, icon: '⏸️', color: '#6B7280', route: '/(drawer)/(tabs)/renters' },
+      { title: 'Rent Expected', value: `₹${s.rent_expected}`, icon: '📊', color: '#2563EB' },
+      { title: 'Rent Collected', value: `₹${s.rent_collected}`, icon: '✅', color: '#059669' },
+      { title: 'Rent Pending', value: `₹${s.rent_pending}`, icon: '⏳', color: '#D97706' },
+      { title: 'Rent Overdue', value: `₹${s.rent_overdue}`, icon: '⚠️', color: '#DC2626', route: '/(drawer)/(tabs)/payments' },
+      { title: 'Late Fees', value: `₹${s.late_fees_total}`, icon: '💲', color: '#7C3AED' },
+      { title: 'Collection Rate', value: `${s.collection_rate}%`, icon: '📈', color: '#0891B2' },
     ];
   }, [dashboardData]);
 
@@ -97,6 +93,7 @@ export default function OwnerDashboardScreen() {
 
   const subscription: SubscriptionPlan | null = dashboardData?.subscription || null;
   const featureUsage: FeatureUsage[] = dashboardData?.feature_usage || [];
+  const currentMonth = dashboardData?.stats?.current_month || '';
 
   const renderHeader = () => (
     <View style={[styles.header, { backgroundColor: theme.colors.surface }]}>
@@ -120,6 +117,23 @@ export default function OwnerDashboardScreen() {
         </View>
       </View>
       <View style={styles.headerRight}>
+        {currentMonth ? (
+          <View
+            style={[
+              styles.monthBadge,
+              { backgroundColor: `${theme.colors.primary}15` },
+            ]}
+          >
+            <Text
+              style={[
+                styles.monthBadgeText,
+                { color: theme.colors.primary },
+              ]}
+            >
+              {currentMonth}
+            </Text>
+          </View>
+        ) : null}
         {subscription && (
           <View
             style={[
@@ -197,6 +211,7 @@ export default function OwnerDashboardScreen() {
               value={stat.value}
               icon={stat.icon}
               color={stat.color}
+              onPress={stat.route ? () => router.push(stat.route) : undefined}
             />
           </Animated.View>
         ))}
@@ -279,6 +294,91 @@ export default function OwnerDashboardScreen() {
     );
   };
 
+  const renderPaymentStatusSummary = () => {
+    if (!dashboardData?.stats?.payment_status_breakdown) return null;
+    const ps = dashboardData.stats.payment_status_breakdown;
+    const items = [
+      { label: 'Paid', count: ps.paid, color: '#059669' },
+      { label: 'Pending', count: ps.pending, color: '#D97706' },
+      { label: 'Overdue', count: ps.overdue, color: '#DC2626' },
+      { label: 'Cancelled', count: ps.cancelled, color: '#6B7280' },
+    ];
+    return (
+      <View style={styles.section}>
+        <Text
+          variant="titleMedium"
+          style={{ color: theme.colors.onSurface, fontWeight: '600', marginBottom: 12 }}
+        >
+          Payment Status
+        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.paymentScrollContent}
+        >
+          {items.map((item) => (
+            <View
+              key={item.label}
+              style={[
+                styles.paymentCard,
+                { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
+              ]}
+            >
+              <Text style={[styles.paymentCount, { color: item.color }]}>
+                {item.count}
+              </Text>
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                {item.label}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderPayoutSummary = () => {
+    if (!dashboardData?.payouts) return null;
+    const p = dashboardData.payouts;
+    const items = [
+      { label: 'Successful', count: p.success, color: '#059669' },
+      { label: 'Pending', count: p.pending, color: '#D97706' },
+      { label: 'Failed', count: p.failed, color: '#DC2626' },
+    ];
+    return (
+      <View style={styles.section}>
+        <Text
+          variant="titleMedium"
+          style={{ color: theme.colors.onSurface, fontWeight: '600', marginBottom: 12 }}
+        >
+          Payout Summary
+        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.paymentScrollContent}
+        >
+          {items.map((item) => (
+            <View
+              key={item.label}
+              style={[
+                styles.paymentCard,
+                { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline },
+              ]}
+            >
+              <Text style={[styles.paymentCount, { color: item.color }]}>
+                {item.count}
+              </Text>
+              <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                {item.label}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   const renderContent = () => {
     if (!netInfo.isConnected && !isLoading && !dashboardData) {
       return (
@@ -347,6 +447,10 @@ export default function OwnerDashboardScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         {renderStatsGrid()}
+
+        {renderPaymentStatusSummary()}
+
+        {renderPayoutSummary()}
 
         <View style={styles.section}>
           <Text
@@ -450,6 +554,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  monthBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+    marginRight: 4,
+  },
+  monthBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
   headerIcon: {
     margin: 0,
   },
@@ -463,6 +577,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
+  },
+  paymentScrollContent: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  paymentCard: {
+    minWidth: 100,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  paymentCount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
   analyticsContainer: {
     paddingHorizontal: 16,

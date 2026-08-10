@@ -4,10 +4,27 @@ export interface DashboardStats {
   occupied_units: number;
   vacant_units: number;
   active_renters: number;
+  notice_period_renters: number;
+  revoked_renters: number;
+  deactivated_renters: number;
   caretakers: number;
+  rent_expected: number;
+  rent_collected: number;
+  rent_pending: number;
+  rent_overdue: number;
+  overdue_renters_count: number;
+  late_fees_total: number;
   monthly_collection: number;
   pending_collection: number;
+  collection_rate: number;
+  payment_status_breakdown: {
+    paid: number;
+    pending: number;
+    overdue: number;
+    cancelled: number;
+  };
   occupancy_rate: number;
+  current_month: string;
 }
 
 export interface MonthlyTrendItem {

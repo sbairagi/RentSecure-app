@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Card, Text, useTheme } from 'react-native-paper';
 
 interface Trend {
@@ -13,6 +13,7 @@ interface DashboardStatsCardProps {
   icon?: string;
   color?: string;
   trend?: Trend;
+  onPress?: () => void;
 }
 
 export const DashboardStatsCard: React.FC<DashboardStatsCardProps> = ({
@@ -21,6 +22,7 @@ export const DashboardStatsCard: React.FC<DashboardStatsCardProps> = ({
   icon,
   color,
   trend,
+  onPress,
 }) => {
   const theme = useTheme();
   const cardColor = color || theme.colors.primary;
@@ -33,7 +35,7 @@ export const DashboardStatsCard: React.FC<DashboardStatsCardProps> = ({
     return val.toString();
   };
 
-  return (
+  const cardContent = (
     <Card
       style={[
         styles.card,
@@ -76,6 +78,16 @@ export const DashboardStatsCard: React.FC<DashboardStatsCardProps> = ({
       </Card.Content>
     </Card>
   );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        {cardContent}
+      </TouchableOpacity>
+    );
+  }
+
+  return cardContent;
 };
 
 const styles = StyleSheet.create({
