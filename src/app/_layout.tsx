@@ -14,6 +14,7 @@ import {
 } from '@/bootstrap/screens';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useAuthStore } from '@/store/authStore';
+import { useNotificationColdStart } from '@/features/notifications/hooks';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -22,6 +23,8 @@ export default function AppLayout() {
   const { initialize, isInitialized, error, isMaintenance, isForceUpdate, currentPhase } =
     useBootstrap();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
+
+  useNotificationColdStart();
 
   const initializeRef = useRef(initialize);
   initializeRef.current = initialize;

@@ -9,6 +9,10 @@ interface NotificationState {
   preferences: NotificationPreferences | null;
   isLoading: boolean;
   error: string | null;
+  expoPushToken: string | null;
+  fcmToken: string | null;
+  isRegistered: boolean;
+  isRegistering: boolean;
 }
 
 interface NotificationActions {
@@ -24,6 +28,10 @@ interface NotificationActions {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+  setExpoPushToken: (token: string | null) => void;
+  setFcmToken: (token: string | null) => void;
+  setRegistered: (registered: boolean) => void;
+  setRegistering: (registering: boolean) => void;
   reset: () => void;
 }
 
@@ -36,6 +44,10 @@ const initialState: NotificationState = {
   preferences: null,
   isLoading: false,
   error: null,
+  expoPushToken: null,
+  fcmToken: null,
+  isRegistered: false,
+  isRegistering: false,
 };
 
 export const useNotificationStore = create<NotificationStore>((set, get) => ({
@@ -95,6 +107,14 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   setError: (error) => set({ error }),
 
   clearError: () => set({ error: null }),
+
+  setExpoPushToken: (expoPushToken) => set({ expoPushToken }),
+
+  setFcmToken: (fcmToken) => set({ fcmToken }),
+
+  setRegistered: (isRegistered) => set({ isRegistered }),
+
+  setRegistering: (isRegistering) => set({ isRegistering }),
 
   reset: () => set(initialState),
 }));

@@ -1,14 +1,9 @@
-export function initNotifications() {
-  try {
-    const expoNotifications = require('expo-notifications');
-    expoNotifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: false,
-        shouldSetBadge: false,
-      }),
-    });
-  } catch {
-    console.warn('expo-notifications not available');
-  }
-}
+export { configureNotificationHandler as initNotifications } from '@/features/notifications/services/pushNotificationService';
+export {
+  requestNotificationPermission,
+  ensureNotificationSetup,
+  refreshPushToken,
+  cleanupOnLogout,
+  setupNotificationChannel,
+} from '@/features/notifications/services/pushNotificationService';
+export type { NotificationPermissionStatus, PushNotificationState } from '@/features/notifications/services/pushNotificationService';

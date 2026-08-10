@@ -117,6 +117,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
           // Ignore logout API errors
         }
       }
+      try {
+        const { cleanupOnLogout } = await import('@/features/notifications/services/pushNotificationService');
+        await cleanupOnLogout();
+      } catch {
+        // best-effort notification cleanup
+      }
       await secureStorage.removeItem('auth_user');
       await secureStorage.removeItem('access_token');
       await secureStorage.removeItem('refresh_token');

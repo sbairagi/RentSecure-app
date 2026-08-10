@@ -1,16 +1,18 @@
-
 export const NOTIFICATION_ENDPOINTS = {
   LIST: '/api/notifications/get/',
   MARK_READ: (id: number) => `/api/notifications/mark/${id}/`,
-  MARK_ALL_READ: '/api/notifications/mark-all-read/', // MISSING - will be added if backend supports
-  DELETE: (id: number) => `/api/notifications/${id}/`, // MISSING
-  UNREAD_COUNT: '/api/notifications/unread/', // MISSING
+  MARK_ALL_READ: '/api/notifications/mark-all-read/',
+  DELETE: (id: number) => `/api/notifications/${id}/`,
+  UNREAD_COUNT: '/api/notifications/unread-count/',
   SAVE_TOKEN: '/api/notifications/save-token/',
   REGISTER_FCM: '/api/notifications/register-fcm/',
-  PREFERENCES: '/api/owner/update-alert-preferences/', // EXISTS in core
-  PREFERENCES_GET: '/api/owner/alert-preferences/', // MISSING
-  WHATSAPP_LOGS: '/api/notifications/whatsapp-logs/', // MISSING
-  REMINDERS: '/api/notifications/reminders/', // MISSING
-  HISTORY: '/api/notifications/history/', // MISSING
-  BROADCASTS: '/api/notifications/broadcasts/', // MISSING
+  PREFERENCES: '/api/notifications/preferences/',
+  PREFERENCES_GET: '/api/notifications/preferences/',
+  DEVICES: '/api/notifications/devices/',
+  DEVICE_DELETE: (id: number) => `/api/notifications/devices/${id}/`,
+  NOTIFICATION_TYPES: '/api/notifications/types/',
+  WHATSAPP_LOGS: '/api/notifications/whatsapp-logs/',
+  REMINDERS: '/api/notifications/reminders/',
+  HISTORY: '/api/notifications/history/',
+  BROADCASTS: '/api/notifications/broadcasts/',
 } as const;

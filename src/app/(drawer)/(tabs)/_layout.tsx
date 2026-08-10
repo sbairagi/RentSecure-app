@@ -5,9 +5,10 @@ import { VersionGuard } from '@/navigation/components/VersionGuard';
 import { mapBackendRole, type UserRole } from '@/navigation/types/navigation.types';
 import { ROLE_TAB_ACCESS } from '@/navigation/utils/roleRedirect';
 import { useAuthStore } from '@/store/authStore';
+import { useNotificationStore } from '@/features/notifications/store/notificationStore';
 import { Tabs } from 'expo-router';
 import { type ColorValue } from 'react-native';
-import { Text } from 'react-native';
+import { Text, View } from 'react-native';
 
 const BASE_TABS = [
   {
@@ -45,6 +46,7 @@ const BASE_TABS = [
 export default function DrawerTabsLayout() {
   const theme = useTheme();
   const { user } = useAuthStore();
+  const { unreadCount } = useNotificationStore();
   const currentRole: UserRole = mapBackendRole(user?.role);
   const allowedTabs = ROLE_TAB_ACCESS[currentRole] || [];
   const tabs = BASE_TABS.filter((tab) => allowedTabs.includes(tab.name));
@@ -74,7 +76,29 @@ export default function DrawerTabsLayout() {
                 options={{
                   title: tab.title,
                   tabBarIcon: ({ focused, color, size }: { focused: boolean; color: ColorValue; size: number }) => (
-                    <Text style={{ fontSize: size, color }}>{tab.icon}</Text>
+                    <View>
+                      <Text style={{ fontSize: size, color }}>{tab.icon}</Text>
+                      {tab.name === 'notifications' && unreadCount > 0 && (
+                        <View
+                          style={{
+                            position: 'absolute',
+                            top: -4,
+                            right: -8,
+                            backgroundColor: theme.error || '#EF4444',
+                            borderRadius: 10,
+                            minWidth: 18,
+                            height: 18,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            paddingHorizontal: 4,
+                          }}
+                        >
+                          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   ),
                 }}
               />

@@ -1,5 +1,13 @@
 import { notificationsApi } from '../services/notificationsApi';
-import type { PaginatedNotifications, NotificationFilters, NotificationPreferences, DeliveryLog, Reminder, DeliveryStats } from '../types';
+import type {
+  PaginatedNotifications,
+  NotificationFilters,
+  NotificationPreferences,
+  DeliveryLog,
+  Reminder,
+  DeliveryStats,
+  DeviceToken,
+} from '../types';
 
 export const notificationsRepository = {
   fetchNotifications: async (filters?: NotificationFilters, page = 1, limit = 20): Promise<PaginatedNotifications> => {
@@ -23,19 +31,19 @@ export const notificationsRepository = {
   },
 
   markAllAsRead: async (): Promise<void> => {
-    // Backend doesn't support bulk - implemented in hook
+    await notificationsApi.markAllAsRead();
   },
 
   deleteNotification: async (id: number): Promise<void> => {
     await notificationsApi.deleteNotification(id);
   },
 
-  saveDeviceToken: async (token: string, platform: string): Promise<void> => {
-    await notificationsApi.saveDeviceToken(token, platform);
+  saveDeviceToken: async (token: string, platform: string, deviceId?: string, fcmToken?: string): Promise<void> => {
+    await notificationsApi.saveDeviceToken(token, platform, deviceId, fcmToken);
   },
 
-  registerFCMToken: async (token: string, type: string): Promise<void> => {
-    await notificationsApi.registerFCMToken(token, type);
+  registerFCMToken: async (token: string, type: string, expoToken?: string): Promise<void> => {
+    await notificationsApi.registerFCMToken(token, type, expoToken);
   },
 
   fetchPreferences: async (): Promise<NotificationPreferences> => {
@@ -46,21 +54,40 @@ export const notificationsRepository = {
     await notificationsApi.updatePreferences(prefs);
   },
 
+  fetchDevices: async (): Promise<DeviceToken[]> => {
+    return notificationsApi.getDevices();
+  },
+
+  unregisterDevice: async (deviceId: number): Promise<void> => {
+    await notificationsApi.unregisterDevice(deviceId);
+  },
+
   fetchWhatsAppLogs: async (filters?: any, page = 1, limit = 20): Promise<DeliveryLog[]> => {
-    return notificationsApi.getWhatsAppLogs({ page, limit });
+    const params: Record<string, any> = { page, limit };
+    if (filters?.search) params.search = filters.search;
+    if (filters?.type && filters.type !== 'all') params.type = filters.type;
+    if (filters?.channel && filters.channel !== 'all') params.channel = filters.channel;
+    if (filters?.read_status && filters.read_status !== 'all') params.read_status = filters.read_status;
+    if (filters?.date_from) params.date_from = filters.date_from;
+    if (filters?.date_to) params.date_to = filters.date_to;
+    return notificationsApi.getWhatsAppLogs(params);
   },
 
   fetchReminders: async (filters?: any, page = 1, limit = 20): Promise<Reminder[]> => {
-    return notificationsApi.getReminders({ page, limit });
+    const params: Record<string, any> = { page, limit };
+    if (filters?.search) params.search = filters.search;
+    if (filters?.type && filters.type !== 'all') params.type = filters.type;
+    if (filters?.status && filters.status !== 'all') params.status = filters.status;
+    if (filters?.date_from) params.date_from = filters.date_from;
+    if (filters?.date_to) params.date_to = filters.date_to;
+    return notificationsApi.getReminders(params);
+  },
+
+  fetchNotificationTypes: async (): Promise<Array<{ value: string; label: string }>> => {
+    return notificationsApi.getNotificationTypes();
   },
 
   getDeliveryStats: async (): Promise<DeliveryStats> => {
-    return {
-      total_sent: 0,
-      total_delivered: 0,
-      total_failed: 0,
-      delivery_rate: 0,
-      by_channel: {},
-    };
+    return notificationsApi.getDeliveryStats();
   },
 };

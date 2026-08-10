@@ -1,0 +1,228 @@
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import { Platform } from 'react-native';
+import { useNotificationStore } from '../store/notificationStore';
+import { notificationsApi } from '../services/notificationsApi';
+import { useAuthStore } from '@/store/authStore';
+import { logger } from '@/services/api/logger';
+import type { Notification } from '../types';
+
+export type NotificationPermissionStatus =
+  | 'granted'
+  | 'denied'
+  | 'undetermined';
+
+export interface PushNotificationState {
+  hasPermission: boolean;
+  permissionStatus: NotificationPermissionStatus;
+  expoPushToken: string | null;
+  fcmToken: string | null;
+  isRegistered: boolean;
+  isRegistering: boolean;
+  error: string | null;
+}
+
+export interface RegisterDeviceOptions {
+  token: string;
+  platform: 'ios' | 'android' | 'web';
+  deviceId?: string;
+  fcmToken?: string | null;
+}
+
+export async function requestNotificationPermission(): Promise<NotificationPermissionStatus> {
+  try {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status === Notifications.PermissionStatus.GRANTED) return 'granted';
+    if (status === Notifications.PermissionStatus.DENIED) return 'denied';
+    return 'undetermined';
+  } catch (error) {
+    logger.error('Failed to request notification permission', error as Error);
+    return 'undetermined';
+  }
+}
+
+export async function getExpoPushToken(): Promise<string | null> {
+  try {
+    if (!Device.isDevice) return null;
+    const { data } = await Notifications.getExpoPushTokenAsync({
+      projectId: undefined,
+    });
+    return data;
+  } catch (error) {
+    logger.error('Failed to get expo push token', error as Error);
+    return null;
+  }
+}
+
+export async function getFCMToken(): Promise<string | null> {
+  try {
+    if (Platform.OS === 'ios') return null;
+    const token = await Notifications.getDevicePushTokenAsync();
+    return token?.data ?? null;
+  } catch (error) {
+    logger.error('Failed to get FCM token', error as Error);
+    return null;
+  }
+}
+
+export async function registerDeviceWithBackend(
+  options: RegisterDeviceOptions,
+): Promise<boolean> {
+  try {
+    const { token, platform, deviceId, fcmToken } = options;
+    await notificationsApi.saveDeviceToken(token, platform, deviceId, fcmToken ?? undefined);
+    const { markAsRead } = useNotificationStore.getState();
+    useNotificationStore.setState({ isRegistered: true, expoPushToken: token, fcmToken: fcmToken ?? null, error: null });
+    logger.info('Device registered with backend', { platform, hasFcm: !!fcmToken });
+    return true;
+  } catch (error) {
+    const message = (error as Error)?.message || 'Failed to register device';
+    logger.error('Device registration failed', error as Error);
+    useNotificationStore.setState({ error: message, isRegistered: false });
+    return false;
+  }
+}
+
+export async function unregisterDeviceFromBackend(token?: string): Promise<void> {
+  try {
+    const devices = await notificationsApi.getDevices();
+    const target = devices.find((d) => d.token === token);
+    if (target?.id) {
+      await notificationsApi.unregisterDevice(target.id);
+    }
+  } catch (error) {
+    logger.error('Device unregistration failed', error as Error);
+  }
+}
+
+export async function ensureNotificationSetup(): Promise<PushNotificationState> {
+  const authStore = useAuthStore.getState();
+  const store = useNotificationStore.getState();
+  const isAuthenticated = authStore.isAuthenticated;
+
+  const permissionStatus = await requestNotificationPermission();
+  const hasPermission = permissionStatus === 'granted';
+
+  let expoPushToken: string | null = null;
+  let fcmToken: string | null = null;
+
+  if (hasPermission) {
+    expoPushToken = await getExpoPushToken();
+    fcmToken = await getFCMToken();
+
+    if (isAuthenticated && expoPushToken) {
+      store.setRegistering(true);
+      const registered = await registerDeviceWithBackend({
+        token: expoPushToken,
+        platform: Platform.OS as 'ios' | 'android' | 'web',
+        deviceId: undefined,
+        fcmToken,
+      });
+      store.setRegistering(false);
+      return {
+        hasPermission,
+        permissionStatus,
+        expoPushToken,
+        fcmToken,
+        isRegistered: registered,
+        isRegistering: false,
+        error: registered ? null : 'Device registration failed',
+      };
+    }
+  }
+
+  return {
+    hasPermission,
+    permissionStatus,
+    expoPushToken,
+    fcmToken,
+    isRegistered: false,
+    isRegistering: false,
+    error: null,
+  };
+}
+
+export async function refreshPushToken(): Promise<string | null> {
+  const expoPushToken = await getExpoPushToken();
+  const fcmToken = await getFCMToken();
+  const authStore = useAuthStore.getState();
+
+  if (authStore.isAuthenticated && expoPushToken) {
+    await registerDeviceWithBackend({
+      token: expoPushToken,
+      platform: Platform.OS as 'ios' | 'android' | 'web',
+      fcmToken,
+    });
+  }
+
+  useNotificationStore.setState({ expoPushToken, fcmToken });
+  return expoPushToken;
+}
+
+export async function handleNotificationResponse(
+  response: Notifications.NotificationResponse,
+): Promise<void> {
+  const { markAsRead } = useNotificationStore.getState();
+  const notification = response.notification;
+
+  if (notification?.request?.content?.data) {
+    const data = notification.request.content.data as Record<string, any>;
+    const notificationId = data.notification_id || data.id;
+
+    if (notificationId) {
+      try {
+        await notificationsApi.markAsRead(Number(notificationId));
+        markAsRead(Number(notificationId));
+      } catch {
+        // best-effort
+      }
+    }
+  }
+}
+
+export function getNotificationPayload(
+  notification: Notifications.Notification,
+): Record<string, any> {
+  return notification.request.content.data || {};
+}
+
+export async function cleanupOnLogout(): Promise<void> {
+  try {
+    const { expoPushToken } = useNotificationStore.getState();
+    if (expoPushToken) {
+      await unregisterDeviceFromBackend(expoPushToken);
+    }
+  } catch (error) {
+    logger.error('Logout cleanup failed', error as Error);
+  } finally {
+    useNotificationStore.setState({
+      expoPushToken: null,
+      fcmToken: null,
+      isRegistered: false,
+      error: null,
+    });
+  }
+}
+
+export function setupNotificationChannel(): void {
+  if (Platform.OS === 'android') {
+    Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#208AEF',
+      bypassDnd: false,
+      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+    });
+  }
+}
+
+export function configureNotificationHandler(): void {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }) as any,
+  });
+}

@@ -34,6 +34,8 @@ export interface Notification {
   action_label?: string;
   image_url?: string;
   archived?: boolean;
+  resource_type?: string;
+  resource_id?: string;
 }
 
 export interface NotificationFilters {

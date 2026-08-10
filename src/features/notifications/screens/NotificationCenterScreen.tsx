@@ -3,34 +3,42 @@ import { StyleSheet, View } from 'react-native';
 import { IconButton, Text, useTheme } from 'react-native-paper';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { showMessage } from 'react-native-flash-message';
+import { useRouter } from 'expo-router';
 import { NotificationFilterSheet } from '../components/NotificationFilterSheet';
 import { NotificationSearchBar } from '../components/NotificationSearchBar';
 import { NotificationEmptyState } from '../components/NotificationEmptyState';
 import { NotificationErrorState } from '../components/NotificationErrorState';
 import { NotificationSkeletonLoader } from '../components/NotificationSkeletonLoader';
 import { NotificationCard } from '../components/NotificationCard';
-import { useNotifications, useMarkAllAsRead } from '../hooks';
+import { useNotifications, useMarkAllAsRead, useUnreadCount, useMarkAsRead } from '../hooks';
 import { useNotificationStore } from '../store/notificationStore';
 import type { NotificationFilters, Notification } from '../types';
 import { groupNotificationsByDate } from '../utils';
+import { routeNotification } from '@/navigation/notification-routing/notificationRouter';
 
 export default function NotificationCenterScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const netInfo = useNetInfo();
-  const { unreadCount } = useNotificationStore();
+  const { unreadCount: storeUnreadCount } = useNotificationStore();
   const [search, setSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<NotificationFilters>({});
-  const [page] = useState(1);
+  const [page, setPage] = useState(1);
 
   const {
     notifications,
+    pagination,
     isLoading,
+    isFetching,
     error,
     refetch,
   } = useNotifications(filters, page, 20);
 
   const { mutate: markAllAsRead, isPending: isMarkingAllRead } = useMarkAllAsRead();
+  const { mutate: markAsRead } = useMarkAsRead();
+  const { data: unreadCountData } = useUnreadCount();
+  const unreadCount = unreadCountData ?? storeUnreadCount;
 
   const filteredNotifications = useMemo(() => {
     if (!search.trim()) return notifications;
@@ -45,18 +53,39 @@ export default function NotificationCenterScreen() {
   const grouped = useMemo(() => groupNotificationsByDate(filteredNotifications), [filteredNotifications]);
 
   const handleNotificationPress = useCallback(
-    (notification: Notification) => {
-      showMessage({
-        message: notification.title,
-        description: notification.message,
-        type: 'info',
-        duration: 3000,
+    async (notification: Notification) => {
+      if (!notification.is_read) {
+        markAsRead(notification.id);
+      }
+
+      const result = routeNotification({
+        id: String(notification.id),
+        title: notification.title,
+        message: notification.message,
+        data: {
+          resource_id: notification.resource_id,
+          resource_type: notification.resource_type,
+          notification_type: notification.type,
+          ...notification.data,
+        },
       });
+
+      if (result.success && result.route) {
+        router.replace(result.route as any);
+      } else {
+        showMessage({
+          message: notification.title,
+          description: notification.message,
+          type: 'info',
+          duration: 3000,
+        });
+      }
     },
-    []
+    [markAsRead, router]
   );
 
   const handleRefresh = useCallback(async () => {
+    setPage(1);
     await refetch();
   }, [refetch]);
 
@@ -64,29 +93,19 @@ export default function NotificationCenterScreen() {
     markAllAsRead();
   }, [markAllAsRead]);
 
-  const renderDateSection = (title: string, items: Notification[]) => {
-    if (items.length === 0) return null;
-    return (
-      <View key={title} style={styles.dateSection}>
-        <Text style={[styles.dateTitle, { color: theme.colors.onSurfaceVariant }]}>
-          {title}
-        </Text>
-        {items.map((notification) => (
-          <NotificationCard
-            key={notification.id}
-            notification={notification}
-            onPress={handleNotificationPress}
-          />
-        ))}
-      </View>
-    );
-  };
+  const handleLoadMore = useCallback(() => {
+    if (pagination && page < pagination.totalPages) {
+      setPage((prev) => prev + 1);
+    }
+  }, [pagination, page]);
 
-  if (isLoading) {
+  const hasMore = pagination ? page < pagination.totalPages : false;
+
+  if (isLoading && page === 1) {
     return <NotificationSkeletonLoader count={5} />;
   }
 
-  if (error) {
+  if (error && page === 1) {
     return (
       <NotificationErrorState
         message={error}
@@ -111,7 +130,7 @@ export default function NotificationCenterScreen() {
               iconColor={theme.colors.primary}
             />
             <View style={[styles.unreadBadge, { backgroundColor: theme.colors.primary }]}>
-              <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+              <Text style={styles.unreadBadgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
             </View>
           </View>
         )}
@@ -126,12 +145,12 @@ export default function NotificationCenterScreen() {
       {!netInfo.isConnected && (
         <View style={[styles.offlineBanner, { backgroundColor: theme.colors.errorContainer }]}>
           <Text style={[styles.offlineText, { color: theme.colors.onErrorContainer }]}>
-            You&apos;re offline. Showing cached notifications.
+            You're offline. Showing cached notifications.
           </Text>
         </View>
       )}
 
-      {filteredNotifications.length === 0 ? (
+      {filteredNotifications.length === 0 && !isFetching ? (
         <NotificationEmptyState
           title="No notifications"
           message="You're all caught up!"
@@ -140,11 +159,26 @@ export default function NotificationCenterScreen() {
         />
       ) : (
         <View style={styles.listContainer}>
-          {renderDateSection('Today', grouped.today)}
-          {renderDateSection('Yesterday', grouped.yesterday)}
-          {renderDateSection('This Week', grouped.thisWeek)}
-          {renderDateSection('This Month', grouped.thisMonth)}
-          {renderDateSection('Older', grouped.older)}
+          {renderDateSection('Today', grouped.today, handleNotificationPress)}
+          {renderDateSection('Yesterday', grouped.yesterday, handleNotificationPress)}
+          {renderDateSection('This Week', grouped.thisWeek, handleNotificationPress)}
+          {renderDateSection('This Month', grouped.thisMonth, handleNotificationPress)}
+          {renderDateSection('Older', grouped.older, handleNotificationPress)}
+
+          {hasMore && (
+            <View style={styles.loadMoreContainer}>
+              <IconButton
+                icon="chevron-down"
+                size={24}
+                onPress={handleLoadMore}
+                disabled={isFetching}
+                iconColor={theme.colors.primary}
+              />
+              <Text style={[styles.loadMoreText, { color: theme.colors.primary }]}>
+                {isFetching ? 'Loading...' : 'Load More'}
+              </Text>
+            </View>
+          )}
         </View>
       )}
 
@@ -152,11 +186,36 @@ export default function NotificationCenterScreen() {
         visible={showFilters}
         filters={filters}
         onClose={() => setShowFilters(false)}
-        onApply={setFilters}
+        onApply={(newFilters) => {
+          setFilters(newFilters);
+          setPage(1);
+        }}
       />
     </View>
   );
 }
+
+const renderDateSection = (
+  title: string,
+  items: Notification[],
+  onPress: (notification: Notification) => void
+) => {
+  if (items.length === 0) return null;
+  return (
+    <View key={title} style={styles.dateSection}>
+      <Text style={[styles.dateTitle, { color: '#6B7280' }]}>
+        {title}
+      </Text>
+      {items.map((notification) => (
+        <NotificationCard
+          key={notification.id}
+          notification={notification}
+          onPress={onPress}
+        />
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -194,6 +253,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     paddingTop: 8,
+    paddingBottom: 24,
   },
   dateSection: {
     marginBottom: 16,
@@ -216,5 +276,16 @@ const styles = StyleSheet.create({
   offlineText: {
     fontSize: 13,
     fontWeight: '500',
+  },
+  loadMoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 8,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
