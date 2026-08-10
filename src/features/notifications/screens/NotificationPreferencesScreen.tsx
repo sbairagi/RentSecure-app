@@ -3,7 +3,6 @@ import { StyleSheet, View } from 'react-native';
 import { IconButton, Switch, Text, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useNotificationPreferences, useUpdatePreferences } from '../hooks';
-import { ChannelToggle } from '../components/ChannelToggle';
 import { PreferenceSection } from '../components/PreferenceSection';
 import type { NotificationPreferences } from '../types';
 
@@ -65,51 +64,174 @@ export default function NotificationPreferencesScreen() {
       </View>
 
       <PreferenceSection
+        title="Push Notifications"
+        description="Master control for push notifications"
+      >
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Enable Push Notifications
+          </Text>
+          <Switch
+            value={!!preferences.push_enabled}
+            onValueChange={() => handleToggle('push_enabled')}
+          />
+        </View>
+      </PreferenceSection>
+
+      <PreferenceSection
         title="Rent Alerts"
         description="Receive notifications about rent payments and reminders"
       >
-        <ChannelToggle
-          channel="whatsapp"
-          enabled={!!preferences.rent_alerts_whatsapp}
-          onToggle={() => handleToggle('rent_alerts_whatsapp')}
-        />
-        <ChannelToggle
-          channel="email"
-          enabled={!!preferences.rent_alerts_email}
-          onToggle={() => handleToggle('rent_alerts_email')}
-        />
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Push
+          </Text>
+          <Switch
+            value={!!preferences.rent_alerts_push}
+            onValueChange={() => handleToggle('rent_alerts_push')}
+          />
+        </View>
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            WhatsApp
+          </Text>
+          <Switch
+            value={!!preferences.rent_alerts_whatsapp}
+            onValueChange={() => handleToggle('rent_alerts_whatsapp')}
+          />
+        </View>
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Email
+          </Text>
+          <Switch
+            value={!!preferences.rent_alerts_email}
+            onValueChange={() => handleToggle('rent_alerts_email')}
+          />
+        </View>
       </PreferenceSection>
 
       <PreferenceSection
         title="Monthly Summary"
         description="Receive monthly rent summary reports"
       >
-        <ChannelToggle
-          channel="email"
-          enabled={!!preferences.monthly_summary_email}
-          onToggle={() => handleToggle('monthly_summary_email')}
-        />
-        <ChannelToggle
-          channel="whatsapp"
-          enabled={!!preferences.monthly_summary_whatsapp}
-          onToggle={() => handleToggle('monthly_summary_whatsapp')}
-        />
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Email
+          </Text>
+          <Switch
+            value={!!preferences.monthly_summary_email}
+            onValueChange={() => handleToggle('monthly_summary_email')}
+          />
+        </View>
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            WhatsApp
+          </Text>
+          <Switch
+            value={!!preferences.monthly_summary_whatsapp}
+            onValueChange={() => handleToggle('monthly_summary_whatsapp')}
+          />
+        </View>
       </PreferenceSection>
 
       <PreferenceSection
         title="Payout Alerts"
         description="Receive notifications about rent payout status"
       >
-        <ChannelToggle
-          channel="whatsapp"
-          enabled={!!preferences.payout_alerts_whatsapp}
-          onToggle={() => handleToggle('payout_alerts_whatsapp')}
-        />
-        <ChannelToggle
-          channel="email"
-          enabled={!!preferences.payout_alerts_email}
-          onToggle={() => handleToggle('payout_alerts_email')}
-        />
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            WhatsApp
+          </Text>
+          <Switch
+            value={!!preferences.payout_alerts_whatsapp}
+            onValueChange={() => handleToggle('payout_alerts_whatsapp')}
+          />
+        </View>
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Email
+          </Text>
+          <Switch
+            value={!!preferences.payout_alerts_email}
+            onValueChange={() => handleToggle('payout_alerts_email')}
+          />
+        </View>
+      </PreferenceSection>
+
+      <PreferenceSection
+        title="Maintenance Alerts"
+        description="Receive push notifications for maintenance updates"
+      >
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Push
+          </Text>
+          <Switch
+            value={!!preferences.maintenance_push}
+            onValueChange={() => handleToggle('maintenance_push')}
+          />
+        </View>
+      </PreferenceSection>
+
+      <PreferenceSection
+        title="Visitor Alerts"
+        description="Receive push notifications for visitor requests"
+      >
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Push
+          </Text>
+          <Switch
+            value={!!preferences.visitor_push}
+            onValueChange={() => handleToggle('visitor_push')}
+          />
+        </View>
+      </PreferenceSection>
+
+      <PreferenceSection
+        title="Agreement Alerts"
+        description="Receive push notifications for agreement updates"
+      >
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Push
+          </Text>
+          <Switch
+            value={!!preferences.agreement_push}
+            onValueChange={() => handleToggle('agreement_push')}
+          />
+        </View>
+      </PreferenceSection>
+
+      <PreferenceSection
+        title="Subscription Alerts"
+        description="Receive push notifications for subscription updates"
+      >
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Push
+          </Text>
+          <Switch
+            value={!!preferences.subscription_push}
+            onValueChange={() => handleToggle('subscription_push')}
+          />
+        </View>
+      </PreferenceSection>
+
+      <PreferenceSection
+        title="System Alerts"
+        description="Receive push notifications for system announcements"
+      >
+        <View style={styles.toggleRow}>
+          <Text style={[styles.toggleLabel, { color: theme.colors.onSurface }]}>
+            Push
+          </Text>
+          <Switch
+            value={!!preferences.system_push}
+            onValueChange={() => handleToggle('system_push')}
+          />
+        </View>
       </PreferenceSection>
 
       <PreferenceSection

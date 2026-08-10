@@ -6,10 +6,13 @@ export type NotificationType =
   | 'payment_failed'
   | 'agreement_expiry'
   | 'agreement_signed'
+  | 'maintenance_created'
   | 'maintenance_update'
-  | 'visitor_approval'
+  | 'visitor_request'
+  | 'visitor_approved'
   | 'subscription_expiry'
-  | 'feature_limit_warning'
+  | 'subscription_expired'
+  | 'document_shared'
   | 'system_announcement'
   | 'payout_success'
   | 'payout_failed'
@@ -41,7 +44,6 @@ export interface Notification {
 export interface NotificationFilters {
   search?: string;
   type?: NotificationType | 'all';
-  channel?: NotificationChannel | 'all';
   read_status?: 'all' | 'read' | 'unread';
   date_from?: string;
   date_to?: string;

@@ -1,10 +1,17 @@
 export interface NotificationPreferences {
+  push_enabled: boolean;
+  rent_alerts_push: boolean;
   rent_alerts_whatsapp: boolean;
   rent_alerts_email: boolean;
   monthly_summary_email: boolean;
   monthly_summary_whatsapp: boolean;
   payout_alerts_whatsapp: boolean;
   payout_alerts_email: boolean;
+  maintenance_push: boolean;
+  visitor_push: boolean;
+  agreement_push: boolean;
+  subscription_push: boolean;
+  system_push: boolean;
   receive_rent_alerts: boolean;
   receive_tax_alerts: boolean;
   receive_vacancy_alerts: boolean;

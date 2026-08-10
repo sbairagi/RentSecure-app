@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
 import { useAuthStore } from '@/store/authStore';
 import {
   cleanupOnLogout,
@@ -194,8 +193,6 @@ export function useNotificationBadge() {
   const { unreadCount } = useNotificationStore();
 
   useEffect(() => {
-    if (Platform.OS === 'ios') {
-      Notifications.setBadgeCountAsync(unreadCount).catch(() => {});
-    }
+    Notifications.setBadgeCountAsync(unreadCount).catch(() => {});
   }, [unreadCount]);
 }

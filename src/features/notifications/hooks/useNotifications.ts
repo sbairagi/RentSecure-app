@@ -4,8 +4,8 @@ import { notificationsRepository } from '../repository';
 import { useNotificationStore } from '../store/notificationStore';
 import type { NotificationFilters, PaginatedNotifications } from '../types';
 
-const NOTIFICATIONS_QUERY_KEY = ['notifications'];
-const UNREAD_COUNT_QUERY_KEY = ['notifications', 'unread-count'];
+const NOTIFICATIONS_QUERY_KEY = ['notifications', 'list'];
+const UNREAD_COUNT_QUERY_KEY = ['notifications', 'unread'];
 
 export function useNotifications(filters?: NotificationFilters, page = 1, limit = 20) {
   const { setNotifications, setLoading } = useNotificationStore();
@@ -78,9 +78,7 @@ export function useMarkAllAsRead() {
 
   return useMutation({
     mutationFn: async () => {
-      const { notifications } = useNotificationStore.getState();
-      const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
-      await Promise.all(unreadIds.map((id) => notificationsRepository.markAsRead(id)));
+      await notificationsRepository.markAllAsRead();
     },
     onSuccess: () => {
       markAllInStore();

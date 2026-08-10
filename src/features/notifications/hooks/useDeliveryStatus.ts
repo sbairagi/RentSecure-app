@@ -4,15 +4,31 @@ import type { DeliveryLog, DeliveryStats } from '../types';
 
 const DELIVERY_QUERY_KEY = ['notifications', 'delivery'];
 
+const STATUS_NORMALIZED: Record<string, 'delivered' | 'failed' | 'sent'> = {
+  SENT: 'sent',
+  DELIVERED: 'delivered',
+  FAILED: 'failed',
+  PERMANENT_FAILED: 'failed',
+  RETRYING: 'sent',
+  pending: 'sent',
+  sent: 'sent',
+  delivered: 'delivered',
+  failed: 'failed',
+};
+
 export function useDeliveryStats() {
   return useQuery({
     queryKey: [...DELIVERY_QUERY_KEY, 'stats'],
     queryFn: async (): Promise<DeliveryStats> => {
+      const logs = await notificationsRepository.fetchWhatsAppLogs(undefined, 1, 100);
+      const total = logs.length;
+      const delivered = logs.filter((l) => STATUS_NORMALIZED[l.status] === 'delivered').length;
+      const failed = logs.filter((l) => STATUS_NORMALIZED[l.status] === 'failed').length;
       return {
-        total_sent: 0,
-        total_delivered: 0,
-        total_failed: 0,
-        delivery_rate: 0,
+        total_sent: total,
+        total_delivered: delivered,
+        total_failed: failed,
+        delivery_rate: total > 0 ? Math.round((delivered / total) * 100) : 0,
         by_channel: {},
       };
     },

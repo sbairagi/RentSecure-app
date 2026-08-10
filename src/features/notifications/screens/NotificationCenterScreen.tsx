@@ -153,7 +153,7 @@ export default function NotificationCenterScreen() {
       {filteredNotifications.length === 0 && !isFetching ? (
         <NotificationEmptyState
           title="No notifications"
-          message="You're all caught up!"
+          message="You&apos;re all caught up!"
           actionLabel={search ? 'Clear search' : undefined}
           onAction={search ? () => setSearch('') : undefined}
         />

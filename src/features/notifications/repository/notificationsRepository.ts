@@ -5,7 +5,6 @@ import type {
   NotificationPreferences,
   DeliveryLog,
   Reminder,
-  DeliveryStats,
   DeviceToken,
 } from '../types';
 
@@ -14,7 +13,6 @@ export const notificationsRepository = {
     const params: Record<string, any> = { page, limit };
     if (filters?.search) params.search = filters.search;
     if (filters?.type && filters.type !== 'all') params.type = filters.type;
-    if (filters?.channel && filters.channel !== 'all') params.channel = filters.channel;
     if (filters?.read_status && filters.read_status !== 'all') params.read_status = filters.read_status;
     if (filters?.date_from) params.date_from = filters.date_from;
     if (filters?.date_to) params.date_to = filters.date_to;
@@ -66,7 +64,6 @@ export const notificationsRepository = {
     const params: Record<string, any> = { page, limit };
     if (filters?.search) params.search = filters.search;
     if (filters?.type && filters.type !== 'all') params.type = filters.type;
-    if (filters?.channel && filters.channel !== 'all') params.channel = filters.channel;
     if (filters?.read_status && filters.read_status !== 'all') params.read_status = filters.read_status;
     if (filters?.date_from) params.date_from = filters.date_from;
     if (filters?.date_to) params.date_to = filters.date_to;
@@ -83,11 +80,7 @@ export const notificationsRepository = {
     return notificationsApi.getReminders(params);
   },
 
-  fetchNotificationTypes: async (): Promise<Array<{ value: string; label: string }>> => {
+  fetchNotificationTypes: async (): Promise<{ value: string; label: string }[]> => {
     return notificationsApi.getNotificationTypes();
-  },
-
-  getDeliveryStats: async (): Promise<DeliveryStats> => {
-    return notificationsApi.getDeliveryStats();
   },
 };

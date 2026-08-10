@@ -3,7 +3,6 @@ import type {
   PaginatedNotifications,
   NotificationPreferences,
   DeliveryLog,
-  DeliveryStats,
   Reminder,
   DeviceToken,
 } from '@/features/notifications/types';
@@ -15,7 +14,6 @@ export const notificationsApi = {
     limit?: number;
     search?: string;
     type?: string;
-    channel?: string;
     read_status?: string;
     date_from?: string;
     date_to?: string;
@@ -84,10 +82,8 @@ export const notificationsApi = {
     return response as NotificationPreferences;
   },
 
-  updatePreferences: async (
-    preferences: Partial<NotificationPreferences>,
-  ): Promise<{ success: boolean; message: string }> => {
-    return apiService.post(NOTIFICATION_ENDPOINTS.PREFERENCES, preferences);
+  updatePreferences: async (prefs: Partial<NotificationPreferences>): Promise<{ success: boolean; message: string }> => {
+    return apiService.post(NOTIFICATION_ENDPOINTS.PREFERENCES, prefs);
   },
 
   getWhatsAppLogs: async (params?: { page?: number; limit?: number }): Promise<DeliveryLog[]> => {
@@ -107,15 +103,5 @@ export const notificationsApi = {
       NOTIFICATION_ENDPOINTS.NOTIFICATION_TYPES
     );
     return response;
-  },
-
-  getDeliveryStats: async (): Promise<DeliveryStats> => {
-    return {
-      total_sent: 0,
-      total_delivered: 0,
-      total_failed: 0,
-      delivery_rate: 0,
-      by_channel: {},
-    };
   },
 };

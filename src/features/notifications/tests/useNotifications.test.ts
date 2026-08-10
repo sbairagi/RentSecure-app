@@ -23,6 +23,7 @@ describe('useNotifications', () => {
       meta: { total: 1, page: 1, limit: 20, totalPages: 1 },
     });
     (notificationsRepository.markAsRead as jest.Mock).mockResolvedValue(undefined);
+    (notificationsRepository.markAllAsRead as jest.Mock).mockResolvedValue(undefined);
   });
 
   it('fetches notifications', async () => {
@@ -46,13 +47,9 @@ describe('useMarkAsRead', () => {
 });
 
 describe('useMarkAllAsRead', () => {
-  it('marks all notifications as read', async () => {
-    (notificationsRepository.fetchNotifications as jest.Mock).mockResolvedValue({
-      data: mockNotifications,
-      meta: { total: 1, page: 1, limit: 20, totalPages: 1 },
-    });
+  it('marks all notifications as read via backend endpoint', async () => {
     const { result } = renderHook(() => useMarkAllAsRead());
     result.current.mutate();
-    await waitFor(() => expect(notificationsRepository.markAsRead).toHaveBeenCalled());
+    await waitFor(() => expect(notificationsRepository.markAllAsRead).toHaveBeenCalled());
   });
 });

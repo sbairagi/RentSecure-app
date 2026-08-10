@@ -115,7 +115,6 @@ export async function ensureNotificationSetup(): Promise<PushNotificationState> 
       const registered = await registerDeviceWithBackend({
         token: expoPushToken,
         platform: Platform.OS as 'ios' | 'android' | 'web',
-        deviceId: undefined,
         fcmToken,
       });
       store.setRegistering(false);

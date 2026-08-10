@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, Text, TextInput, useTheme } from 'react-native-paper';
-import type { NotificationType, NotificationChannel } from '../types';
+import type { NotificationType } from '../types';
 import { NOTIFICATION_TYPE_CONFIG } from '../constants/notificationTypes';
 
 interface NotificationFilterSheetProps {
@@ -9,14 +9,12 @@ interface NotificationFilterSheetProps {
   filters: {
     search?: string;
     type?: NotificationType | 'all';
-    channel?: NotificationChannel | 'all';
     read_status?: 'all' | 'read' | 'unread';
   };
   onClose: () => void;
   onApply: (filters: {
     search?: string;
     type?: NotificationType | 'all';
-    channel?: NotificationChannel | 'all';
     read_status?: 'all' | 'read' | 'unread';
   }) => void;
 }
@@ -32,9 +30,6 @@ export const NotificationFilterSheet: React.FC<NotificationFilterSheetProps> = (
   const [selectedType, setSelectedType] = React.useState<NotificationType | 'all'>(
     filters.type || 'all'
   );
-  const [selectedChannel, setSelectedChannel] = React.useState<NotificationChannel | 'all'>(
-    filters.channel || 'all'
-  );
   const [readStatus, setReadStatus] = React.useState<'all' | 'read' | 'unread'>(
     filters.read_status || 'all'
   );
@@ -43,7 +38,6 @@ export const NotificationFilterSheet: React.FC<NotificationFilterSheetProps> = (
     onApply({
       search,
       type: selectedType,
-      channel: selectedChannel,
       read_status: readStatus,
     });
     onClose();
@@ -52,7 +46,6 @@ export const NotificationFilterSheet: React.FC<NotificationFilterSheetProps> = (
   const handleReset = () => {
     setSearch('');
     setSelectedType('all');
-    setSelectedChannel('all');
     setReadStatus('all');
     onApply({});
     onClose();
