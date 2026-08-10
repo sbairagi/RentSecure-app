@@ -150,8 +150,8 @@ export default function RenterDashboardScreen() {
                 <PaymentCTA
                   rent={dashboard.current_rent}
                   onPayPress={() => router.push({
-                    pathname: '/(drawer)/(tabs)/pay-rent',
-                    params: { rentId: dashboard.current_rent!.id },
+                    pathname: '/(drawer)/(tabs)/payments/pay-rent',
+                    params: { rentId: dashboard.current_rent!.id.toString() },
                   })}
                 />
               </Animated.View>
@@ -163,8 +163,8 @@ export default function RenterDashboardScreen() {
                   payments={dashboard.recent_payments}
                   onViewAll={() => router.push('/(drawer)/(tabs)/payments')}
                   onPressPayment={(payment) => router.push({
-                    pathname: '/(drawer)/(tabs)/payment-details',
-                    params: { paymentId: payment.id.toString() },
+                    pathname: '/(drawer)/(tabs)/payment-details/[id]',
+                    params: { id: payment.id.toString() },
                   })}
                 />
               </Animated.View>

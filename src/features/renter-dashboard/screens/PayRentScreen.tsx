@@ -3,10 +3,8 @@ import { StyleSheet, View, ActivityIndicator, Alert } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import WebView from 'react-native-webview';
-import { RouteGuard } from '@/navigation/components/RouteGuard';
-import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { showMessage } from 'react-native-flash-message';
-import { useInitiateRenterPayment, useVerifyRenterPayment } from '@/features/renter-dashboard/hooks/useRenterPayments';
+import { useInitiateRenterPayment, useVerifyRenterPayment } from '../hooks/useRenterPayments';
 
 type PaymentResult = {
   razorpay_order_id: string;
@@ -159,56 +157,48 @@ export default function PayRentScreen() {
 
   if (initiateMutation.isPending && !initiateMutation.data) {
     return (
-      <RouteGuard requireAuth>
-        <PermissionGuard permissions={['payment:read']}>
-          <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-              <Text style={[styles.loadingText, { color: theme.colors.onSurface }]}>
-                Preparing payment...
-              </Text>
-            </View>
-          </View>
-        </PermissionGuard>
-      </RouteGuard>
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={[styles.loadingText, { color: theme.colors.onSurface }]}>
+            Preparing payment...
+          </Text>
+        </View>
+      </View>
     );
   }
 
   if (initiateMutation.isError) {
     return (
-      <RouteGuard requireAuth>
-        <PermissionGuard permissions={['payment:read']}>
-          <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorIcon}>⚠️</Text>
-              <Text style={[styles.errorTitle, { color: theme.colors.onSurface }]}>
-                Payment Initiation Failed
-              </Text>
-              <Text style={[styles.errorDescription, { color: theme.colors.onSurfaceVariant }]}>
-                {initiateMutation.error instanceof Error
-                  ? initiateMutation.error.message
-                  : 'Could not initiate payment. Please try again.'}
-              </Text>
-              <Text
-                style={[styles.retryButton, { color: theme.colors.primary }]}
-                onPress={() => {
-                  if (rentId) {
-                    initiateMutation.mutate(Number(rentId));
-                  }
-                }}
-              >
-                Tap to retry
-              </Text>
-              <Text
-                style={[styles.backButton, { color: theme.colors.onSurfaceVariant }]}
-                onPress={() => router.back()}
-              >
-                Go Back
-              </Text>
-            </View>
-          </View>
-        </PermissionGuard>
-      </RouteGuard>
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={[styles.errorTitle, { color: theme.colors.onSurface }]}>
+            Payment Initiation Failed
+          </Text>
+          <Text style={[styles.errorDescription, { color: theme.colors.onSurfaceVariant }]}>
+            {initiateMutation.error instanceof Error
+              ? initiateMutation.error.message
+              : 'Could not initiate payment. Please try again.'}
+          </Text>
+          <Text
+            style={[styles.retryButton, { color: theme.colors.primary }]}
+            onPress={() => {
+              if (rentId) {
+                initiateMutation.mutate(Number(rentId));
+              }
+            }}
+          >
+            Tap to retry
+          </Text>
+          <Text
+            style={[styles.backButton, { color: theme.colors.onSurfaceVariant }]}
+            onPress={() => router.back()}
+          >
+            Go Back
+          </Text>
+        </View>
+      </View>
     );
   }
 
@@ -217,36 +207,32 @@ export default function PayRentScreen() {
   }
 
   return (
-    <RouteGuard requireAuth>
-      <PermissionGuard permissions={['payment:read']}>
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-          {isLoading && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
-          )}
-          {verificationStatus === 'processing' && (
-            <View style={styles.processingOverlay}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-              <Text style={[styles.processingText, { color: theme.colors.onSurface }]}>
-                Verifying payment...
-              </Text>
-            </View>
-          )}
-          <WebView
-            ref={webViewRef}
-            source={{ html }}
-            onMessage={handleWebViewMessage}
-            onLoadEnd={() => setIsLoading(false)}
-            javaScriptEnabled
-            domStorageEnabled
-            startInLoadingState
-            scalesPageToFit
-            mixedContentMode="compatibility"
-          />
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
-      </PermissionGuard>
-    </RouteGuard>
+      )}
+      {verificationStatus === 'processing' && (
+        <View style={styles.processingOverlay}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={[styles.processingText, { color: theme.colors.onSurface }]}>
+            Verifying payment...
+          </Text>
+        </View>
+      )}
+      <WebView
+        ref={webViewRef}
+        source={{ html }}
+        onMessage={handleWebViewMessage}
+        onLoadEnd={() => setIsLoading(false)}
+        javaScriptEnabled
+        domStorageEnabled
+        startInLoadingState
+        scalesPageToFit
+        mixedContentMode="compatibility"
+      />
+    </View>
   );
 }
 

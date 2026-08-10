@@ -1,10 +1,10 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { useTheme } from 'react-native-paper';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
-import { useLocalSearchParams } from 'expo-router';
-import { useRenterRentRecordDetail } from '@/features/renter-dashboard/hooks/useRenterDashboard';
+import { useRenterPaymentDetail } from '@/features/renter-dashboard/hooks/useRenterPayments';
 import { RENTER_PAYMENT_STATUS_CONFIG } from '@/features/renter-dashboard/constants/paymentStatus';
 import { DashboardErrorState } from '@/features/renter-dashboard/components/DashboardErrorState';
 import { PaymentSkeletonLoader } from '@/features/payments/components/PaymentSkeletonLoader';
@@ -12,10 +12,22 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 
 export default function RenterPaymentDetailsScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const params = useLocalSearchParams<{ paymentId?: string }>();
   const paymentId = params.paymentId;
 
-  const { payment, isLoading, error, refetch } = useRenterRentRecordDetail(paymentId || '');
+  const { payment, isLoading, error, refetch } = useRenterPaymentDetail(
+    paymentId ? Number(paymentId) : 0
+  );
+
+  const handleViewInvoice = useCallback(() => {
+    if (payment?.invoice_url) {
+      router.push({
+        pathname: '/(drawer)/(tabs)/invoice-detail',
+        params: { paymentId: payment.id.toString() },
+      });
+    }
+  }, [payment, router]);
 
   if (isLoading) {
     return (
@@ -44,12 +56,16 @@ export default function RenterPaymentDetailsScreen() {
   const statusConfig = RENTER_PAYMENT_STATUS_CONFIG[payment.payment_status] || RENTER_PAYMENT_STATUS_CONFIG.pending;
   const amount = parseFloat(payment.amount || '0');
   const lateFee = parseFloat(payment.late_fee || '0');
-  const total = amount + lateFee;
+  const discount = parseFloat(payment.discount || '0');
+  const total = amount + lateFee - discount;
 
   return (
     <RouteGuard requireAuth>
       <PermissionGuard permissions={['payment:read']}>
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <ScrollView
+          style={[styles.container, { backgroundColor: theme.colors.background }]}
+          contentContainerStyle={styles.scrollContent}
+        >
           <View style={styles.header}>
             <Text style={[styles.title, { color: theme.colors.onSurface }]}>
               Payment Details
@@ -77,8 +93,11 @@ export default function RenterPaymentDetailsScreen() {
               {lateFee > 0 && (
                 <DetailRow label="Late Fee" value={`₹${lateFee.toLocaleString('en-IN')}`} theme={theme} valueColor={theme.colors.error} />
               )}
+              {discount > 0 && (
+                <DetailRow label="Discount" value={`-₹${discount.toLocaleString('en-IN')}`} theme={theme} valueColor={theme.colors.primary} />
+              )}
               <DetailRow label="Total" value={`₹${total.toLocaleString('en-IN')}`} theme={theme} bold />
-              <DetailRow label="Payment Method" value={payment.payment_method.replace('_', ' ').toUpperCase()} theme={theme} />
+              <DetailRow label="Payment Method" value={payment.payment_method ? payment.payment_method.replace(/_/g, ' ').toUpperCase() : 'N/A'} theme={theme} />
               <DetailRow label="Payment Date" value={payment.paid_on ? new Date(payment.paid_on).toLocaleDateString('en-IN') : 'N/A'} theme={theme} />
               <DetailRow label="Transaction ID" value={payment.transaction_id || 'N/A'} theme={theme} />
               <DetailRow label="Unit" value={payment.unit_name || 'N/A'} theme={theme} />
@@ -91,13 +110,17 @@ export default function RenterPaymentDetailsScreen() {
                 <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontWeight: '600', marginBottom: 12 }}>
                   Invoice
                 </Text>
-                <Text variant="bodyMedium" style={{ color: theme.colors.primary }} onPress={() => {}}>
-                  View Invoice
+                <Text
+                  variant="bodyMedium"
+                  style={{ color: theme.colors.primary }}
+                  onPress={handleViewInvoice}
+                >
+                  View Invoice →
                 </Text>
               </Animated.View>
             )}
           </Animated.View>
-        </View>
+        </ScrollView>
       </PermissionGuard>
     </RouteGuard>
   );
@@ -125,6 +148,10 @@ function DetailRow({ label, value, theme, valueColor, bold }: { label: string; v
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
   },
   header: {
     flexDirection: 'row',

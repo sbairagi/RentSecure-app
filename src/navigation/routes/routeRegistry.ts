@@ -261,6 +261,13 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     requiredPermissions: ['payment:read'],
   },
   {
+    name: ROUTE_NAMES.PAY_RENT,
+    path: '/(drawer)/(tabs)/payments/pay-rent',
+    group: 'drawer',
+    requiredRoles: ['renter'],
+    requiredPermissions: ['payment:read'],
+  },
+  {
     name: ROUTE_NAMES.RENT_RECORD_DETAIL,
     path: '/(drawer)/(tabs)/payments/rent-record/[id]',
     group: 'drawer',
@@ -629,6 +636,18 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     path: '/(drawer)/(tabs)/support/tickets',
     group: 'drawer',
     requiredPermissions: ['dashboard:read'],
+  },
+  {
+    name: 'payment-status',
+    path: '/(drawer)/(tabs)/payment-status',
+    group: 'drawer',
+    requiredPermissions: ['payment:read'],
+  },
+  {
+    name: 'invoice-detail',
+    path: '/(drawer)/(tabs)/invoice-detail',
+    group: 'drawer',
+    requiredPermissions: ['payment:read'],
   },
 ];
 

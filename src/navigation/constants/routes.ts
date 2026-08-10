@@ -60,6 +60,7 @@ export const ROUTE_NAMES = {
   PAYMENTS: 'payments',
   PAYMENTS_OWNER: 'payments-owner',
   PAYMENTS_RENTER: 'payments-renter',
+  PAY_RENT: 'pay-rent',
   RENT_RECORD_DETAIL: 'rent-record-detail',
   RENT_DUE: 'rent-due',
   RENT_HISTORY: 'rent-history',

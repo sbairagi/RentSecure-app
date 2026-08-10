@@ -433,6 +433,24 @@ export default function DrawerTabsLayout() {
                 href: null,
               }}
             />
+            <Tabs.Screen
+              name="payment-status"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="invoice-detail"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="invoices"
+              options={{
+                href: null,
+              }}
+            />
           </Tabs>
         </SubscriptionGuard>
       </VersionGuard>

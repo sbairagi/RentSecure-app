@@ -151,3 +151,19 @@ export interface RenterExtraChargesResponse {
     totalPages: number;
   };
 }
+
+export interface RenterRentPaymentInitiation {
+  order_id: string;
+  amount: string;
+  currency: string;
+  key_id: string;
+  rent_id: number;
+}
+
+export interface RenterRentPaymentVerification {
+  status: string;
+  message: string;
+  rent_id: number;
+  payment_status: string;
+  paid_on?: string;
+}

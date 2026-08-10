@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import { RefreshControl } from 'react-native';
+import { RefreshControl, FlatList } from 'react-native';
+import { useRouter } from 'expo-router';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { useNetInfo } from '@react-native-community/netinfo';
@@ -11,6 +12,7 @@ import { RENTER_PAYMENT_STATUS_CONFIG } from '@/features/renter-dashboard/consta
 
 export default function RenterPaymentHistoryScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const netInfo = useNetInfo();
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
@@ -22,6 +24,7 @@ export default function RenterPaymentHistoryScreen() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
+    setPage(1);
     try {
       await refetch();
     } catch {
@@ -71,6 +74,13 @@ export default function RenterPaymentHistoryScreen() {
     updated_at: record.updated_at,
   });
 
+  const handlePaymentPress = useCallback((paymentId: number) => {
+    router.push({
+      pathname: '/(drawer)/(tabs)/payment-details/[id]',
+      params: { id: paymentId.toString() },
+    });
+  }, [router]);
+
   if (isLoading && !payments.length) {
     return (
       <RouteGuard requireAuth>
@@ -112,7 +122,7 @@ export default function RenterPaymentHistoryScreen() {
             <View style={styles.offlineContainer}>
               <Text style={styles.offlineIcon}>📡</Text>
               <Text style={[styles.offlineText, { color: theme.colors.onSurface }]}>
-                You&apos;re Offline
+                You're Offline
               </Text>
               <Text style={[styles.offlineSubtext, { color: theme.colors.onSurfaceVariant }]}>
                 Please check your internet connection and try again.
@@ -124,13 +134,34 @@ export default function RenterPaymentHistoryScreen() {
               description="Your payment history will appear here."
             />
           ) : (
-            payments.map((payment) => (
-              <PaymentCard
-                key={payment.id}
-                payment={mapToPaymentCard(payment)}
-                onPress={() => {}}
-              />
-            ))
+            <FlatList
+              data={payments}
+              renderItem={({ item }) => (
+                <PaymentCard
+                  key={item.id}
+                  payment={mapToPaymentCard(item)}
+                  onPress={() => handlePaymentPress(item.id)}
+                />
+              )}
+              keyExtractor={(item) => `payment-${item.id}`}
+              contentContainerStyle={styles.listContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  tintColor={theme.colors.primary}
+                />
+              }
+              onEndReached={handleLoadMore}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                pagination && page < pagination.totalPages ? (
+                  <View style={styles.footerLoader}>
+                    <Text style={{ color: theme.colors.onSurfaceVariant }}>Loading more...</Text>
+                  </View>
+                ) : null
+              }
+            />
           )}
         </View>
       </PermissionGuard>
@@ -153,6 +184,14 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     marginTop: 4,
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: 'center',
   },
   offlineContainer: {
     flex: 1,

@@ -17,9 +17,9 @@ export function PaymentCTA({ rent, onPayPress }: PaymentCTAProps) {
   const handlePayPress = () => {
     if (onPayPress) {
       onPayPress();
-    } else if (rent.payment_link) {
+    } else {
       router.push({
-        pathname: '/(drawer)/(tabs)/pay-rent',
+        pathname: '/(drawer)/(tabs)/payments/pay-rent',
         params: { rentId: rent.id.toString() },
       });
     }
