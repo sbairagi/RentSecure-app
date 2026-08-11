@@ -3,12 +3,12 @@ import { FeatureLimitGuard } from '@/navigation/components/FeatureLimitGuard';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { RenterCard } from '../components/RenterCard';
 import RenterEmptyState from '../components/RenterEmptyState';
-import RenterErrorState from '../components/RenterErrorState';
+import { RenterErrorState } from '../components/RenterErrorState';
 import { RenterFilterChips } from '../components/RenterFilterChips';
 import { RenterSearchBar } from '../components/RenterSearchBar';
 import { RenterSkeletonLoader } from '../components/RenterSkeletonLoader';
@@ -17,26 +17,23 @@ import type { SelectedFilters } from '../types';
 
 export default function RenterListScreen() {
   const router = useRouter();
-  const { renters, isLoading, isFetching, error, refresh } = useRenters();
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({});
 
-  const filtered = useMemo(() => {
-    let list = [...renters];
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (r) =>
-          r.name.toLowerCase().includes(q) ||
-          r.phone.toLowerCase().includes(q) ||
-          (r.email && r.email.toLowerCase().includes(q))
-      );
-    }
-    if (selectedFilters.status) {
-      list = list.filter((r) => r.status === selectedFilters.status);
-    }
-    return list;
-  }, [renters, search, selectedFilters]);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const params = {
+    ...(debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {}),
+    ...(selectedFilters.status ? { status: selectedFilters.status } : {}),
+    ...(selectedFilters.building ? { building: String(selectedFilters.building) } : {}),
+    ...(selectedFilters.unit ? { unit: String(selectedFilters.unit) } : {}),
+  };
+
+  const { renters, isLoading, isFetching, error, refresh } = useRenters(Object.keys(params).length > 0 ? params : undefined);
 
   const handleAdd = () => {
     router.push('/(drawer)/(tabs)/renters/add');
@@ -87,11 +84,11 @@ export default function RenterListScreen() {
                 <Text style={styles.addButtonText}>+ Add Renter</Text>
               </TouchableOpacity>
             </View>
-            {filtered.length === 0 ? (
+            {renters.length === 0 ? (
               <RenterEmptyState onAction={handleAdd} />
             ) : (
               <FlatList
-                data={filtered}
+                data={renters}
                 keyExtractor={(item) => String(item.id)}
                 renderItem={({ item }) => (
                   <RenterCard renter={item} onPress={() => handleRenterPress(item.id)} />

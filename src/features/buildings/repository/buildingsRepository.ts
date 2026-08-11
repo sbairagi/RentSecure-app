@@ -1,9 +1,9 @@
 import { buildingsApi } from '../services/buildingsApi';
-import type { Building, BuildingAnalytics } from '../types/buildings';
+import type { Building, BuildingAnalytics, BuildingFilters } from '../types/buildings';
 
 export const buildingsRepository = {
-  fetchBuildings: async (): Promise<Building[]> => {
-    return buildingsApi.list();
+  fetchBuildings: async (params?: BuildingFilters): Promise<Building[]> => {
+    return buildingsApi.list(params);
   },
 
   fetchBuilding: async (id: number | string): Promise<Building> => {

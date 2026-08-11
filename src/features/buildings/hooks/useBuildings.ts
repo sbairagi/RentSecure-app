@@ -3,20 +3,20 @@ import { useCallback } from 'react';
 import { showMessage } from 'react-native-flash-message';
 import { buildingsRepository } from '../repository/buildingsRepository';
 import { useBuildingsStore } from '../store/buildingsStore';
-import type { Building, BuildingCreatePayload, BuildingUpdatePayload } from '../types/buildings';
+import type { Building, BuildingCreatePayload, BuildingFilters, BuildingUpdatePayload } from '../types/buildings';
 
-const BUILDINGS_QUERY_KEY = (userId: number | string) => ['owner', userId, 'buildings', 'list'];
+const BUILDINGS_QUERY_KEY = (userId: number | string, filters?: BuildingFilters) => ['owner', userId, 'buildings', 'list', filters];
 const BUILDING_DETAIL_QUERY_KEY = (userId: number | string, buildingId: number | string) => ['owner', userId, 'building', buildingId];
 
-export const useBuildings = (userId?: number | string) => {
+export const useBuildings = (userId?: number | string, filters?: BuildingFilters) => {
   const queryClient = useQueryClient();
   const { setError } = useBuildingsStore();
   const ownerId = userId || 'current';
 
   const { data, isLoading, isFetching, error, refetch } = useQuery<Building[]>({
-    queryKey: BUILDINGS_QUERY_KEY(ownerId),
+    queryKey: BUILDINGS_QUERY_KEY(ownerId, filters),
     queryFn: async () => {
-      const result = await buildingsRepository.fetchBuildings();
+      const result = await buildingsRepository.fetchBuildings(filters);
       useBuildingsStore.getState().cacheBuildings(result);
       return result;
     },

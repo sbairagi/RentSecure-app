@@ -50,3 +50,13 @@ export interface BuildingCreatePayload {
 }
 
 export interface BuildingUpdatePayload extends Partial<BuildingCreatePayload> {}
+
+export interface BuildingFilters {
+  search?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  is_archived?: boolean;
+  ordering?: string;
+  page?: number;
+}

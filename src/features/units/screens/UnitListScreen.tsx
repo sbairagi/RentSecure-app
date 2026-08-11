@@ -2,7 +2,7 @@ import { Spacing } from '@/constants/theme';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { BulkActions } from '../components/BulkActions';
@@ -18,60 +18,43 @@ import { useUnits } from '../hooks/useUnits';
 import { useUnitSubscriptionLimits } from '../hooks/useUnitSubscriptionLimits';
 import type { SortOption, UnitFilters } from '../types/units';
 
-function useDebouncedValue<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = React.useState(value);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debounced;
-}
-
 export default function UnitListScreen() {
   const router = useRouter();
-  const { units, isLoading, isFetching, error, refresh } = useUnits();
-  const { limits } = useUnitSubscriptionLimits();
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [filters, setFilters] = useState<UnitFilters>({});
 
-  const debouncedSearch = useDebouncedValue(search, 300);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const orderingMap: Record<SortOption, string | undefined> = {
+    newest: '-created_at',
+    oldest: 'created_at',
+    rent_amount: 'rent_amount',
+    occupancy: undefined,
+    alphabetical: 'unit',
+  };
+
+  const params: UnitFilters = {
+    ...(debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {}),
+    ...(filters.building ? { building: filters.building } : {}),
+    ...(filters.city ? { city: filters.city } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.unit_type ? { unit_type: filters.unit_type } : {}),
+    ...(filters.is_archived !== undefined ? { is_archived: filters.is_archived } : {}),
+    ordering: orderingMap[sortBy],
+  };
+
+  const { units, isLoading, isFetching, error, refresh, total } = useUnits(Object.keys(params).length > 0 ? params : undefined);
+  const { limits } = useUnitSubscriptionLimits();
 
   const canCreate = limits?.can_create_unit ?? true;
-
-  const filtered = useMemo(() => {
-    let list = [...units];
-    if (debouncedSearch.trim()) {
-      const q = debouncedSearch.toLowerCase();
-      list = list.filter(
-        (u) =>
-          u.unit.toLowerCase().includes(q) ||
-          u.building_name.toLowerCase().includes(q) ||
-          u.city.toLowerCase().includes(q) ||
-          u.unit_type.toLowerCase().includes(q)
-      );
-    }
-    switch (sortBy) {
-      case 'newest':
-        list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-        break;
-      case 'oldest':
-        list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-        break;
-      case 'alphabetical':
-        list.sort((a, b) => a.unit.localeCompare(b.unit));
-        break;
-      case 'occupancy':
-        list.sort((a, b) => Number(b.is_vacant) - Number(a.is_vacant));
-        break;
-    }
-    return list;
-  }, [units, debouncedSearch, sortBy]);
 
   const handleAdd = () => {
     router.push('/(drawer)/(tabs)/units/add');
@@ -79,7 +62,7 @@ export default function UnitListScreen() {
 
   const handleUnitPress = (unitId: number) => {
     router.push(`/(drawer)/(tabs)/units/${unitId}`);
-  };
+  });
 
   const handleBulkAction = async (action: string, _data?: Record<string, any>) => {
     if (selectedIds.length === 0) return;
@@ -148,11 +131,11 @@ export default function UnitListScreen() {
               </TouchableOpacity>
             )}
           </View>
-          {filtered.length === 0 ? (
+          {units.length === 0 ? (
             <UnitEmptyState onAction={canCreate ? handleAdd : undefined} />
           ) : (
             <FlatList
-              data={filtered}
+              data={units}
               keyExtractor={(item) => String(item.id)}
               renderItem={({ item }) => (
                 <UnitCard unit={item} onPress={() => handleUnitPress(item.id)} />

@@ -8,11 +8,11 @@ interface BuildingFilterSheetProps {
   visible: boolean;
   onClose: () => void;
   filters: {
-    city: string;
-    state: string;
-    country: string;
+    city?: string;
+    state?: string;
+    country?: string;
   };
-  onFilterChange: (filters: { city: string; state: string; country: string }) => void;
+  onFilterChange: (filters: { city?: string; state?: string; country?: string }) => void;
   onApply: () => void;
 }
 
