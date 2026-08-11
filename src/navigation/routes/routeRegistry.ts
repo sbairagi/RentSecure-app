@@ -600,6 +600,12 @@ export const ROUTE_REGISTRY: RouteDefinition[] = [
     requiredPermissions: ['settings:write'],
   },
   {
+    name: ROUTE_NAMES.SETTINGS_DEACTIVATE_ACCOUNT,
+    path: '/(drawer)/(tabs)/settings/deactivate-account',
+    group: 'drawer',
+    requiredPermissions: ['settings:write'],
+  },
+  {
     name: ROUTE_NAMES.SETTINGS_LOGIN_SESSIONS,
     path: '/(drawer)/(tabs)/settings/login-sessions',
     group: 'drawer',

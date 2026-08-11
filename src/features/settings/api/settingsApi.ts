@@ -13,6 +13,17 @@ import type {
 } from '../types';
 import { SETTINGS_ENDPOINTS } from './settingsEndpoints';
 
+export interface DeviceTokenData {
+  id: number;
+  token: string;
+  device_id: string;
+  platform: string;
+  fcm_token: string;
+  active: boolean;
+  last_used?: string;
+  created_at?: string;
+}
+
 export const settingsApi = {
   getProfile: async (): Promise<ProfileData> => {
     const response = await apiService.get<{ user: ProfileData }>(SETTINGS_ENDPOINTS.PROFILE);
@@ -92,6 +103,11 @@ export const settingsApi = {
 
   registerDevice: async (deviceInfo: DeviceInfo): Promise<{ message: string }> => {
     return apiService.post<{ message: string }>(SETTINGS_ENDPOINTS.DEVICE_REGISTER, deviceInfo);
+  },
+
+  listDevices: async (): Promise<DeviceTokenData[]> => {
+    const response = await apiService.get<DeviceTokenData[]>(SETTINGS_ENDPOINTS.DEVICES_LIST);
+    return Array.isArray(response) ? response : [];
   },
 
   getSubscriptionPlans: async (): Promise<SubscriptionPlan[]> => {

@@ -1,12 +1,18 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+import {
+  Button,
+  Text,
+  useTheme,
+} from 'react-native-paper';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
+import { useRouter } from 'expo-router';
 import { ProfileHeader } from '../components';
 import { useProfile } from '../hooks';
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const { data: profile, isLoading, error } = useProfile();
 
   if (isLoading) {
@@ -39,21 +45,55 @@ export default function ProfileScreen() {
           role={profile.role}
           isPhoneVerified={profile.is_phone_verified}
         />
+
+        <View style={styles.actionsRow}>
+          <Button
+            mode="contained"
+            onPress={() => router.push('/(drawer)/(tabs)/settings/edit-profile')}
+            icon="pencil"
+          >
+            Edit Profile
+          </Button>
+        </View>
+
         <View style={styles.infoSection}>
           <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
             Account Information
           </Text>
           <View style={[styles.infoCard, { backgroundColor: theme.colors.surface }]}>
-            <InfoRow label="User ID" value={profile.id} theme={theme} />
+            <InfoRow label="User ID" value={String(profile.id)} theme={theme} />
             <InfoRow label="Username" value={profile.username || '-'} theme={theme} />
+            <InfoRow label="Full Name" value={profile.full_name || '-'} theme={theme} />
             <InfoRow label="Email" value={profile.email} theme={theme} />
             <InfoRow label="Phone" value={profile.phone || '-'} theme={theme} />
-            <InfoRow label="Role" value={profile.role} theme={theme} />
+            <InfoRow label="Role" value={profile.role || '-'} theme={theme} />
             <InfoRow
               label="Phone Verified"
               value={profile.is_phone_verified ? 'Yes' : 'No'}
               theme={theme}
             />
+          </View>
+        </View>
+
+        <View style={styles.infoSection}>
+          <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+            Permissions
+          </Text>
+          <View style={[styles.infoCard, { backgroundColor: theme.colors.surface }]}>
+            {(profile.permissions || []).length === 0 ? (
+              <InfoRow label="Permissions" value="None" theme={theme} />
+            ) : (
+              profile.permissions!.map((perm) => (
+                <View
+                  key={perm}
+                  style={[styles.permissionRow, { borderBottomColor: theme.colors.outline }]}
+                >
+                  <Text style={[styles.permissionText, { color: theme.colors.onSurface }]}>
+                    {perm}
+                  </Text>
+                </View>
+              ))
+            )}
           </View>
         </View>
       </View>
@@ -63,7 +103,7 @@ export default function ProfileScreen() {
 
 function InfoRow({ label, value, theme }: { label: string; value: string; theme: any }) {
   return (
-    <View style={[styles.infoRow, { borderBottomColor: theme.colors.border }]}>
+    <View style={[styles.infoRow, { borderBottomColor: theme.colors.outline }]}>
       <Text style={[styles.infoLabel, { color: theme.colors.onSurfaceVariant }]}>{label}</Text>
       <Text style={[styles.infoValue, { color: theme.colors.onSurface }]}>{value}</Text>
     </View>
@@ -74,8 +114,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  actionsRow: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
   infoSection: {
-    padding: 16,
+    paddingHorizontal: 16,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
@@ -100,5 +145,14 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  permissionRow: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+  },
+  permissionText: {
+    fontSize: 13,
+    fontFamily: 'monospace',
   },
 });

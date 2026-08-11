@@ -25,6 +25,25 @@ export function useUpdateProfile() {
     onSuccess: (updatedProfile) => {
       queryClient.setQueryData(['settings', 'profile'], updatedProfile);
       queryClient.invalidateQueries({ queryKey: ['settings', 'profile'] });
+
+      try {
+        const { useAuthStore } = require('@/store/authStore');
+        const authStore = useAuthStore.getState();
+        if (authStore.user && updatedProfile) {
+          authStore.updateUser({
+            fullName: updatedProfile.full_name,
+            email: updatedProfile.email,
+            phone: updatedProfile.phone,
+            role: updatedProfile.role,
+            permissions: updatedProfile.permissions,
+            isPhoneVerified: updatedProfile.is_phone_verified,
+            username: updatedProfile.username,
+          } as any);
+        }
+      } catch {
+        // best-effort sync to auth store
+      }
+
       showMessage({
         message: 'Profile updated successfully',
         type: 'success',

@@ -123,6 +123,17 @@ export interface DeviceInfo {
   isCurrentDevice?: boolean;
 }
 
+export interface DeviceTokenData {
+  id: number;
+  token: string;
+  device_id: string;
+  platform: string;
+  fcm_token: string;
+  active: boolean;
+  last_used?: string;
+  created_at?: string;
+}
+
 export interface SettingsSectionData {
   id: string;
   title: string;

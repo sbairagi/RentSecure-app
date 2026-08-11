@@ -10,7 +10,7 @@ const createTestQueryClient = () => new QueryClient({
   },
 });
 
-const _TestWrapper = ({ children }: { children: React.ReactNode }) => {
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
   const queryClient = createTestQueryClient();
 
   return (
@@ -37,6 +37,20 @@ describe('Settings Types', () => {
     expect(profile.email).toBe('test@example.com');
     expect(profile.role).toBe('property_owner');
     expect(profile.is_phone_verified).toBe(true);
+  });
+
+  it('ProfileData includes permissions array', () => {
+    const profile = {
+      id: '1',
+      email: 'test@example.com',
+      full_name: 'Test User',
+      phone: '+919876543210',
+      role: 'property_owner',
+      permissions: ['property:read', 'settings:read'],
+      is_phone_verified: true,
+    };
+    expect(profile.permissions).toContain('property:read');
+    expect(profile.permissions).toContain('settings:read');
   });
 
   it('has correct NotificationPreference shape', () => {
@@ -112,5 +126,48 @@ describe('Settings Types', () => {
     };
     expect(device.platform).toBe('ios');
     expect(device.deviceId).toBe('abc123');
+  });
+
+  it('has correct DeviceTokenData shape', () => {
+    const device = {
+      id: 1,
+      token: 'token123',
+      device_id: 'dev456',
+      platform: 'android',
+      fcm_token: 'fcm789',
+      active: true,
+    };
+    expect(device.id).toBe(1);
+    expect(device.platform).toBe('android');
+    expect(device.active).toBe(true);
+  });
+
+  it('DeviceTokenData defaults inactive to false', () => {
+    const device = {
+      id: 2,
+      token: 'token',
+      device_id: 'dev',
+      platform: 'ios',
+      fcm_token: 'fcm',
+      active: false,
+    };
+    expect(device.active).toBe(false);
+  });
+});
+
+describe('Settings API', () => {
+  it('settingsApi exports required methods', async () => {
+    const { settingsApi } = await import('../api/settingsApi');
+    expect(typeof settingsApi.getProfile).toBe('function');
+    expect(typeof settingsApi.updateProfile).toBe('function');
+    expect(typeof settingsApi.changePassword).toBe('function');
+    expect(typeof settingsApi.logout).toBe('function');
+    expect(typeof settingsApi.logoutAllDevices).toBe('function');
+    expect(typeof settingsApi.deactivateAccount).toBe('function');
+    expect(typeof settingsApi.deleteAccount).toBe('function');
+    expect(typeof settingsApi.getNotificationPreference).toBe('function');
+    expect(typeof settingsApi.updateNotificationPreference).toBe('function');
+    expect(typeof settingsApi.listDevices).toBe('function');
+    expect(typeof settingsApi.registerDevice).toBe('function');
   });
 });

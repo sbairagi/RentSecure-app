@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import {
   Button,
@@ -10,15 +10,19 @@ import {
 } from 'react-native-paper';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
-import { useRegisterDevice } from '../hooks';
-import type { DeviceInfo } from '../types';
+import { useRegisterDevice, useProfile } from '../hooks';
+import { settingsApi } from '../api';
+import type { DeviceInfo, DeviceTokenData } from '../types';
 import Constants from 'expo-constants';
 
 export default function ConnectedDevicesScreen() {
   const theme = useTheme();
   const router = useRouter();
   const registerDevice = useRegisterDevice();
+  // const { data: profile } = useProfile();
   const [deviceName, setDeviceName] = useState('');
+  const [devices, setDevices] = useState<DeviceTokenData[]>([]);
+  const [loadingDevices, setLoadingDevices] = useState(true);
 
   const deviceId = Constants.sessionId || 'unknown';
   const appVersion = Constants.expoConfig?.version || '1.0.0';
@@ -36,6 +40,22 @@ export default function ConnectedDevicesScreen() {
     buildVersion,
     isCurrentDevice: true,
   };
+
+  const loadDevices = async () => {
+    try {
+      const data = await settingsApi.listDevices();
+      setDevices(data);
+    } catch {
+      setDevices([]);
+    } finally {
+      setLoadingDevices(false);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadDevices();
+  }, []);
 
   const handleRegister = () => {
     registerDevice.mutate({
@@ -92,14 +112,38 @@ export default function ConnectedDevicesScreen() {
 
         <List.Section>
           <List.Subheader style={{ color: theme.colors.onSurfaceVariant }}>
-            Note
+            Your Devices
           </List.Subheader>
-          <List.Item
-            title="Device list API not yet available"
-            description="Backend supports registration only"
-            left={(props) => <List.Icon {...props} icon="information" />}
-            style={{ backgroundColor: theme.colors.surface }}
-          />
+          {loadingDevices ? (
+            <List.Item
+              title="Loading devices..."
+              description="Please wait"
+              left={(props) => <List.Icon {...props} icon="loading" />}
+              style={{ backgroundColor: theme.colors.surface }}
+            />
+          ) : devices.length === 0 ? (
+            <List.Item
+              title="No devices found"
+              description="Register a device to see it here"
+              left={(props) => <List.Icon {...props} icon="information" />}
+              style={{ backgroundColor: theme.colors.surface }}
+            />
+          ) : (
+            devices.map((device) => (
+              <List.Item
+                key={device.id}
+                title={device.device_id || `Device ${device.id}`}
+                description={`${device.platform} • ${device.active ? 'Active' : 'Inactive'}`}
+                left={(props) => (
+                  <List.Icon
+                    {...props}
+                    icon={device.active ? 'cellphone-check' : 'cellphone-off'}
+                  />
+                )}
+                style={{ backgroundColor: theme.colors.surface }}
+              />
+            ))
+          )}
         </List.Section>
       </View>
     </RouteGuard>

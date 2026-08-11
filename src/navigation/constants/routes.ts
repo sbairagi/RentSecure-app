@@ -113,6 +113,7 @@ export const ROUTE_NAMES = {
   SETTINGS_ABOUT: 'settings-about',
   SETTINGS_HELP: 'settings-help',
   SETTINGS_DELETE_ACCOUNT: 'settings-delete-account',
+  SETTINGS_DEACTIVATE_ACCOUNT: 'settings-deactivate-account',
   SETTINGS_LOGIN_SESSIONS: 'settings-login-sessions',
   SETTINGS_EDIT_PROFILE: 'settings-edit-profile',
   PROFILE: 'profile',
