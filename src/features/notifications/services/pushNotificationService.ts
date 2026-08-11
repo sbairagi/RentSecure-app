@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import * as TaskManager from 'expo-task-manager';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import { useNotificationStore } from '../store/notificationStore';
@@ -27,6 +28,77 @@ export interface RegisterDeviceOptions {
   platform: 'ios' | 'android' | 'web';
   deviceId?: string;
   fcmToken?: string | null;
+}
+
+export const BACKGROUND_NOTIFICATION_TASK = 'rentsecure-background-notification';
+
+TaskManager.defineTask<Notifications.NotificationTaskPayload>(BACKGROUND_NOTIFICATION_TASK, ({ data }) => {
+  const isResponse = 'actionIdentifier' in data;
+  if (!isResponse) {
+    const notificationId = data?.data?.notification_id || data?.data?.id;
+    if (notificationId) {
+      // Background tasks cannot make network requests.
+      // The foreground notification listener will sync the read state.
+    }
+  }
+  return { __skipDuplicates: true } as any;
+});
+
+export async function registerBackgroundNotificationTask(): Promise<void> {
+  try {
+    await Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
+  } catch (error) {
+    logger.error('Failed to register background notification task', error as Error);
+  }
+}
+
+export async function setupNotificationCategories(): Promise<void> {
+  await Notifications.setNotificationCategoryAsync('rent_action', [
+    {
+      buttonTitle: 'View Payment',
+      identifier: 'VIEW_PAYMENT',
+      options: { opensAppToForeground: true },
+    },
+  ]);
+
+  await Notifications.setNotificationCategoryAsync('maintenance_action', [
+    {
+      buttonTitle: 'View Request',
+      identifier: 'VIEW_MAINTENANCE',
+      options: { opensAppToForeground: true },
+    },
+  ]);
+
+  await Notifications.setNotificationCategoryAsync('agreement_action', [
+    {
+      buttonTitle: 'View Agreement',
+      identifier: 'VIEW_AGREEMENT',
+      options: { opensAppToForeground: true },
+    },
+  ]);
+
+  await Notifications.setNotificationCategoryAsync('subscription_action', [
+    {
+      buttonTitle: 'View Subscription',
+      identifier: 'VIEW_SUBSCRIPTION',
+      options: { opensAppToForeground: true },
+    },
+  ]);
+}
+
+export function getCategoryForNotificationType(type: string): string | undefined {
+  const map: Record<string, string> = {
+    rent_due: 'rent_action',
+    payment_success: 'rent_action',
+    payment_failed: 'rent_action',
+    maintenance_created: 'maintenance_action',
+    maintenance_update: 'maintenance_action',
+    agreement_expiry: 'agreement_action',
+    agreement_signed: 'agreement_action',
+    subscription_expiring: 'subscription_action',
+    subscription_expired: 'subscription_action',
+  };
+  return map[type];
 }
 
 export async function requestNotificationPermission(): Promise<NotificationPermissionStatus> {
@@ -160,9 +232,11 @@ export async function refreshPushToken(): Promise<string | null> {
 
 export async function handleNotificationResponse(
   response: Notifications.NotificationResponse,
+  navigate?: (route: string) => void,
 ): Promise<void> {
   const { markAsRead } = useNotificationStore.getState();
   const notification = response.notification;
+  const actionIdentifier = response.actionIdentifier;
 
   if (notification?.request?.content?.data) {
     const data = notification.request.content.data as Record<string, any>;
@@ -174,6 +248,33 @@ export async function handleNotificationResponse(
         markAsRead(Number(notificationId));
       } catch {
         // best-effort
+      }
+    }
+  }
+
+  if (actionIdentifier && actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER && navigate) {
+    const actionRouteMap: Record<string, (data: Record<string, any>) => string | null> = {
+      VIEW_PAYMENT: (data) => {
+        const rid = data?.resource_id;
+        return rid ? `/(drawer)/(tabs)/payments/rent-record/${rid}` : null;
+      },
+      VIEW_MAINTENANCE: (data) => {
+        const rid = data?.resource_id;
+        return rid ? `/(drawer)/(tabs)/maintenance/${rid}` : null;
+      },
+      VIEW_AGREEMENT: (data) => {
+        const rid = data?.resource_id;
+        return rid ? `/(drawer)/(tabs)/agreements/${rid}` : null;
+      },
+      VIEW_SUBSCRIPTION: () => '/(drawer)/(tabs)/subscription',
+    };
+
+    const routeBuilder = actionRouteMap[actionIdentifier];
+    if (routeBuilder) {
+      const data = (notification?.request?.content?.data as Record<string, any>) || {};
+      const route = routeBuilder(data);
+      if (route) {
+        navigate(route);
       }
     }
   }

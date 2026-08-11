@@ -137,6 +137,7 @@ module.exports = {
           color: '#208AEF',
           sounds: [],
           mode: 'production',
+          enableBackgroundRemoteNotifications: true,
         },
       ],
       // Splash screen native module

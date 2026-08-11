@@ -9,7 +9,9 @@ import {
   getNotificationPayload,
   handleNotificationResponse,
   refreshPushToken,
+  registerBackgroundNotificationTask,
   requestNotificationPermission,
+  setupNotificationCategories,
   setupNotificationChannel,
 } from '../services/pushNotificationService';
 import { useNotificationStore } from '../store/notificationStore';
@@ -55,6 +57,8 @@ export function usePushNotifications() {
   useEffect(() => {
     configureNotificationHandler();
     setupNotificationChannel();
+    setupNotificationCategories().catch(() => {});
+    registerBackgroundNotificationTask().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -95,7 +99,7 @@ export function usePushNotifications() {
     });
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      handleNotificationResponse
+      (response) => handleNotificationResponse(response, router.replace)
     );
 
     return () => {
