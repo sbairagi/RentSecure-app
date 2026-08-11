@@ -9,7 +9,7 @@ import {
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
 import { useLanguageStore } from '@/store/languageStore';
-import { useAlertPreferences, useUpdateAlertPreferences } from '../hooks';
+import { useNotificationPreference, useUpdateNotificationPreference } from '../hooks';
 
 const LANGUAGES = [
   { label: 'English', value: 'en' },
@@ -20,10 +20,10 @@ export default function LanguageSettingsScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { language, setLanguage } = useLanguageStore();
-  const { data: alertPrefs, isLoading } = useAlertPreferences();
-  const updatePrefs = useUpdateAlertPreferences();
+  const { data: prefs, isLoading } = useNotificationPreference();
+  const updatePrefs = useUpdateNotificationPreference();
 
-  const backendLanguage = alertPrefs?.language_preference || 'en';
+  const backendLanguage = prefs?.language_preference || 'en';
   const currentLanguage = backendLanguage || language;
 
   const handleLanguageChange = async (lang: string) => {

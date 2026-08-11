@@ -37,12 +37,29 @@ export interface AlertPreferences {
 }
 
 export interface NotificationPreference {
+  push_enabled: boolean;
+  rent_alerts_push: boolean;
   rent_alerts_whatsapp: boolean;
   rent_alerts_email: boolean;
   monthly_summary_email: boolean;
   monthly_summary_whatsapp: boolean;
   payout_alerts_whatsapp: boolean;
   payout_alerts_email: boolean;
+  maintenance_push: boolean;
+  visitor_push: boolean;
+  agreement_push: boolean;
+  subscription_push: boolean;
+  system_push: boolean;
+  receive_rent_alerts: boolean;
+  receive_tax_alerts: boolean;
+  receive_vacancy_alerts: boolean;
+  receive_flagged_alerts: boolean;
+  receive_voice_alerts: boolean;
+  language_preference: string;
+  alert_frequency: string;
+  greeting_prefix: string;
+  reminder_time: string;
+  rent_reminders_enabled: boolean;
 }
 
 export interface SubscriptionPlan {

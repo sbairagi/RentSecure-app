@@ -8,23 +8,23 @@ import {
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
 import { SettingsSection, SettingsItem } from '../components';
-import { useAlertPreferences, useUpdateAlertPreferences } from '../hooks';
+import { useNotificationPreference, useUpdateNotificationPreference } from '../hooks';
 
 export default function NotificationSettingsScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { data: alertPrefs, isLoading, refetch } = useAlertPreferences();
-  const updatePrefs = useUpdateAlertPreferences();
+  const { data: prefs, isLoading, refetch } = useNotificationPreference();
+  const updatePrefs = useUpdateNotificationPreference();
 
   const handleToggle = async (key: string, value: boolean) => {
-    if (!alertPrefs) return;
+    if (!prefs) return;
     await updatePrefs.mutateAsync({ [key]: value } as any);
     await refetch();
   };
 
   const getPref = (key: string, fallback: boolean): boolean => {
-    if (!alertPrefs) return fallback;
-    return (alertPrefs as any)[key] ?? fallback;
+    if (!prefs) return fallback;
+    return (prefs as any)[key] ?? fallback;
   };
 
   if (isLoading) {
@@ -46,6 +46,51 @@ export default function NotificationSettingsScreen() {
             Notification Settings
           </Text>
         </View>
+
+        <SettingsSection title="Push Notifications" description="Manage push notification settings">
+          <SettingsItem
+            id="push_enabled"
+            label="Enable Push Notifications"
+            type="toggle"
+            value={getPref('push_enabled', true)}
+            onToggle={(val) => handleToggle('push_enabled', val)}
+          />
+          <SettingsItem
+            id="maintenance_push"
+            label="Maintenance Alerts"
+            type="toggle"
+            value={getPref('maintenance_push', true)}
+            onToggle={(val) => handleToggle('maintenance_push', val)}
+          />
+          <SettingsItem
+            id="visitor_push"
+            label="Visitor Alerts"
+            type="toggle"
+            value={getPref('visitor_push', true)}
+            onToggle={(val) => handleToggle('visitor_push', val)}
+          />
+          <SettingsItem
+            id="agreement_push"
+            label="Agreement Alerts"
+            type="toggle"
+            value={getPref('agreement_push', true)}
+            onToggle={(val) => handleToggle('agreement_push', val)}
+          />
+          <SettingsItem
+            id="subscription_push"
+            label="Subscription Alerts"
+            type="toggle"
+            value={getPref('subscription_push', true)}
+            onToggle={(val) => handleToggle('subscription_push', val)}
+          />
+          <SettingsItem
+            id="system_push"
+            label="System Alerts"
+            type="toggle"
+            value={getPref('system_push', true)}
+            onToggle={(val) => handleToggle('system_push', val)}
+          />
+        </SettingsSection>
 
         <SettingsSection title="Rent Alerts" description="Notifications about rent payments">
           <SettingsItem
