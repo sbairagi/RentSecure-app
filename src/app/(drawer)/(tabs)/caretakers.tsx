@@ -1,5 +1,12 @@
-import { Redirect } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 export default function CaretakersTabScreen() {
-  return <Redirect href="/(drawer)/(tabs)/caretakers/list" />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/(drawer)/(tabs)/caretakers/list');
+  }, [router]);
+
+  return null;
 }

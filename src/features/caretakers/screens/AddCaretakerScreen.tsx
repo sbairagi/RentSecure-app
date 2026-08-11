@@ -3,9 +3,10 @@ import { useTheme } from '@/hooks/use-theme';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useCaretakers } from '../hooks';
+import { caretakersRepository } from '../repository';
 import { validateCaretaker } from '../validations';
 import type { CaretakerFormData } from '../validations';
 
@@ -24,6 +25,24 @@ export default function AddCaretakerScreen() {
     notes: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [units, setUnits] = useState<{ id: number; label: string }[]>([]);
+  const [loadingUnits, setLoadingUnits] = useState(true);
+
+  const loadUnits = async () => {
+    try {
+      const data = await caretakersRepository.fetchUnits();
+      setUnits(data);
+    } catch {
+      // ignore
+    } finally {
+      setLoadingUnits(false);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadUnits();
+  }, []);
 
   const handleSubmit = async () => {
     const result = validateCaretaker(form);
@@ -78,6 +97,47 @@ export default function AddCaretakerScreen() {
 
           <View style={styles.content}>
             <View style={[styles.formCard, { backgroundColor: theme.card }]}>
+              <View style={styles.formField}>
+                <Text style={[styles.label, { color: theme.text }]}>Unit *</Text>
+                {loadingUnits ? (
+                  <Text style={[styles.helperText, { color: theme.subText }]}>Loading units...</Text>
+                ) : units.length === 0 ? (
+                  <Text style={[styles.helperText, { color: theme.subText }]}>
+                    No units available. Please add a unit first.
+                  </Text>
+                ) : (
+                  <View style={styles.unitChips}>
+                    {units.map((unit) => {
+                      const selected = form.unit === unit.id;
+                      return (
+                        <TouchableOpacity
+                          key={unit.id}
+                          style={[
+                            styles.unitChip,
+                            {
+                              backgroundColor: selected ? theme.primary : theme.background,
+                              borderColor: selected ? theme.primary : theme.border,
+                            },
+                          ]}
+                          onPress={() => updateField('unit', unit.id)}
+                        >
+                          <Text
+                            style={[
+                              styles.unitChipText,
+                              { color: selected ? '#fff' : theme.text },
+                            ]}
+                          >
+                            {unit.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+                {errors.unit ? (
+                  <Text style={[styles.errorText, { color: theme.danger }]}>{errors.unit}</Text>
+                ) : null}
+              </View>
               <FormField
                 label="Name *"
                 value={form.name}
@@ -158,37 +218,37 @@ interface FormFieldProps {
   multiline?: boolean;
 }
 
-  const FormField: React.FC<FormFieldProps> = ({
-    label,
-    value,
-    onChangeText,
-    placeholder,
-    error,
-    theme,
-    keyboardType = 'default',
-    multiline = false,
-  }) => (
-    <View style={styles.formField}>
-      <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
-      <TextInput
-        style={[
-          styles.input,
-          {
-            color: theme.text,
-            borderColor: error ? theme.danger : theme.border,
-            backgroundColor: theme.background,
-          },
-        ]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={theme.subText}
-        keyboardType={keyboardType}
-        multiline={multiline}
-      />
-      {error ? <Text style={[styles.errorText, { color: theme.danger }]}>{error}</Text> : null}
-    </View>
-  );
+const FormField: React.FC<FormFieldProps> = ({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  error,
+  theme,
+  keyboardType = 'default',
+  multiline = false,
+}) => (
+  <View style={styles.formField}>
+    <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
+    <TextInput
+      style={[
+        styles.input,
+        {
+          color: theme.text,
+          borderColor: error ? theme.danger : theme.border,
+          backgroundColor: theme.background,
+        },
+      ]}
+      value={value}
+      onChangeText={onChangeText}
+      placeholder={placeholder}
+      placeholderTextColor={theme.subText}
+      keyboardType={keyboardType}
+      multiline={multiline}
+    />
+    {error ? <Text style={[styles.errorText, { color: theme.danger }]}>{error}</Text> : null}
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -239,5 +299,26 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 12,
     marginTop: 2,
+  },
+  unitChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
+  },
+  unitChip: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginRight: Spacing.xs,
+    marginBottom: Spacing.xs,
+  },
+  unitChipText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  helperText: {
+    fontSize: 14,
+    marginVertical: Spacing.sm,
   },
 });

@@ -61,7 +61,7 @@ export const queryKeys = {
     profile: (id: string) => ['renters', 'profile', id],
   },
   caretakers: {
-    list: ['caretakers', 'list'],
+    list: (params?: Record<string, any>) => ['caretakers', 'list', params],
     detail: (id: string) => ['caretakers', 'detail', id],
   },
   agreements: {

@@ -5,6 +5,7 @@ import type {
   CaretakerCreatePayload,
   CaretakerDetailResponse,
   CaretakerFilters,
+  CaretakerHistoryEntry,
   CaretakerListResponse,
   CaretakerUpdatePayload,
 } from '../types/caretakers';
@@ -41,6 +42,21 @@ export const caretakersApi = {
 
   deactivate: async (id: number | string): Promise<Caretaker> => {
     return apiService.post<Caretaker>(CARETAKER_CONSTANTS.API.DEACTIVATE(id), {});
+  },
+
+  fetchHistory: async (id: number | string): Promise<CaretakerHistoryEntry[]> => {
+    return apiService.get<CaretakerHistoryEntry[]>(CARETAKER_CONSTANTS.API.HISTORY(id));
+  },
+
+  fetchUnits: async (): Promise<{ id: number; label: string }[]> => {
+    const response = await apiService.get<{ results: { id: number; unit: string; building_name: string }[] }>(
+      `${CARETAKER_CONSTANTS.API.UNITS_LIST}?is_archived=false`
+    );
+    const list = response.results || [];
+    return list.map((u) => ({
+      id: u.id,
+      label: `${u.building_name || ''} - ${u.unit}`.trim(),
+    }));
   },
 
   getLimits: async (): Promise<any> => {

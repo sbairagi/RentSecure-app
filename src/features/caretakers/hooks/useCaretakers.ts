@@ -1,18 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { showMessage } from 'react-native-flash-message';
+import { queryKeys } from '@/providers/queryClient';
 import { caretakersRepository } from '../repository/caretakersRepository';
 import { useCaretakersStore } from '../store/caretakersStore';
 import type { Caretaker, CaretakerCreatePayload, CaretakerFilters, CaretakerUpdatePayload } from '../types/caretakers';
-
-const CARETAKERS_QUERY_KEY = ['caretakers'];
 
 export const useCaretakers = (params?: CaretakerFilters) => {
   const queryClient = useQueryClient();
   const { setError } = useCaretakersStore();
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: CARETAKERS_QUERY_KEY,
+    queryKey: queryKeys.caretakers.list(params),
     queryFn: async () => {
       const result = await caretakersRepository.fetchCaretakers(params);
       const list: Caretaker[] = Array.isArray(result) ? result : result.results || [];
@@ -33,7 +32,7 @@ export const useCaretakers = (params?: CaretakerFilters) => {
     mutationFn: (payload: CaretakerCreatePayload) =>
       caretakersRepository.createCaretaker(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CARETAKERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.list() });
       showMessage({ message: 'Caretaker created successfully', type: 'success' });
     },
     onError: (err: any) => {
@@ -47,7 +46,7 @@ export const useCaretakers = (params?: CaretakerFilters) => {
     mutationFn: ({ id, payload }: { id: number | string; payload: CaretakerUpdatePayload }) =>
       caretakersRepository.updateCaretaker(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CARETAKERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.list() });
       showMessage({ message: 'Caretaker updated successfully', type: 'success' });
     },
     onError: (err: any) => {
@@ -60,7 +59,7 @@ export const useCaretakers = (params?: CaretakerFilters) => {
   const deleteMutation = useMutation({
     mutationFn: (id: number | string) => caretakersRepository.deleteCaretaker(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CARETAKERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.list() });
       showMessage({ message: 'Caretaker deleted successfully', type: 'success' });
     },
     onError: (err: any) => {
@@ -73,7 +72,7 @@ export const useCaretakers = (params?: CaretakerFilters) => {
   const deactivateMutation = useMutation({
     mutationFn: (id: number | string) => caretakersRepository.deactivateCaretaker(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CARETAKERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.list() });
       showMessage({ message: 'Caretaker deactivated successfully', type: 'success' });
     },
     onError: (err: any) => {
@@ -112,9 +111,10 @@ export const useCaretakers = (params?: CaretakerFilters) => {
 export const useCaretaker = (id: number | string) => {
   const queryClient = useQueryClient();
   const { setError } = useCaretakersStore();
+  const caretakerId = String(id);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['caretaker', id],
+    queryKey: queryKeys.caretakers.detail(caretakerId),
     queryFn: async () => {
       const result = await caretakersRepository.fetchCaretaker(id);
       useCaretakersStore.getState().setSelectedCaretaker(result);
@@ -134,8 +134,8 @@ export const useCaretaker = (id: number | string) => {
     mutationFn: ({ id: caretakerId, payload }: { id: number | string; payload: any }) =>
       caretakersRepository.updateCaretaker(caretakerId, payload),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['caretaker', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['caretakers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.detail(String(variables.id)) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.list() });
     },
     onError: (err: any) => {
       const message = err?.message || 'Failed to update caretaker';
@@ -146,8 +146,8 @@ export const useCaretaker = (id: number | string) => {
   const deleteMutationCaretaker = useMutation({
     mutationFn: (id: number | string) => caretakersRepository.deleteCaretaker(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['caretaker', id] });
-      queryClient.invalidateQueries({ queryKey: ['caretakers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.detail(String(id)) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.list() });
     },
     onError: (err: any) => {
       const message = err?.message || 'Failed to delete caretaker';
@@ -158,8 +158,8 @@ export const useCaretaker = (id: number | string) => {
   const deactivateMutationCaretaker = useMutation({
     mutationFn: (id: number | string) => caretakersRepository.deactivateCaretaker(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['caretaker', id] });
-      queryClient.invalidateQueries({ queryKey: ['caretakers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.detail(String(id)) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.caretakers.list() });
     },
     onError: (err: any) => {
       const message = err?.message || 'Failed to deactivate caretaker';

@@ -2,13 +2,14 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useCaretaker } from '../hooks';
 
 export default function CaretakerDetailsScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { caretaker, isLoading, error } = useCaretaker(Number(id));
 
@@ -101,6 +102,50 @@ export default function CaretakerDetailsScreen() {
               value={caretaker.is_active ? 'Active' : 'Inactive'}
               theme={theme}
             />
+          </View>
+
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: theme.primary }]}
+              onPress={() => router.push(`/(drawer)/(tabs)/caretakers/${id}/edit`)}
+            >
+              <Text style={styles.actionButtonText}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: theme.danger }]}
+              onPress={() => router.push(`/(drawer)/(tabs)/caretakers/${id}/delete`)}
+            >
+              <Text style={styles.actionButtonText}>Delete</Text>
+            </TouchableOpacity>
+            {caretaker.is_active && (
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: '#f59e0b' }]}
+                onPress={() => router.push(`/(drawer)/(tabs)/caretakers/${id}/deactivate`)}
+              >
+                <Text style={styles.actionButtonText}>Deactivate</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.navActions}>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => router.push(`/(drawer)/(tabs)/caretakers/${id}/activity`)}
+            >
+              <Text style={styles.navButtonText}>Activity</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => router.push(`/(drawer)/(tabs)/caretakers/${id}/permissions`)}
+            >
+              <Text style={styles.navButtonText}>Permissions</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.navButton}
+              onPress={() => router.push(`/(drawer)/(tabs)/caretakers/${id}/documents`)}
+            >
+              <Text style={styles.navButtonText}>Documents</Text>
+            </TouchableOpacity>
           </View>
 
           {caretaker.notes ? (
@@ -212,5 +257,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 24,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  actionButton: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  navActions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  navButton: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  navButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
   },
 });

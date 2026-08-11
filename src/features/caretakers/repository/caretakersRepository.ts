@@ -4,6 +4,7 @@ import type {
   CaretakerCreatePayload,
   CaretakerDetailResponse,
   CaretakerFilters,
+  CaretakerHistoryEntry,
   CaretakerListResponse,
   CaretakerUpdatePayload,
 } from '../types/caretakers';
@@ -34,6 +35,14 @@ export const caretakersRepository = {
 
   deactivateCaretaker: async (id: number | string): Promise<Caretaker> => {
     return caretakersApi.deactivate(id);
+  },
+
+  fetchHistory: async (id: number | string): Promise<CaretakerHistoryEntry[]> => {
+    return caretakersApi.fetchHistory(id);
+  },
+
+  fetchUnits: async (): Promise<{ id: number; label: string }[]> => {
+    return caretakersApi.fetchUnits();
   },
 
   fetchLimits: async (): Promise<any> => {

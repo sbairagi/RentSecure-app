@@ -15,7 +15,7 @@ export interface Caretaker {
   updated_at: string;
 }
 
-export interface CaretakerUnit {
+export interface CaretakerUnitInfo {
   id: number;
   unit: string;
   building_name: string;
@@ -23,6 +23,14 @@ export interface CaretakerUnit {
   status: string;
   city: string;
   state: string;
+}
+
+export interface CaretakerHistoryEntry {
+  id: string;
+  action: string;
+  changed_by: string | null;
+  timestamp: string;
+  data: Record<string, any>;
 }
 
 export interface CaretakerCreatePayload {
@@ -67,9 +75,9 @@ export interface CaretakerStats {
 }
 
 export interface CaretakerTimelineEntry {
-  id: number;
+  id: string;
   action: string;
   description: string;
   timestamp: string;
-  user: string;
+  user: string | null;
 }
