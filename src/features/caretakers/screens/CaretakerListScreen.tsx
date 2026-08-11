@@ -15,7 +15,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type SortOption = 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'joining_date_desc' | 'joining_date_asc';
@@ -24,13 +24,19 @@ export default function CaretakerListScreen() {
   const theme = useTheme();
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [filters, setFilters] = useState<CaretakerFilters>({});
 
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const apiParams: CaretakerFilters = {
-    ...(search.trim() ? { search: search.trim() } : {}),
+    ...(debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {}),
     ...(filters.is_active !== undefined ? { is_active: filters.is_active } : {}),
     ordering: sortBy === 'newest' ? '-joining_date' : sortBy === 'oldest' ? 'joining_date' : sortBy === 'name_asc' ? 'name' : sortBy === 'name_desc' ? '-name' : sortBy === 'joining_date_desc' ? '-joining_date' : 'joining_date',
   };

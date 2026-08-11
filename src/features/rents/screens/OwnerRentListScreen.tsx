@@ -1,14 +1,12 @@
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, Text, View, TextInput } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import { RefreshControl } from 'react-native';
-import { RouteGuard } from '@/navigation/components/RouteGuard';
+import { RouteGuard } from '@/navigation/components';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useRouter } from 'expo-router';
 import { useRentRecords } from '../hooks/useRentRecords';
 import { RentCard, RentFilters, RentSkeletonLoader, RentEmptyState, RentErrorState } from '../components';
-import { RENT_CONSTANTS } from '../constants/rents';
 import type { RentFilters as RentFiltersType } from '../types/rents';
 
 export default function OwnerRentListScreen() {
@@ -16,18 +14,26 @@ export default function OwnerRentListScreen() {
   const router = useRouter();
   const netInfo = useNetInfo();
   const [filters, setFilters] = useState<RentFiltersType>({});
-  const [refreshing, setRefreshing] = useState(false);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const { rentRecords, isLoading, error, refresh, refetch, total } = useRentRecords(filters);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const activeFilters: RentFiltersType = {
+    ...filters,
+    ...(debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {}),
+  };
+
+  const { rentRecords, isLoading, error, refetch, total } = useRentRecords(activeFilters);
 
   const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
     try {
       await refetch();
     } catch {
       // Error handled
-    } finally {
-      setRefreshing(false);
     }
   }, [refetch]);
 
@@ -72,6 +78,19 @@ export default function OwnerRentListScreen() {
             </Text>
           </View>
 
+          <View style={styles.searchRow}>
+            <TextInput
+              style={[styles.searchInput, { color: theme.colors.onSurface, borderColor: theme.colors.outline || '#e5e7eb' }]}
+              placeholder="Search rent records..."
+              placeholderTextColor={theme.colors.onSurfaceVariant || '#9ca3af'}
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+          </View>
+
           <RentFilters
             filters={filters}
             onFilterChange={setFilters}
@@ -82,7 +101,7 @@ export default function OwnerRentListScreen() {
             <View style={styles.offlineContainer}>
               <Text style={styles.offlineIcon}>📡</Text>
               <Text style={[styles.offlineText, { color: theme.colors.onSurface }]}>
-                You're Offline
+                You&apos;re Offline
               </Text>
               <Text style={[styles.offlineSubtext, { color: theme.colors.onSurfaceVariant }]}>
                 Please check your internet connection and try again.
@@ -95,21 +114,21 @@ export default function OwnerRentListScreen() {
               actionLabel="Create Rent Record"
               onAction={handleCreateRent}
             />
-          ) : (
-            rentRecords.map((rent) => (
-              <RentCard
-                key={rent.id}
-                rent={rent}
-                onPress={() => router.push(`/(drawer)/(tabs)/rents/${rent.id}` as any)}
-                onRetryPayout={() => router.push(`/(drawer)/(tabs)/rents/${rent.id}/retry-payout` as any)}
-                onResendConfirmation={() => router.push(`/(drawer)/(tabs)/rents/${rent.id}/resend` as any)}
-              />
-            ))
-          )}
-        </View>
-      </PermissionGuard>
-    </RouteGuard>
-  );
+  ) : (
+    rentRecords.map((rent) => (
+      <RentCard
+        key={rent.id}
+        rent={rent}
+        onPress={() => router.push(`/(drawer)/(tabs)/rents/${rent.id}` as any)}
+        onRetryPayout={() => router.push(`/(drawer)/(tabs)/rents/${rent.id}/retry-payout` as any)}
+        onResendConfirmation={() => router.push(`/(drawer)/(tabs)/rents/${rent.id}/resend` as any)}
+      />
+    ))
+  )}
+</View>
+</PermissionGuard>
+</RouteGuard>
+);
 }
 
 const styles = StyleSheet.create({
@@ -127,6 +146,17 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     marginTop: 4,
+  },
+  searchRow: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
   },
   offlineContainer: {
     flex: 1,

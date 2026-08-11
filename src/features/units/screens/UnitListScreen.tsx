@@ -62,7 +62,7 @@ export default function UnitListScreen() {
 
   const handleUnitPress = (unitId: number) => {
     router.push(`/(drawer)/(tabs)/units/${unitId}`);
-  });
+  };
 
   const handleBulkAction = async (action: string, _data?: Record<string, any>) => {
     if (selectedIds.length === 0) return;

@@ -1,11 +1,10 @@
-import { Spacing } from '@/constants/theme';
-import { FeatureLimitGuard } from '@/navigation/components/FeatureLimitGuard';
+import React, { useState, useEffect } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, TextInput } from 'react-native';
+import { RouteGuard } from '@/navigation/components';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';
-import { RouteGuard } from '@/navigation/components/RouteGuard';
+import { FeatureLimitGuard } from '@/navigation/components/FeatureLimitGuard';
 import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { Spacing } from '@/constants/theme';
 import { AgreementCard } from '../components/AgreementCard';
 import AgreementEmptyState from '../components/AgreementEmptyState';
 import AgreementErrorState from '../components/AgreementErrorState';
@@ -14,30 +13,40 @@ import { AgreementSkeletonLoader } from '../components/AgreementSkeletonLoader';
 import { useAgreements } from '../hooks/useAgreements';
 import type { AgreementFilters } from '../types';
 
+type SortOption = 'newest' | 'oldest' | 'start_date' | 'end_date' | 'status' | 'renter';
+
 export default function AgreementListScreen() {
   const router = useRouter();
-  const { agreements, isLoading, isFetching, error, refresh } = useAgreements();
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<AgreementFilters>({});
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
 
-  const filtered = useMemo(() => {
-    let list = [...agreements];
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (a) =>
-          (a.renter_name && a.renter_name.toLowerCase().includes(q)) ||
-          (a.unit_name && a.unit_name.toLowerCase().includes(q)) ||
-          (a.building_name && a.building_name.toLowerCase().includes(q)) ||
-          String(a.id).includes(q)
-      );
-    }
-    if (selectedFilters.status) {
-      list = list.filter((a) => (a.status || 'draft') === selectedFilters.status);
-    }
-    return list;
-  }, [agreements, search, selectedFilters]);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const orderingMap: Record<SortOption, string> = {
+    newest: '-generated_at',
+    oldest: 'generated_at',
+    start_date: 'agreement_start_date',
+    end_date: 'agreement_end_date',
+    status: 'status',
+    renter: 'renter__name',
+  };
+
+  const params: AgreementFilters = {
+    ...(debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {}),
+    ...(selectedFilters.status ? { status: selectedFilters.status } : {}),
+    ...(selectedFilters.building ? { building: Number(selectedFilters.building) } : {}),
+    ...(selectedFilters.unit ? { unit: Number(selectedFilters.unit) } : {}),
+    ...(selectedFilters.renter ? { renter: Number(selectedFilters.renter) } : {}),
+    ordering: orderingMap[sortBy],
+  };
+
+  const { agreements, isLoading, isFetching, error, refresh } = useAgreements(Object.keys(params).length > 0 ? params : undefined);
 
   const handleAdd = () => {
     router.push('/(drawer)/(tabs)/agreements/create');
@@ -84,6 +93,18 @@ export default function AgreementListScreen() {
                 <Text style={styles.addButtonText}>+ Create</Text>
               </TouchableOpacity>
             </View>
+            <View style={styles.searchRow}>
+              <TextInput
+                style={[styles.searchInput, { color: '#111827', borderColor: '#e5e7eb' }]}
+                placeholder="Search agreements..."
+                placeholderTextColor="#9ca3af"
+                value={search}
+                onChangeText={setSearch}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+              />
+            </View>
             <View style={styles.toolbar}>
               <TouchableOpacity
                 onPress={() => setShowFilters(true)}
@@ -94,6 +115,22 @@ export default function AgreementListScreen() {
               >
                 <Text style={styles.toolButtonText}>Filters</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  const options: SortOption[] = ['newest', 'oldest', 'start_date', 'end_date', 'status', 'renter'];
+                  const currentIndex = options.indexOf(sortBy);
+                  const nextIndex = (currentIndex + 1) % options.length;
+                  setSortBy(options[nextIndex]);
+                }}
+                style={styles.toolButton}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel="Sort"
+              >
+                <Text style={styles.toolButtonText}>
+                  Sort: {sortBy.replace('_', ' ')}
+                </Text>
+              </TouchableOpacity>
             </View>
             <AgreementFilterSheet
               visible={showFilters}
@@ -101,11 +138,11 @@ export default function AgreementListScreen() {
               filters={selectedFilters}
               onApply={setSelectedFilters}
             />
-            {filtered.length === 0 ? (
+            {agreements.length === 0 ? (
               <AgreementEmptyState onAction={handleAdd} />
             ) : (
               <FlatList
-                data={filtered}
+                data={agreements}
                 keyExtractor={(item) => String(item.id)}
                 renderItem={({ item }) => (
                   <AgreementCard
@@ -162,6 +199,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  searchRow: {
+    paddingHorizontal: Spacing.md,
+    marginBottom: 8,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
   },
   toolbar: {
     flexDirection: 'row',

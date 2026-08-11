@@ -34,8 +34,6 @@ export default function BuildingListScreen() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const debouncedSearch = search.trim();
-
   const orderingMap: Record<string, string> = {
     newest: '-created_at',
     oldest: 'created_at',

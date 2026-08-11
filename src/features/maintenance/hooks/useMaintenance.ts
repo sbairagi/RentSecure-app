@@ -5,15 +5,15 @@ import { maintenanceRepository } from '../repository/maintenanceRepository';
 import { useMaintenanceStore } from '../store/maintenanceStore';
 import type { MaintenanceCommentPayload, MaintenanceCreatePayload, MaintenanceExpensePayload, MaintenanceFilters, MaintenanceUpdatePayload } from '../types/maintenance';
 
-const MAINTENANCE_QUERY_KEY = ['maintenance'];
-const MAINTENANCE_DETAIL_KEY = ['maintenance', 'detail'];
+const MAINTENANCE_QUERY_KEY = (params?: MaintenanceFilters) => ['maintenance', 'list', params];
+const MAINTENANCE_DETAIL_KEY = (id: number | string) => ['maintenance', 'detail', id];
 
 export const useMaintenance = (params?: MaintenanceFilters) => {
   const queryClient = useQueryClient();
   const { setError } = useMaintenanceStore();
 
   const { data, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: MAINTENANCE_QUERY_KEY,
+    queryKey: MAINTENANCE_QUERY_KEY(params),
     queryFn: async () => {
       const result = await maintenanceRepository.fetchMaintenanceRequests(params);
       const list = Array.isArray(result) ? result : result.results || [];
