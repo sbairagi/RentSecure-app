@@ -97,7 +97,7 @@ export default function AddRenterScreen() {
     <RouteGuard requireAuth>
       <PermissionGuard permissions={['renter:write']}>
         <FeatureLimitGuard featureKey="max_renters">
-          <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
+          <View testID="add-renter.screen" style={[styles.container, { backgroundColor: '#f9fafb' }]}>
             <Title style={styles.title}>Add Renter</Title>
             
             {isAtLimit && (
@@ -112,6 +112,7 @@ export default function AddRenterScreen() {
             )}
             
             <TextInput
+              testID="add-renter.name"
               label="Full Name *"
               value={formData.name}
               onChangeText={(text) => setFormData({ ...formData, name: text })}
@@ -124,6 +125,7 @@ export default function AddRenterScreen() {
             )}
             
             <TextInput
+              testID="add-renter.phone"
               label="Phone *"
               value={formData.phone}
               onChangeText={(text) => setFormData({ ...formData, phone: text })}
@@ -137,6 +139,7 @@ export default function AddRenterScreen() {
             )}
             
             <TextInput
+              testID="add-renter.email"
               label="Email"
               value={formData.email}
               onChangeText={(text) => setFormData({ ...formData, email: text })}
@@ -147,6 +150,7 @@ export default function AddRenterScreen() {
             />
             
             <TextInput
+              testID="add-renter.rentAmount"
               label="Rent Amount *"
               value={formData.rent_amount}
               onChangeText={(text) => setFormData({ ...formData, rent_amount: text })}
@@ -264,10 +268,11 @@ export default function AddRenterScreen() {
             )}
             
             <View style={styles.actions}>
-              <Button mode="outlined" onPress={() => router.back()} disabled={isCreating}>
+              <Button testID="add-renter.cancel" mode="outlined" onPress={() => router.back()} disabled={isCreating}>
                 Cancel
               </Button>
               <Button 
+                testID="add-renter.submit"
                 mode="contained" 
                 onPress={handleSubmit} 
                 loading={isCreating} 

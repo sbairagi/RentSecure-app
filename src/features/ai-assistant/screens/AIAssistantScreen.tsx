@@ -188,6 +188,7 @@ export default function AIAssistantScreen() {
           }
         >
           <KeyboardAvoidingView
+            testID="ai-assistant.screen"
             style={[styles.container, { backgroundColor: theme.colors.background }]}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
@@ -224,6 +225,7 @@ export default function AIAssistantScreen() {
             </View>
 
             <FlatList
+              testID="ai-assistant.messages"
               ref={flatListRef}
               style={styles.messagesList}
               contentContainerStyle={styles.messagesContent}
@@ -245,6 +247,7 @@ export default function AIAssistantScreen() {
             />
 
             <ChatInput
+              testID="ai-assistant.chat-input"
               onSend={handleSend}
               disabled={isSending || isProcessing}
               placeholder="Ask AI anything..."

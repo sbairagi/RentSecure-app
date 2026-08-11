@@ -1,0 +1,20 @@
+# Maestro Flow: Logout
+# Tests logging out and returning to welcome screen.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: profile.screen
+    timeout: 30000
+
+# Logout
+- tapOn:
+    id: profile.logout
+
+- extendedWaitUntil:
+    visible:
+      id: welcome.screen
+    timeout: 15000

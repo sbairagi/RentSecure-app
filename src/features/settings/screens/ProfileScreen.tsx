@@ -37,7 +37,7 @@ export default function ProfileScreen() {
 
   return (
     <RouteGuard requireAuth>
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View testID="profile.screen" style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <ProfileHeader
           fullName={profile.full_name}
           email={profile.email}
@@ -48,11 +48,21 @@ export default function ProfileScreen() {
 
         <View style={styles.actionsRow}>
           <Button
+            testID="profile.edit"
             mode="contained"
             onPress={() => router.push('/(drawer)/(tabs)/settings/edit-profile')}
             icon="pencil"
           >
             Edit Profile
+          </Button>
+          <Button
+            testID="profile.logout"
+            mode="outlined"
+            onPress={() => {/* logout logic */}}
+            icon="logout"
+            style={{ marginTop: 8 }}
+          >
+            Logout
           </Button>
         </View>
 

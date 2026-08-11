@@ -19,9 +19,10 @@ interface CurrentPlanCardProps {
   onUpgrade?: () => void;
   onRenew?: () => void;
   onCancel?: () => void;
+  testID?: string;
 }
 
-export function CurrentPlanCard({ subscription, onUpgrade, onRenew, onCancel }: CurrentPlanCardProps) {
+export function CurrentPlanCard({ subscription, onUpgrade, onRenew, onCancel, testID }: CurrentPlanCardProps) {
   const theme = useTheme();
   const router = useRouter();
   const plan = subscription.plan;
@@ -105,7 +106,7 @@ export function CurrentPlanCard({ subscription, onUpgrade, onRenew, onCancel }: 
         {!isExpired && (
           <View style={styles.actions}>
             {onUpgrade && (
-              <Button mode="contained" onPress={onUpgrade} style={styles.button}>
+              <Button testID={testID ? `${testID}.upgrade` : undefined} mode="contained" onPress={onUpgrade} style={styles.button}>
                 Upgrade Plan
               </Button>
             )}

@@ -48,7 +48,7 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer testID="forgot-password.screen">
       <AuthHeader
         title="Forgot Password"
         subtitle="Enter your email and we'll send you a reset link"
@@ -60,11 +60,12 @@ export default function ForgotPasswordScreen() {
             <Text style={styles.successText}>
               Check your email for the reset link. If you don&apos;t see it, check your spam folder.
             </Text>
-            <AppButton title="Back to Login" onPress={() => router.back()} variant="primary" />
+            <AppButton testID="forgot-password.back-to-login" title="Back to Login" onPress={() => router.back()} variant="primary" />
           </View>
         ) : (
           <>
             <AppInput
+              testID="forgot-password.email"
               label="Email"
               placeholder="Enter your email"
               value={email}
@@ -75,6 +76,7 @@ export default function ForgotPasswordScreen() {
             />
 
             <AppButton
+              testID="forgot-password.submit"
               title="Send Reset Link"
               onPress={handleSubmit}
               loading={loading}
@@ -82,6 +84,7 @@ export default function ForgotPasswordScreen() {
             />
 
             <AppButton
+              testID="forgot-password.login-link"
               title="Back to Login"
               onPress={() => router.back()}
               variant="ghost"

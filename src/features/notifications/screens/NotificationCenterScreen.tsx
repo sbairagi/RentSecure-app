@@ -115,7 +115,7 @@ export default function NotificationCenterScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View testID="notifications.screen" style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: theme.colors.onSurface }]}>
           Notifications
@@ -158,7 +158,7 @@ export default function NotificationCenterScreen() {
           onAction={search ? () => setSearch('') : undefined}
         />
       ) : (
-        <View style={styles.listContainer}>
+        <View testID="notifications.list" style={styles.listContainer}>
           {renderDateSection('Today', grouped.today, handleNotificationPress)}
           {renderDateSection('Yesterday', grouped.yesterday, handleNotificationPress)}
           {renderDateSection('This Week', grouped.thisWeek, handleNotificationPress)}

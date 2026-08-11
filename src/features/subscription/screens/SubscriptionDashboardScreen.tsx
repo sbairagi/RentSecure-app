@@ -70,7 +70,7 @@ export default function SubscriptionDashboardScreen() {
   return (
     <RouteGuard requireAuth>
       <PermissionGuard permissions={['subscription:read']}>
-        <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+          <ScrollView testID="subscription.screen" style={[styles.container, { backgroundColor: theme.colors.background }]}>
           <View style={styles.header}>
             <Text style={[styles.title, { color: theme.colors.onSurface }]}>
               Subscription Dashboard
@@ -82,6 +82,7 @@ export default function SubscriptionDashboardScreen() {
 
           {subscription && (
             <CurrentPlanCard
+              testID="subscription"
               subscription={subscription}
               onUpgrade={() => router.push('/(drawer)/(tabs)/subscription/upgrade')}
               onRenew={() => router.push('/(drawer)/(tabs)/subscription/renew')}

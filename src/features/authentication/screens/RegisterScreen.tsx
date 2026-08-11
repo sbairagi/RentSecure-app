@@ -73,23 +73,26 @@ export default function RegisterScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer testID="register.screen">
       <AuthHeader title="Create Account" subtitle="Join SecureNest today" />
 
       <View style={styles.form}>
         <AppInput
+          testID="register.firstName"
           label="First Name"
           placeholder="Enter your first name"
           value={form.firstName}
           onChangeText={(text) => updateField('firstName', text)}
         />
         <AppInput
+          testID="register.lastName"
           label="Last Name"
           placeholder="Enter your last name"
           value={form.lastName}
           onChangeText={(text) => updateField('lastName', text)}
         />
         <AppInput
+          testID="register.email"
           label="Email"
           placeholder="Enter your email"
           value={form.email}
@@ -99,6 +102,7 @@ export default function RegisterScreen() {
           error={error}
         />
         <AppInput
+          testID="register.phone"
           label="Phone Number"
           placeholder="Enter your phone number"
           value={form.phone}
@@ -106,6 +110,7 @@ export default function RegisterScreen() {
           keyboardType="phone-pad"
         />
         <AppInput
+          testID="register.password"
           label="Password"
           placeholder="Create a password"
           value={form.password}
@@ -113,6 +118,7 @@ export default function RegisterScreen() {
           secureTextEntry
         />
         <AppInput
+          testID="register.confirmPassword"
           label="Confirm Password"
           placeholder="Confirm your password"
           value={form.confirmPassword}
@@ -121,6 +127,7 @@ export default function RegisterScreen() {
         />
 
         <AppButton
+          testID="register.submit"
           title="Create Account"
           onPress={handleSubmit}
           loading={loading}
@@ -130,6 +137,7 @@ export default function RegisterScreen() {
         <View style={styles.loginLink}>
           <Link href="/(auth)/welcome" asChild>
             <AppButton
+              testID="register.login-link"
               title="Already have an account? Login"
               variant="ghost"
               size="small"

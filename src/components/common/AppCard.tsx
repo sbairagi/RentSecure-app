@@ -10,6 +10,7 @@ interface AppCardProps {
   margin?: 'none' | 'sm' | 'md' | 'lg';
   onPress?: () => void;
   style?: ViewStyle;
+  testID?: string;
 }
 
 export const AppCard: React.FC<AppCardProps> = ({
@@ -19,6 +20,7 @@ export const AppCard: React.FC<AppCardProps> = ({
   margin = 'md',
   onPress,
   style,
+  testID,
 }) => {
   const theme = useTheme();
 
@@ -87,6 +89,7 @@ export const AppCard: React.FC<AppCardProps> = ({
 
   return (
     <CardWrapper
+      testID={testID}
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}
       style={[getCardStyle(), style]}

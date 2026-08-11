@@ -1,0 +1,33 @@
+# Maestro Flow: Renter Pay Rent
+# Tests the renter paying rent flow.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: renter-dashboard.screen
+    timeout: 30000
+
+# Navigate to Pay Rent
+- tapOn:
+    id: collect-rent.screen
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: collect-rent.amount
+    timeout: 15000
+
+- inputText:
+    id: collect-rent.amount
+    text: "15000"
+
+- tapOn:
+    id: collect-rent.submit
+
+- extendedWaitUntil:
+    visible:
+      id: renter-dashboard.screen
+    timeout: 15000

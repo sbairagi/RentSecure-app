@@ -69,11 +69,12 @@ export default function AddBuildingScreen() {
   return (
     <RouteGuard requireAuth>
       <PermissionGuard permissions={['building:write']}>
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View testID="add-building.screen" style={[styles.container, { backgroundColor: theme.background }]}>
           <AppText style={[styles.title, { color: theme.text }]}>Add Building</AppText>
           <View style={[styles.card, { backgroundColor: theme.card }]}>
             <FormField label="Building Name" required error={errors.name?.message}>
               <AppInput
+                testID="add-building.name"
                 control={control as any}
                 name="name"
                 placeholder="Enter building name"
@@ -86,6 +87,7 @@ export default function AddBuildingScreen() {
             </FormField>
             <FormField label="Address" required error={errors.address_line?.message}>
               <AppInput
+                testID="add-building.address"
                 control={control as any}
                 name="address_line"
                 placeholder="Street address"
@@ -98,6 +100,7 @@ export default function AddBuildingScreen() {
             </FormField>
             <FormField label="City" required error={errors.city?.message}>
               <AppInput
+                testID="add-building.city"
                 control={control as any}
                 name="city"
                 placeholder="City"
@@ -110,6 +113,7 @@ export default function AddBuildingScreen() {
             </FormField>
             <FormField label="State" required error={errors.state?.message}>
               <AppInput
+                testID="add-building.state"
                 control={control as any}
                 name="state"
                 placeholder="State"
@@ -122,6 +126,7 @@ export default function AddBuildingScreen() {
             </FormField>
             <FormField label="Country" required error={errors.country?.message}>
               <AppInput
+                testID="add-building.country"
                 control={control as any}
                 name="country"
                 placeholder="Country"
@@ -134,6 +139,7 @@ export default function AddBuildingScreen() {
             </FormField>
             <FormField label="Postal Code" required error={errors.postal_code?.message}>
               <AppInput
+                testID="add-building.postalCode"
                 control={control as any}
                 name="postal_code"
                 placeholder="ZIP / Postal code"
@@ -145,6 +151,7 @@ export default function AddBuildingScreen() {
               />
             </FormField>
             <Button
+              testID="add-building.submit"
               title={isCreating ? 'Saving...' : 'Save Building'}
               onPress={handleSubmit(onSubmit)}
               disabled={isCreating || isOffline}

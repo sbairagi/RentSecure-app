@@ -52,7 +52,7 @@ export default function CollectRentScreen() {
   return (
     <RouteGuard requireAuth>
       <PermissionGuard permissions={['payment:write']}>
-        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <View testID="collect-rent.screen" style={[styles.container, { backgroundColor: theme.colors.background }]}>
           <View style={styles.header}>
             <Text style={[styles.title, { color: theme.colors.onSurface }]}>
               Collect Rent
@@ -64,6 +64,7 @@ export default function CollectRentScreen() {
 
           <View style={styles.form}>
             <TextInput
+              testID="collect-rent.amount"
               mode="outlined"
               label="Amount (₹)"
               value={formData.amount}
@@ -128,6 +129,7 @@ export default function CollectRentScreen() {
             />
 
             <Button
+              testID="collect-rent.submit"
               mode="contained"
               onPress={handleSubmit}
               loading={collectRent.isPending}

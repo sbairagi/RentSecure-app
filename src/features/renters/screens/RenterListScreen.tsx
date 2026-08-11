@@ -48,7 +48,7 @@ export default function RenterListScreen() {
       <RouteGuard requireAuth>
         <PermissionGuard permissions={['renter:read']}>
           <FeatureLimitGuard featureKey="max_renters">
-            <View style={[styles.container, { backgroundColor: '#f9fafb' }]}>
+          <View testID="renters.screen" style={[styles.container, { backgroundColor: '#f9fafb' }]}>
               <RenterSkeletonLoader type="list" />
             </View>
           </FeatureLimitGuard>
@@ -80,7 +80,7 @@ export default function RenterListScreen() {
               onFilterChange={setSelectedFilters}
             />
             <View style={styles.actions}>
-              <TouchableOpacity onPress={handleAdd} style={styles.addButton}>
+              <TouchableOpacity testID="renters.add" onPress={handleAdd} style={styles.addButton}>
                 <Text style={styles.addButtonText}>+ Add Renter</Text>
               </TouchableOpacity>
             </View>
@@ -88,10 +88,11 @@ export default function RenterListScreen() {
               <RenterEmptyState onAction={handleAdd} />
             ) : (
               <FlatList
+                testID="renters.list"
                 data={renters}
                 keyExtractor={(item) => String(item.id)}
                 renderItem={({ item }) => (
-                  <RenterCard renter={item} onPress={() => handleRenterPress(item.id)} />
+                  <RenterCard renter={item} onPress={() => handleRenterPress(item.id)} testID={`renters.card.${item.id}`} />
                 )}
                 refreshing={isFetching}
                 onRefresh={refresh}

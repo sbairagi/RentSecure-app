@@ -1,0 +1,11 @@
+appId: com.rentsecure.app
+
+---
+# Test environment configuration
+# Uses E2E-specific backend URL and test credentials
+env:
+  BASE_URL: "http://localhost:8000"
+  E2E_OWNER_PHONE: "+919876540001"
+  E2E_OWNER_OTP: "123456"
+  E2E_RENTER_PHONE: "+919876540002"
+  E2E_RENTER_OTP: "654321"

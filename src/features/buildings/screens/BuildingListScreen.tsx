@@ -66,7 +66,7 @@ export default function BuildingListScreen() {
     return (
       <RouteGuard requireAuth>
         <PermissionGuard permissions={['building:read']}>
-          <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View testID="buildings.screen" style={[styles.container, { backgroundColor: theme.background }]}>
             <BuildingSkeleton count={5} />
           </View>
         </PermissionGuard>
@@ -97,7 +97,7 @@ export default function BuildingListScreen() {
               <Text style={[styles.actionText, { color: theme.primary }]}>Sort</Text>
             </TouchableOpacity>
             {canCreate && (
-              <TouchableOpacity onPress={handleAdd} style={styles.addButton}>
+              <TouchableOpacity testID="buildings.add" onPress={handleAdd} style={styles.addButton}>
                 <Text style={styles.addButtonText}>+ Add Building</Text>
               </TouchableOpacity>
             )}
@@ -106,10 +106,11 @@ export default function BuildingListScreen() {
             <BuildingEmptyState onAction={isOffline ? undefined : handleAdd} />
           ) : (
             <FlatList
+              testID="buildings.list"
               data={buildings}
               keyExtractor={(item) => String(item.id)}
               renderItem={({ item }) => (
-                <BuildingCard building={item} onPress={() => handleBuildingPress(item)} />
+                <BuildingCard building={item} onPress={() => handleBuildingPress(item)} testID={`buildings.card.${item.id}`} />
               )}
               refreshing={isFetching}
               onRefresh={refresh}

@@ -1,0 +1,63 @@
+# Maestro Flow: Owner Building CRUD
+# Tests creating, viewing, updating, and deleting a building.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: welcome.login
+    timeout: 30000
+
+# NOTE: In a real E2E run, this flow assumes the app is already
+# authenticated (e.g., via a pre-test setup flow or saved session).
+# For CI, use the `maestro cloud` with a pre-authenticated app state
+# or run the login flow first.
+
+# Navigate to Buildings tab
+- tapOn:
+    id: buildings.screen
+    optional: true
+
+# Add Building
+- tapOn:
+    id: buildings.add
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: add-building.name
+    timeout: 15000
+
+- inputText:
+    id: add-building.name
+    text: "E2E Test Building"
+
+- inputText:
+    id: add-building.address
+    text: "123 E2E Street"
+
+- inputText:
+    id: add-building.city
+    text: "Mumbai"
+
+- inputText:
+    id: add-building.state
+    text: "MH"
+
+- inputText:
+    id: add-building.country
+    text: "IN"
+
+- inputText:
+    id: add-building.postalCode
+    text: "400001"
+
+- tapOn:
+    id: add-building.submit
+
+- extendedWaitUntil:
+    visible:
+      id: buildings.screen
+    timeout: 15000

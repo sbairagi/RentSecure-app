@@ -1,0 +1,15 @@
+# Maestro Flow: Notifications
+# Tests the notification center.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: notifications.screen
+    timeout: 30000
+
+# Verify notification list is visible
+- assertVisible:
+    id: notifications.list

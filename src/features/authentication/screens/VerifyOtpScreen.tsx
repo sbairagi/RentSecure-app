@@ -66,7 +66,7 @@ export default function VerifyOtpScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer testID="verify-otp.screen">
       <AuthHeader
         title="Verify OTP"
         subtitle={`Enter the 6-digit code sent to ${params.phone || params.email || 'your phone'}`}
@@ -74,6 +74,7 @@ export default function VerifyOtpScreen() {
 
       <View style={styles.form}>
         <AppInput
+          testID="verify-otp.input"
           label="OTP"
           placeholder="Enter 6-digit OTP"
           value={otp}
@@ -88,12 +89,14 @@ export default function VerifyOtpScreen() {
           <Text style={styles.roleLabel}>I am an:</Text>
           <View style={styles.roleButtons}>
             <AppButton
+              testID="verify-otp.role-owner"
               title="Owner"
               variant={role === 'owner' ? 'primary' : 'outline'}
               onPress={() => setRole('owner')}
               style={styles.roleButton}
             />
             <AppButton
+              testID="verify-otp.role-renter"
               title="Renter"
               variant={role === 'renter' ? 'primary' : 'outline'}
               onPress={() => setRole('renter')}
@@ -102,13 +105,14 @@ export default function VerifyOtpScreen() {
           </View>
         </View>
 
-        <AppButton title="Verify OTP" onPress={handleSubmit} loading={loading} disabled={loading} />
+        <AppButton testID="verify-otp.submit" title="Verify OTP" onPress={handleSubmit} loading={loading} disabled={loading} />
 
         <View style={styles.resendContainer}>
           {countdown > 0 ? (
             <Text style={styles.countdown}>Resend OTP in {countdown}s</Text>
           ) : (
             <AppButton
+              testID="verify-otp.resend"
               title="Resend OTP"
               onPress={handleResendOtp}
               loading={resendLoading}

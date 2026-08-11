@@ -88,6 +88,7 @@ export interface SelectedFilters {
 export interface RenterCardProps {
   renter: Renter;
   onPress: () => void;
+  testID?: string;
 }
 
 export interface RenterSearchBarProps {

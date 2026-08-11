@@ -8,12 +8,14 @@ interface ChatInputProps {
   onSend: (message: string) => void;
   disabled?: boolean;
   placeholder?: string;
+  testID?: string;
 }
 
 export function ChatInput({
   onSend,
   disabled = false,
   placeholder = 'Ask AI anything...',
+  testID,
 }: ChatInputProps) {
   const theme = useTheme();
   const [text, setText] = useState('');
@@ -36,6 +38,7 @@ export function ChatInput({
       ]}
     >
       <TextInput
+        testID={testID ? `${testID}.input` : undefined}
         style={[
           styles.input,
           {
@@ -54,6 +57,7 @@ export function ChatInput({
         blurOnSubmit={false}
       />
       <TouchableOpacity
+        testID={testID ? `${testID}.send` : undefined}
         style={[
           styles.sendButton,
           {

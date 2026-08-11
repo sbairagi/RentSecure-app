@@ -1,0 +1,15 @@
+# Maestro Flow: Subscription Dashboard
+# Tests viewing subscription and usage limits.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: subscription.screen
+    timeout: 30000
+
+# Verify subscription dashboard is accessible
+- assertVisible:
+    id: subscription.upgrade

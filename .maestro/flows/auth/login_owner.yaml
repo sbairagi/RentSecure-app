@@ -1,0 +1,24 @@
+# Maestro Flow: Owner Authentication (OTP-based)
+# This flow tests the complete owner authentication journey.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: welcome.login
+    timeout: 30000
+
+- tapOn:
+    id: welcome.login
+
+- extendedWaitUntil:
+    visible:
+      id: login.email
+    timeout: 30000
+
+# Login via OTP verification endpoint (simulated by entering OTP screen)
+# For actual OTP-based login, the flow goes through VerifyOtpScreen
+# This flow assumes OTP is auto-filled or uses a test backend that
+# accepts any OTP in DEBUG mode

@@ -1,0 +1,28 @@
+# Maestro Flow: AI Assistant
+# Tests the AI assistant chat flow.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: ai-assistant.screen
+    timeout: 30000
+
+# Verify AI assistant is accessible
+- assertVisible:
+    id: ai-assistant.chat-input
+
+# Input a test question
+- inputText:
+    id: ai-assistant.chat-input.input
+    text: "How much rent is pending?"
+
+- tapOn:
+    id: ai-assistant.chat-input.send
+
+- extendedWaitUntil:
+    visible:
+      id: ai-assistant.messages
+    timeout: 30000

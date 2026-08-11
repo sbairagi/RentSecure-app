@@ -1,0 +1,45 @@
+# Maestro Flow: Owner Renter Management
+# Tests adding and viewing renters.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: renters.screen
+    timeout: 30000
+
+# Add Renter
+- tapOn:
+    id: renters.add
+    optional: true
+
+- extendedWaitUntil:
+    visible:
+      id: add-renter.name
+    timeout: 15000
+
+- inputText:
+    id: add-renter.name
+    text: "E2E Maestro Renter"
+
+- inputText:
+    id: add-renter.phone
+    text: "+919876543210"
+
+- inputText:
+    id: add-renter.email
+    text: "maestro-renter@test.com"
+
+- inputText:
+    id: add-renter.rentAmount
+    text: "15000"
+
+- tapOn:
+    id: add-renter.submit
+
+- extendedWaitUntil:
+    visible:
+      id: renters.screen
+    timeout: 15000

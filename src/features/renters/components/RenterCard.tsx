@@ -19,11 +19,12 @@ const RENTER_STATUS_LABELS: Record<string, string> = {
   deactivated: 'Deactivated',
 };
 
-export const RenterCard: React.FC<RenterCardProps> = ({ renter, onPress }) => {
+export const RenterCard: React.FC<RenterCardProps> = ({ renter, onPress, testID }) => {
   const theme = useTheme();
 
   return (
     <TouchableOpacity
+      testID={testID}
       onPress={onPress}
       activeOpacity={0.7}
       accessible

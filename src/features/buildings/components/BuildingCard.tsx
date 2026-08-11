@@ -9,16 +9,17 @@ import { computeBuildingStats, formatBuildingAddress } from '../utils/buildingHe
 interface BuildingCardProps {
   building: Building;
   onPress?: () => void;
+  testID?: string;
 }
 
-export const BuildingCard: React.FC<BuildingCardProps> = ({ building, onPress }) => {
+export const BuildingCard: React.FC<BuildingCardProps> = ({ building, onPress, testID }) => {
   const theme = useTheme();
   const stats = computeBuildingStats(building);
   const status = building.is_archived ? 'Archived' : 'Active';
   const statusColor = building.is_archived ? Colors.error[500] : Colors.success[500];
 
   return (
-    <AppCard onPress={onPress} padding="md" margin="sm">
+    <AppCard onPress={onPress} padding="md" margin="sm" testID={testID}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
           {building.name}

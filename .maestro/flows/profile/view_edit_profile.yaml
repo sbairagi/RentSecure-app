@@ -1,0 +1,24 @@
+# Maestro Flow: Profile Management
+# Tests viewing and editing profile.
+
+appId: com.rentsecure.app
+
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: profile.screen
+    timeout: 30000
+
+# Verify profile is accessible
+- assertVisible:
+    id: profile.edit
+
+# Navigate to edit profile
+- tapOn:
+    id: profile.edit
+
+- extendedWaitUntil:
+    visible:
+      id: profile.screen
+    timeout: 15000

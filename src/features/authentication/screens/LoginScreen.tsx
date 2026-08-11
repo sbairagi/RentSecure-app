@@ -60,11 +60,12 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer testID="login-screen">
       <AuthHeader title="Welcome Back" subtitle="Sign in to your account" />
 
       <View style={styles.form}>
         <AppInput
+          testID="login.email"
           label="Email"
           placeholder="Enter your email"
           value={email}
@@ -75,6 +76,7 @@ export default function LoginScreen() {
         />
 
         <AppInput
+          testID="login.password"
           label="Password"
           placeholder="Enter your password"
           value={password}
@@ -82,11 +84,18 @@ export default function LoginScreen() {
           secureTextEntry
         />
 
-        <AppButton title="Login" onPress={handleSubmit} loading={loading} disabled={loading} />
+        <AppButton
+          testID="login.submit"
+          title="Login"
+          onPress={handleSubmit}
+          loading={loading}
+          disabled={loading}
+        />
 
         <View style={styles.links}>
           <Link href="/(auth)/forgot-password" asChild>
             <AppButton
+              testID="login.forgot-password"
               title="Forgot Password?"
               variant="ghost"
               size="small"
@@ -94,6 +103,7 @@ export default function LoginScreen() {
           </Link>
           <Link href="/(auth)/register" asChild>
             <AppButton
+              testID="login.create-account"
               title="Create Account"
               variant="ghost"
               size="small"

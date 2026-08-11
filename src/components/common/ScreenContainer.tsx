@@ -21,6 +21,7 @@ interface ScreenContainerProps {
   footer?: React.ReactNode;
   loading?: boolean;
   empty?: boolean;
+  testID?: string;
 }
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({
@@ -33,12 +34,14 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   footer,
   loading = false,
   empty = false,
+  testID,
 }) => {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
 
   const content = (
     <View
+      testID={testID}
       style={[
         styles.content,
         {

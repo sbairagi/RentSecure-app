@@ -64,7 +64,7 @@ export default function ResetPasswordScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer testID="reset-password.screen">
       <AuthHeader title="Reset Password" subtitle="Create a new password" />
 
       <View style={styles.form}>
@@ -74,6 +74,7 @@ export default function ResetPasswordScreen() {
               Password reset successful! Please login with your new password.
             </Text>
             <AppButton
+              testID="reset-password.login-link"
               title="Go to Login"
               onPress={() => router.replace('/(auth)/login')}
               variant="primary"
@@ -82,6 +83,7 @@ export default function ResetPasswordScreen() {
         ) : (
           <>
             <AppInput
+              testID="reset-password.password"
               label="New Password"
               placeholder="Enter new password"
               value={form.password}
@@ -90,6 +92,7 @@ export default function ResetPasswordScreen() {
               error={error}
             />
             <AppInput
+              testID="reset-password.confirmPassword"
               label="Confirm Password"
               placeholder="Confirm new password"
               value={form.confirmPassword}
@@ -97,6 +100,7 @@ export default function ResetPasswordScreen() {
               secureTextEntry
             />
             <AppButton
+              testID="reset-password.submit"
               title="Reset Password"
               onPress={handleSubmit}
               loading={loading}

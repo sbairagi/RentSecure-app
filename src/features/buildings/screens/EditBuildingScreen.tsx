@@ -103,13 +103,14 @@ export default function EditBuildingScreen() {
   }
 
   return (
-    <RouteGuard requireAuth>
-      <PermissionGuard permissions={['building:write']}>
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
-          <AppText style={[styles.title, { color: theme.text }]}>Edit Building</AppText>
+        <RouteGuard requireAuth>
+          <PermissionGuard permissions={['building:write']}>
+            <View testID="edit-building.screen" style={[styles.container, { backgroundColor: theme.background }]}>
+              <AppText style={[styles.title, { color: theme.text }]}>Edit Building</AppText>
           <View style={[styles.card, { backgroundColor: theme.card }]}>
             <FormField label="Building Name" required error={errors.name?.message}>
               <AppInput
+                testID="edit-building.name"
                 control={control as any}
                 name="name"
                 placeholder="Enter building name"
@@ -122,6 +123,7 @@ export default function EditBuildingScreen() {
             </FormField>
             <FormField label="Address" required error={errors.address_line?.message}>
               <AppInput
+                testID="edit-building.address"
                 control={control as any}
                 name="address_line"
                 placeholder="Street address"
@@ -134,6 +136,7 @@ export default function EditBuildingScreen() {
             </FormField>
             <FormField label="City" required error={errors.city?.message}>
               <AppInput
+                testID="edit-building.city"
                 control={control as any}
                 name="city"
                 placeholder="City"
@@ -146,6 +149,7 @@ export default function EditBuildingScreen() {
             </FormField>
             <FormField label="State" required error={errors.state?.message}>
               <AppInput
+                testID="edit-building.state"
                 control={control as any}
                 name="state"
                 placeholder="State"
@@ -158,6 +162,7 @@ export default function EditBuildingScreen() {
             </FormField>
             <FormField label="Country" required error={errors.country?.message}>
               <AppInput
+                testID="edit-building.country"
                 control={control as any}
                 name="country"
                 placeholder="Country"
@@ -170,6 +175,7 @@ export default function EditBuildingScreen() {
             </FormField>
             <FormField label="Postal Code" required error={errors.postal_code?.message}>
               <AppInput
+                testID="edit-building.postalCode"
                 control={control as any}
                 name="postal_code"
                 placeholder="ZIP / Postal code"
@@ -181,6 +187,7 @@ export default function EditBuildingScreen() {
               />
             </FormField>
             <Button
+              testID="edit-building.submit"
               title={isUpdating ? 'Saving...' : 'Update Building'}
               onPress={handleSubmit(onSubmit)}
               disabled={isUpdating || isOffline}

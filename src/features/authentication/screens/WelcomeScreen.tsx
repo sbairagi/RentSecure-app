@@ -19,7 +19,7 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer testID="welcome-screen">
       <AuthHeader
         title="Welcome to SecureNest"
         subtitle="Manage your properties with ease. Secure, fast, and reliable."
@@ -43,10 +43,10 @@ export default function WelcomeScreen() {
 
         <View style={styles.buttonContainer}>
           <Link href="/(auth)/login" asChild>
-            <AppButton title="Login with Phone" variant="primary" size="large" />
+            <AppButton testID="welcome.login" title="Login with Phone" variant="primary" size="large" />
           </Link>
           <Link href="/(auth)/register" asChild>
-            <AppButton title="Create Account" variant="outline" size="large" style={styles.secondaryButton} />
+            <AppButton testID="welcome.create-account" title="Create Account" variant="outline" size="large" style={styles.secondaryButton} />
           </Link>
         </View>
 
