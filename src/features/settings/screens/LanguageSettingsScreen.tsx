@@ -10,11 +10,7 @@ import { RouteGuard } from '@/navigation/components/RouteGuard';
 import { useRouter } from 'expo-router';
 import { useLanguageStore } from '@/store/languageStore';
 import { useNotificationPreference, useUpdateNotificationPreference } from '../hooks';
-
-const LANGUAGES = [
-  { label: 'English', value: 'en' },
-  { label: 'हिंदी (Hindi)', value: 'hi' },
-];
+import { LANGUAGES } from '@/localization/constants/languages';
 
 export default function LanguageSettingsScreen() {
   const theme = useTheme();
@@ -27,8 +23,11 @@ export default function LanguageSettingsScreen() {
   const currentLanguage = backendLanguage || language;
 
   const handleLanguageChange = async (lang: string) => {
-    await setLanguage(lang as 'en' | 'hi');
-    await updatePrefs.mutateAsync({ language_preference: lang });
+    const supportedLang = LANGUAGES.find((l) => l.code === lang);
+    if (!supportedLang) return;
+
+    await setLanguage(supportedLang.code);
+    await updatePrefs.mutateAsync({ language_preference: supportedLang.code });
   };
 
   if (isLoading) {
@@ -53,22 +52,23 @@ export default function LanguageSettingsScreen() {
 
         {LANGUAGES.map((lang) => (
           <List.Item
-            key={lang.value}
-            title={lang.label}
+            key={lang.code}
+            title={lang.nativeName}
+            description={lang.name}
             left={(props) => (
               <List.Icon
                 {...props}
-                icon={currentLanguage === lang.value ? 'check' : 'translate'}
+                icon={currentLanguage === lang.code ? 'check' : 'translate'}
               />
             )}
-            onPress={() => handleLanguageChange(lang.value)}
+            onPress={() => handleLanguageChange(lang.code)}
             style={[
               styles.item,
               { backgroundColor: theme.colors.surface },
-              currentLanguage === lang.value && { backgroundColor: theme.colors.primaryContainer },
+              currentLanguage === lang.code && { backgroundColor: theme.colors.primaryContainer },
             ]}
             titleStyle={
-              currentLanguage === lang.value
+              currentLanguage === lang.code
                 ? { color: theme.colors.onPrimaryContainer, fontWeight: '600' }
                 : { color: theme.colors.onSurface }
             }

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
 
 type TranslationKeys = {
   app: { name: string; tagline: string };
@@ -36,7 +37,16 @@ type TranslationKeys = {
 
 export const useAppTranslation = () => {
   const { t } = useTranslation();
-  return { t };
+
+  const interpolate = useMemo(
+    () =>
+      (key: string, values?: Record<string, any>): string => {
+        return t(key, values);
+      },
+    [t]
+  );
+
+  return { t, interpolate };
 };
 
 export type { TranslationKeys };
