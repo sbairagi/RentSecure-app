@@ -93,7 +93,14 @@ export function RouteGuard({
       }
 
       if (requireFeature) {
-        const features = ROLE_REDIRECT;
+        const requiredFeatures = Array.isArray(requireFeature) ? requireFeature : [requireFeature];
+        const hasAccess = requiredFeatures.some((feature) => {
+          if (!subscription || isSubscriptionExpired(subscription.end_date)) {
+            return false;
+          }
+          return true;
+        });
+        if (!hasAccess) return false;
       }
 
       if (requireSubscription) {

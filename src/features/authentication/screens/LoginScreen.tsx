@@ -5,6 +5,7 @@ import { Spacing } from '@/constants/theme';
 import { AuthHeader } from '@/features/authentication/components/AuthHeader';
 import { SocialLoginButtons } from '@/features/authentication/components/SocialLoginButtons';
 import { useAuth } from '@/features/authentication/hooks/useAuth';
+import { useRouter } from 'expo-router';
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -19,6 +20,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
+  const router = useRouter();
   const { login, socialLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
