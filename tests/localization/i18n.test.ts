@@ -18,7 +18,7 @@ describe('i18n', () => {
 
   it('falls back to English for unsupported language', async () => {
     await i18n.changeLanguage('fr');
-    expect(i18n.language).toBe('en');
+    expect(i18n.t('common.loading')).toBe('Loading...');
   });
 
   it('returns English translation for known key', () => {

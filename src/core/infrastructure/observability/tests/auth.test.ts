@@ -1,7 +1,7 @@
 import { ApiError } from '@/services/api/errorHandler';
 import { refreshTokenManager } from '@/services/api/refreshToken';
-import { errorReporter } from '@/core/observability/error/ErrorReporter';
-import { classifyHttpError, isAuthenticationError, isAuthorizationError, buildErrorContext } from '@/core/observability/utils/classify';
+import { errorReporter } from '@/core/infrastructure/observability/error/ErrorReporter';
+import { classifyHttpError, isAuthenticationError, isAuthorizationError, buildErrorContext } from '@/core/infrastructure/observability/utils/classify';
 
 describe('Token refresh concurrency', () => {
   it('should not allow concurrent refresh calls', async () => {
@@ -53,13 +53,13 @@ describe('ErrorReporter', () => {
 
 describe('Error boundary state', () => {
   it('should categorize network errors', () => {
-    const { ErrorBoundary } = require('@/core/observability/error/ErrorBoundary');
+    const { ErrorBoundary } = require('@/core/infrastructure/observability/error/ErrorBoundary');
     const category = (ErrorBoundary as any).categorizeError(new Error('Network request failed'));
     expect(category).toBe('NETWORK_ERROR');
   });
 
   it('should categorize auth errors', () => {
-    const { ErrorBoundary } = require('@/core/observability/error/ErrorBoundary');
+    const { ErrorBoundary } = require('@/core/infrastructure/observability/error/ErrorBoundary');
     const category = (ErrorBoundary as any).categorizeError(new Error('Auth token expired'));
     expect(category).toBe('AUTHENTICATION_ERROR');
   });

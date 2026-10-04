@@ -3,7 +3,7 @@ import { Button } from '@/design-system/buttons/Button';
 import { BuildingStatsRow } from '@/features/buildings/components/BuildingStatsRow';
 import { useBuilding } from '@/features/buildings/hooks/useBuilding';
 import { useBuildings } from '@/features/buildings/hooks/useBuildings';
-import { useIsOffline } from '@/core/offline';
+import { useIsOffline } from '@/core/infrastructure/offline';
 import {
   formatBuildingAddress,
   getBuildingStatus,

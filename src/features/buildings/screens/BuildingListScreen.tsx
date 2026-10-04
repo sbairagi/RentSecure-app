@@ -6,7 +6,7 @@ import { BuildingFilterSheet } from '@/features/buildings/components/BuildingFil
 import { BuildingLimitBanner } from '@/features/buildings/components/BuildingLimitBanner';
 import { BuildingSortSheet } from '@/features/buildings/components/BuildingSortSheet';
 import { BuildingSkeleton } from '@/features/buildings/components/BuildingSkeleton';
-import { useIsOffline } from '@/core/offline';
+import { useIsOffline } from '@/core/infrastructure/offline';
 import { useBuildings } from '@/features/buildings/hooks/useBuildings';
 import type { Building, BuildingFilters } from '@/features/buildings/types/buildings';
 import { useTheme } from '@/hooks/use-theme';

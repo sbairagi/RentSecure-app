@@ -1,5 +1,5 @@
 import { createApiError } from '@/services/api/errorHandler';
-import { classifyHttpError, isRetryable } from '@/core/observability/utils/classify';
+import { classifyHttpError, isRetryable } from '@/core/infrastructure/observability/utils/classify';
 
 describe('createApiError - 401 handling', () => {
   it('should create UNAUTHORIZED error for 401', () => {

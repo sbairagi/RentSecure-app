@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import { HttpsEnforcer } from '@/core/security/network/httpsEnforcer';
+import { HttpsEnforcer } from '@/core/infrastructure/security/network/httpsEnforcer';
 
 /**
  * Application environment configuration.

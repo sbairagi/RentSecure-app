@@ -10,11 +10,11 @@ import { I18nextProvider } from 'react-i18next';
 import FlashMessage from 'react-native-flash-message';
 import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ErrorBoundary } from '@/core/observability/error';
-import { initSentry } from '@/core/observability/monitoring/sentry';
+import { ErrorBoundary } from '@/core/infrastructure/observability/error';
+import { initSentry } from '@/core/infrastructure/observability/monitoring/sentry';
 import { queryClient } from './queryClient';
-import { OfflineBanner } from '@/core/offline/network/OfflineBanner';
-import { initializeSync } from '@/core/offline/sync/syncEngine';
+import { OfflineBanner } from '@/core/infrastructure/offline/network/OfflineBanner';
+import { initializeSync } from '@/core/infrastructure/offline/sync/syncEngine';
 
 function ProvidersInner({ children }: { children: React.ReactNode }) {
   const _themeMode = useThemeStore((s) => s.mode);

@@ -1,4 +1,4 @@
-import { redactObject, redactHeaders, sanitizeForLogging } from '@/core/observability/utils/redact';
+import { redactObject, redactHeaders, sanitizeForLogging } from '@/core/infrastructure/observability/utils/redact';
 
 describe('Sensitive data redaction - passwords', () => {
   it('should redact password field', () => {

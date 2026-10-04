@@ -1,8 +1,8 @@
-import { observabilityLogger } from '@/core/observability/logging';
-import { trackBusinessFlow } from '@/core/observability/monitoring/business';
-import { logPaymentFlowStarted, logSuccessfulPayment, logOrderCreationFailure } from '@/core/observability/logging/payment';
-import { logSubscriptionExpired, logUpgradeFailure } from '@/core/observability/logging/subscription';
-import { trackApiPerformance, trackScreenLoad } from '@/core/observability/performance';
+import { observabilityLogger } from '@/core/infrastructure/observability/logging';
+import { trackBusinessFlow } from '@/core/infrastructure/observability/monitoring/business';
+import { logPaymentFlowStarted, logSuccessfulPayment, logOrderCreationFailure } from '@/core/infrastructure/observability/logging/payment';
+import { logSubscriptionExpired, logUpgradeFailure } from '@/core/infrastructure/observability/logging/subscription';
+import { trackApiPerformance, trackScreenLoad } from '@/core/infrastructure/observability/performance';
 
 describe('ObservabilityLogger', () => {
   beforeEach(() => {

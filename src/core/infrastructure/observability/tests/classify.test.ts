@@ -1,5 +1,5 @@
-import { classifyHttpError, classifyNetworkError, isRetryable, getErrorSeverity, buildErrorContext, isAuthenticationError, isAuthorizationError, isValidationError, isRateLimitError, isServerError } from '@/core/observability/utils/classify';
-import { ERROR_CATEGORIES } from '@/core/observability/constants/errors';
+import { classifyHttpError, classifyNetworkError, isRetryable, getErrorSeverity, buildErrorContext, isAuthenticationError, isAuthorizationError, isValidationError, isRateLimitError, isServerError } from '@/core/infrastructure/observability/utils/classify';
+import { ERROR_CATEGORIES } from '@/core/infrastructure/observability/constants/errors';
 
 describe('classifyHttpError', () => {
   it('should classify 401 as AUTHENTICATION_ERROR', () => {

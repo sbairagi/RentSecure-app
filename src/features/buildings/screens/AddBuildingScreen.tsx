@@ -4,7 +4,7 @@ import { FormField } from '@/components/forms/FormField';
 import { Radius, Spacing } from '@/constants/theme';
 import { Button } from '@/design-system/buttons/Button';
 import { useBuildings } from '@/features/buildings/hooks/useBuildings';
-import { useIsOffline } from '@/core/offline';
+import { useIsOffline } from '@/core/infrastructure/offline';
 import { useTheme } from '@/hooks/use-theme';
 import { useAuthStore } from '@/store/authStore';
 import { PermissionGuard } from '@/navigation/components/PermissionGuard';

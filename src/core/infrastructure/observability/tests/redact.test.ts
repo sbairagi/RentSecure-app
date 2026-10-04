@@ -1,4 +1,4 @@
-import { redactObject, redactHeaders, sanitizeForLogging, isSensitiveField } from '@/core/observability/utils/redact';
+import { redactObject, redactHeaders, sanitizeForLogging, isSensitiveField } from '@/core/infrastructure/observability/utils/redact';
 
 describe('redactObject', () => {
   it('should handle null', () => {

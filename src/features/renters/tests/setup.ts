@@ -16,6 +16,23 @@ jest.mock('react-native-mmkv', () => ({
   })),
 }));
 
+jest.mock('expo-modules-core', () => ({
+  EventEmitter: jest.fn(),
+  NativeModule: jest.fn(),
+  Constants: {
+    expoConfig: {},
+    sessionId: 'test-session-id',
+  },
+}));
+
+jest.mock('expo-constants', () => ({
+  Constants: {
+    expoConfig: {},
+    sessionId: 'test-session-id',
+    platform: { ios: null, android: null, web: null },
+  },
+}));
+
 jest.mock('@/services/api/apiClient', () => ({
   apiService: {
     get: jest.fn(),
